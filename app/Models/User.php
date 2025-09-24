@@ -2,20 +2,20 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
+     * Kolom yang bisa diisi secara mass-assignment.
      *
-     * @var list<string>
+     * @var array<int,string>
      */
     protected $fillable = [
         'name',
@@ -24,9 +24,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * Kolom yang harus disembunyikan ketika diserialisasi.
      *
-     * @var list<string>
+     * @var array<int,string>
      */
     protected $hidden = [
         'password',
@@ -34,9 +34,9 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Tipe casting atribut.
      *
-     * @return array<string, string>
+     * @return array<string,string>
      */
     protected function casts(): array
     {
@@ -45,4 +45,23 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Relasi satu-satu ke Dosen.
+     *
+     * Pastikan kolom foreign key di tabel `dosens` bernama `user_id`.
+     */
+    public function dosen(): HasOne
+    {
+        return $this->hasOne(Dosen::class, 'user_id');
+    }
+
+    /**
+     * (Opsional) contoh relasi jika nanti
+     * user memiliki banyak penelitian.
+     */
+    // public function penelitians(): HasMany
+    // {
+    //     return $this->hasMany(Penelitian::class);
+    // }
 }
