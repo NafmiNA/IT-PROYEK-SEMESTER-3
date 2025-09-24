@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Run the migrations.
+     * Jalankan migrasi: membuat tabel dosens.
      */
     public function up(): void
     {
@@ -17,14 +17,16 @@ return new class extends Migration
             $table->string('nama');
             $table->string('email')->unique();
             $table->boolean('status_aktif')->default(true);
+
+            // FK otomatis ke tabel users (id) + cascade on delete
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+
             $table->timestamps();
         });
-        
     }
 
     /**
-     * Reverse the migrations.
+     * Rollback migrasi.
      */
     public function down(): void
     {
