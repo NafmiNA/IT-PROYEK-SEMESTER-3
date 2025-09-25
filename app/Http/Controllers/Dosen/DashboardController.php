@@ -8,9 +8,13 @@ use App\Models\Pengabdian;
 use App\Models\Dokumentasi;
 use App\Models\Verifikasi;
 use Illuminate\Http\Request;
+use Carbon\CarbonPeriod;
 
 class DashboardController extends Controller
 {
+
+// Removed duplicate index() method to resolve duplicate symbol declaration error.
+
     public function index(Request $request)
     {
         $dosen = $request->user()->dosen; // relasi user->dosen
@@ -36,4 +40,6 @@ class DashboardController extends Controller
             'menungguVerif','recentPenelitian','recentPengabdian','recentVerif'
         ));
     }
+
+    
 }
