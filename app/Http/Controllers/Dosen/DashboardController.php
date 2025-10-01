@@ -21,7 +21,12 @@ class DashboardController extends Controller
 
         $totalPenelitian   = Penelitian::where('dosen_id', $dosen->id)->count();
         $totalPengabdian   = Pengabdian::where('dosen_id', $dosen->id)->count();
-        $totalDokumentasi  = Dokumentasi::where('dosen_id', $dosen->id)->count();
+        $totalDokumentasi = Dokumentasi::whereHas('penelitian', function ($q) use ($dosen) {
+            $q->where('dosen_id', $dosen->id);
+        })->orWhereHas('pengabdian', function ($q) use ($dosen) {
+            $q->where('dosen_id', $dosen->id);
+        })->count();
+        
 
         $menungguVerif = Verifikasi::where('dosen_id', $dosen->id)
             ->where('status','Menunggu')->count();

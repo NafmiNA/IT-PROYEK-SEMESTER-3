@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Verifikasi extends Model
 {
-    protected $fillable = ['tanggal','status','catatan','admin_p3m_id','penelitian_id','pengabdian_id','dosen_id'];
-    public function dosen(){ return $this->belongsTo(Dosen::class); }
+    // Paksa nama tabel yang dipakai
+    protected $table = 'verifikasi';
+
+    protected $fillable = [
+        'dosen_id', 'jenis', 'referensi_id', 'status', 'catatan',
+    ];
 }
