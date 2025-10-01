@@ -85,6 +85,11 @@
    Kelola Pengabdian
 </a>
 
+<a href="{{ route('dosen.dokumentasi.index') }}"
+   class="btn btn-secondary text-decoration-none">
+   Kelola Dokumentasi
+</a>
+
           </a>
         </div>
       </div>
@@ -110,8 +115,8 @@
       {{-- Grafik --}}
       <div class="card pad" style="margin-bottom:20px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <h3 class="section-title">Tren 6 Bulan Terakhir</h3>
-          <span class="muted">per bulan</span>
+          <h3 class="section-title">Tren 5 Tahun Terakhir</h3>
+          <span class="muted">per Tahun</span>
         </div>
         <div class="chart-wrap">
           <canvas id="paChart"></canvas>
@@ -155,7 +160,7 @@
   @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     @php
-      $labels   = $chartLabels     ?? ['Apr','Mei','Jun','Jul','Agu','Sep'];
+      $labels   = $chartLabels     ?? ['2019','2020','2021','2021','2022','2022'];
       $peneliti = $chartPenelitian ?? [2,4,3,5,4,6];
       $pengabdi = $chartPengabdian ?? [1,2,2,3,4,3];
     @endphp
