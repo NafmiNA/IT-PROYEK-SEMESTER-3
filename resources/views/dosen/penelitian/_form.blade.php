@@ -61,19 +61,31 @@
     <div class="form-text">Isi angka, otomatis diberi pemisah ribuan.</div>
   </div>
 
+  {{-- Tempat Terbit Jurnal --}}
+  {{-- Tempat Terbit Jurnal --}}
+<div class="col-md-6">
+  <label class="form-label">Tempat Terbit Jurnal</label>
+  <input type="text" name="tempat_terbit"
+         value="{{ old('tempat_terbit', $isEdit ? ($penelitian->tempat_terbit ?? '') : '') }}"
+         class="form-control @error('tempat_terbit') is-invalid @enderror"
+         placeholder="Masukkan nama jurnal atau prosiding">
+  @error('tempat_terbit') 
+    <div class="invalid-feedback">{{ $message }}</div> 
+  @enderror
+  <div class="form-text">Tuliskan nama jurnal, prosiding, atau penerbit penelitian.</div>
+</div>
+
+
   {{-- Status --}}
   <div class="col-md-6">
     <label class="form-label">Status <span class="text-danger">*</span></label>
-     <label class="form-label">Status <span class="text-danger">*</span></label>
-<select name="status" class="form-select" required>
-    <option value="Menunggu" selected>Menunggu</option>
-</select>
-<div class="form-text">
-    Status otomatis <strong>Menunggu</strong> ketika diajukan verifikasi.
-</div>
-
+    <select name="status" class="form-select" required>
+        <option value="Menunggu" {{ old('status', $isEdit ? $penelitian->status : 'Menunggu')=='Menunggu'?'selected':'' }}>Menunggu</option>
+        <option value="Disetujui" {{ old('status', $isEdit ? $penelitian->status : '')=='Disetujui'?'selected':'' }}>Disetujui</option>
+        <option value="Ditolak" {{ old('status', $isEdit ? $penelitian->status : '')=='Ditolak'?'selected':'' }}>Ditolak</option>
+    </select>
     @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-    <div class="form-text">Pilih <b>Menunggu</b> ketika diajukan verifikasi.</div>
+    <div class="form-text">Status otomatis <b>Menunggu</b> ketika diajukan verifikasi.</div>
   </div>
 </div>
 
