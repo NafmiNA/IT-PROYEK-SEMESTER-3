@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Dosen\DashboardController;
 use App\Http\Controllers\Dosen\PenelitianController;
 use App\Http\Controllers\Dosen\PengabdianController;
+use App\Http\Controllers\Dosen\DokumentasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,4 +61,11 @@ Route::middleware(['auth','verified','role:dosen'])
 
         // Kelola Pengabdian
         Route::resource('pengabdian', PengabdianController::class);
+    });
+
+    Route::prefix('dosen')->name('dosen.')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::resource('/penelitian', PenelitianController::class);
+        Route::resource('/pengabdian', PengabdianController::class);
+        Route::resource('/dokumentasi', DokumentasiController::class);
     });

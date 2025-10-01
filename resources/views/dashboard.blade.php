@@ -8,38 +8,40 @@
   <h1 class="text-2xl font-bold mb-6">Halo, {{ $dosen->nama }}</h1>
 
   {{-- Kartu Ringkasan --}}
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="p-5 rounded-2xl shadow bg-white">
-      <div class="text-sm text-gray-500">Total Penelitian</div>
-      <div class="text-3xl font-semibold">{{ $totalPenelitian }}</div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="p-6 rounded-2xl shadow bg-white hover:shadow-lg transition">
+      <p class="text-sm text-gray-500">Total Penelitian</p>
+      <p class="text-3xl font-bold text-blue-600">{{ $totalPenelitian }}</p>
     </div>
-    <div class="p-5 rounded-2xl shadow bg-white">
-      <div class="text-sm text-gray-500">Total Pengabdian</div>
-      <div class="text-3xl font-semibold">{{ $totalPengabdian }}</div>
+    <div class="p-6 rounded-2xl shadow bg-white hover:shadow-lg transition">
+      <p class="text-sm text-gray-500">Total Pengabdian</p>
+      <p class="text-3xl font-bold text-green-600">{{ $totalPengabdian }}</p>
     </div>
-    <div class="p-5 rounded-2xl shadow bg-white">
-      <div class="text-sm text-gray-500">Dokumentasi</div>
-      <div class="text-3xl font-semibold">{{ $totalDokumentasi }}</div>
+    <div class="p-6 rounded-2xl shadow bg-white hover:shadow-lg transition">
+      <p class="text-sm text-gray-500">Dokumentasi</p>
+      <p class="text-3xl font-bold text-purple-600">{{ $totalDokumentasi }}</p>
     </div>
-    <div class="p-5 rounded-2xl shadow bg-white">
-      <div class="text-sm text-gray-500">Menunggu Verifikasi</div>
-      <div class="text-3xl font-semibold">{{ $menungguVerif }}</div>
+    <div class="p-6 rounded-2xl shadow bg-white hover:shadow-lg transition">
+      <p class="text-sm text-gray-500">Menunggu Verifikasi</p>
+      <p class="text-3xl font-bold text-yellow-600">{{ $menungguVerif }}</p>
     </div>
   </div>
 
   {{-- Tabel Ringkas --}}
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white rounded-2xl shadow">
-      <div class="px-5 py-3 border-b font-semibold">Penelitian Terbaru</div>
+
+    {{-- Penelitian --}}
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
+      <div class="px-5 py-3 border-b font-semibold text-lg">Penelitian Terbaru</div>
       <div class="p-5">
         <ul class="space-y-3">
           @forelse($recentPenelitian as $p)
-            <li class="flex items-center justify-between">
+            <li class="flex items-center justify-between border-b last:border-0 pb-2">
               <div>
-                <div class="font-medium">{{ $p->judul }}</div>
-                <div class="text-xs text-gray-500">Tahun {{ $p->tahun }} • Status: {{ $p->status }}</div>
+                <p class="font-medium">{{ $p->judul }}</p>
+                <p class="text-xs text-gray-500">Tahun {{ $p->tahun }} • Status: {{ $p->status }}</p>
               </div>
-              <a href="#" class="text-blue-600 text-sm">Detail</a>
+              <a href="#" class="text-blue-600 text-sm hover:underline">Detail</a>
             </li>
           @empty
             <li class="text-gray-500 text-sm">Belum ada data.</li>
@@ -48,17 +50,18 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow">
-      <div class="px-5 py-3 border-b font-semibold">Pengabdian Terbaru</div>
+    {{-- Pengabdian --}}
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
+      <div class="px-5 py-3 border-b font-semibold text-lg">Pengabdian Terbaru</div>
       <div class="p-5">
         <ul class="space-y-3">
           @forelse($recentPengabdian as $g)
-            <li class="flex items-center justify-between">
+            <li class="flex items-center justify-between border-b last:border-0 pb-2">
               <div>
-                <div class="font-medium">{{ $g->judul }}</div>
-                <div class="text-xs text-gray-500">Tahun {{ $g->tahun }} • Status: {{ $g->status }}</div>
+                <p class="font-medium">{{ $g->judul }}</p>
+                <p class="text-xs text-gray-500">Tahun {{ $g->tahun }} • Status: {{ $g->status }}</p>
               </div>
-              <a href="#" class="text-blue-600 text-sm">Detail</a>
+              <a href="#" class="text-blue-600 text-sm hover:underline">Detail</a>
             </li>
           @empty
             <li class="text-gray-500 text-sm">Belum ada data.</li>
@@ -67,8 +70,9 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl shadow lg:col-span-2">
-      <div class="px-5 py-3 border-b font-semibold">Riwayat Verifikasi</div>
+    {{-- Verifikasi --}}
+    <div class="bg-white rounded-2xl shadow lg:col-span-2 overflow-hidden">
+      <div class="px-5 py-3 border-b font-semibold text-lg">Riwayat Verifikasi</div>
       <div class="p-5 overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead>
@@ -89,7 +93,7 @@
                   @endif
                 </td>
                 <td class="py-2">
-                  <span class="px-2 py-1 rounded-full text-xs
+                  <span class="px-2 py-1 rounded-full text-xs font-medium
                     @class([
                       'bg-yellow-100 text-yellow-800' => $v->status==='Menunggu',
                       'bg-green-100 text-green-700' => $v->status==='Disetujui',
@@ -101,7 +105,9 @@
                 <td class="py-2">{{ $v->catatan ?? '-' }}</td>
               </tr>
             @empty
-              <tr><td class="py-4 text-gray-500" colspan="4">Belum ada verifikasi.</td></tr>
+              <tr>
+                <td class="py-4 text-gray-500 text-center" colspan="4">Belum ada verifikasi.</td>
+              </tr>
             @endforelse
           </tbody>
         </table>
