@@ -16,7 +16,7 @@ class Pengabdian extends Model
         return $this->belongsTo(Dosen::class);
     }
 
-    public function dokumentasis()
+    public function dokumentasi()
     {
         return $this->hasMany(Dokumentasi::class, 'pengabdian_id');
     }

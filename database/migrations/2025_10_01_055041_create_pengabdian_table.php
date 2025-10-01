@@ -5,20 +5,20 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
-        Schema::create('pengabdian', function (Blueprint $table) {
-            $table->id();
-            $table->string('judul');
-            $table->integer('tahun');
-            $table->string('bidang')->nullable();
-            $table->string('sumber_dana')->nullable();
-            $table->decimal('dana', 15, 2)->nullable();
-            $table->enum('status', ['Draft','Menunggu','Disetujui','Ditolak'])->default('Draft');
-            $table->foreignId('dosen_id')->constrained('dosens')->cascadeOnDelete();
-            $table->timestamps();
-        });
-    }
-    public function down(): void {
-        Schema::dropIfExists('pengabdian');
-    }
+  public function up(): void {
+    Schema::create('pengabdians', function (Blueprint $t) {
+      $t->id();
+      $t->foreignId('dosen_id')->constrained('dosens')->cascadeOnDelete(); // sesuaikan nama tabel dosenmu
+      $t->string('judul');
+      $t->year('tahun');
+      $t->string('skema')->nullable();
+      $t->string('sumber_dana')->nullable();
+      $t->decimal('dana', 15, 2)->nullable();
+      $t->string('status')->default('Menunggu'); // Menunggu | Disetujui | Ditolak
+      $t->timestamps();
+    });
+  }
+  public function down(): void {
+    Schema::dropIfExists('pengabdians');
+  }
 };

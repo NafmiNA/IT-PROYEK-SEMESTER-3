@@ -69,3 +69,9 @@ Route::middleware(['auth','verified','role:dosen'])
         Route::resource('/pengabdian', PengabdianController::class);
         Route::resource('/dokumentasi', DokumentasiController::class);
     });
+
+    Route::middleware(['auth','role:dosen'])
+    ->prefix('dosen')->name('dosen.')
+    ->group(function () {
+        Route::resource('pengabdian', PengabdianController::class);
+    });
