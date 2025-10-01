@@ -33,24 +33,32 @@ class PenelitianController extends Controller
      * Simpan penelitian baru
      */
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'judul'       => 'required|string|max:255',
-            'tahun'       => 'required|integer',
-            'skema'       => 'nullable|string|max:255',
-            'sumber_dana' => 'nullable|string|max:255',
-            'dana'        => 'nullable|numeric',
-            'status'      => 'required|string|max:50',
-        ]);
+{
+    $validated = $request->validate([
+        'judul'       => 'required|string|max:255',
+        'tahun'       => 'required|integer',
+        'skema'       => 'nullable|string|max:100',
+        'sumber_dana' => 'nullable|string|max:100',
+        'dana'        => 'required',           // kita bersihkan manual
+        'status'      => 'nullable|string|in:Menunggu,Disetujui,Ditolak',
+    ]);
 
-        $validated['dosen_id'] = $request->user()->dosen->id;
+    // bersihkan format uang (hapus "Rp", titik, spasi, dll)
+    $validated['dana'] = (int) preg_replace('/\D/', '', $validated['dana']);
 
-        Penelitian::create($validated);
+    // set pemilik
+    $validated['dosen_id'] = $request->user()->dosen->id ?? $request->user()->dosen_id;
 
-        return redirect()
-            ->route('dosen.penelitian.index')
-            ->with('success', 'Penelitian berhasil ditambahkan.');
-    }
+    // default status jika tidak dikirim dari form
+    $validated['status'] = $validated['status'] ?? 'Menunggu';
+
+    Penelitian::create($validated);
+
+    return redirect()
+        ->route('dosen.penelitian.index')
+        ->with('success', 'Penelitian berhasil ditambahkan.');
+}
+
 
     /**
      * Tampilkan detail satu penelitian

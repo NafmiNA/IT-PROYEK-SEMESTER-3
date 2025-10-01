@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use App\Models\Dosen;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class DemoDosenSeeder extends Seeder
@@ -13,12 +13,25 @@ class DemoDosenSeeder extends Seeder
     {
         $user = User::firstOrCreate(
             ['email' => 'andi@kampus.ac.id'],
-            ['name' => 'Dr. Andi', 'password' => Hash::make('password'), 'role' => 'dosen']
+            [
+                'name' => 'Andi Dosen',
+                'password' => Hash::make('password123'),
+                'role' => 'dosen',
+            ]
         );
 
-        Dosen::firstOrCreate(
-            ['user_id' => $user->id],
-            ['nidn' => '0012345678', 'nama' => 'Dr. Andi', 'email' => 'andi@kampus.ac.id', 'status_aktif' => true]
+        // buat baris dosen terhubung ke user
+        DB::table('dosens')->updateOrInsert(
+            ['email' => 'andi@kampus.ac.id'],
+            [
+                'nama' => 'Andi Dosen',
+                'nidn' => '0012345678',
+                'jabatan_fungsional' => 'Lektor',
+                'status_aktif' => true,
+                'user_id' => $user->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
         );
     }
 }

@@ -6,7 +6,29 @@ use Illuminate\Database\Eloquent\Model;
 
 class Penelitian extends Model
 {
-    protected $fillable = ['judul','skema','tahun','sumber_dana','dana','status','dosen_id'];
-    public function dosen(){ return $this->belongsTo(Dosen::class); }
-}
+    // kalau nama tabel kamu 'penelitian' (bukan jamak) tulis ini:
+    protected $table = 'penelitian';
 
+    // izinkan kolom-kolom yang di-create/update massal
+    protected $fillable = [
+        'judul',
+        'tahun',
+        'skema',
+        'sumber_dana',
+        'dana',
+        'status',
+        'dosen_id',
+    ];
+
+    // opsional: casting angka
+    protected $casts = [
+        'tahun' => 'integer',
+        'dana'  => 'integer',
+    ];
+
+    // relasi opsional
+    public function dosen()
+    {
+        return $this->belongsTo(Dosen::class);
+    }
+}
