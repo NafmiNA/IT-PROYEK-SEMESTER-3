@@ -11,14 +11,15 @@ return new class extends Migration {
             $table->dateTime('tanggal')->nullable();
             $table->enum('status', ['Menunggu','Disetujui','Ditolak'])->default('Menunggu');
             $table->text('catatan')->nullable();
-            $table->foreignId('admin_p3m_id')->constrained('users')->cascadeOnDelete();
 
+            $table->foreignId('admin_p3m_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('penelitian_id')->nullable()->constrained('penelitian')->nullOnDelete();
-            $table->foreignId('pengabdian_id')->nullable()->constrained('pengabdian')->nullOnDelete();
+            $table->foreignId('pengabdian_id')->nullable()->constrained('pengabdians')->nullOnDelete(); // <-- plural
 
             $table->timestamps();
         });
     }
+
     public function down(): void {
         Schema::dropIfExists('verifikasi');
     }
