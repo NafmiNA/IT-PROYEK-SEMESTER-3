@@ -85,11 +85,6 @@
    Kelola Pengabdian
 </a>
 
-<a href="{{ route('dosen.dokumentasi.index') }}"
-   class="btn btn-secondary text-decoration-none">
-   Kelola Dokumentasi
-</a>
-
           </a>
         </div>
       </div>
