@@ -6,13 +6,24 @@ use Illuminate\Database\Eloquent\Model;
 
 class Dokumentasi extends Model
 {
-    protected $table = 'dokumentasi'; // ganti ke 'dokumentasis' jika tabel kamu plural
+    protected $table = 'dokumentasi';
+    protected $primaryKey = 'dokumentasi_id';
+
     protected $fillable = [
-        'file_path','jenis','tanggal','keterangan',
-        'mahasiswa_id','penelitian_id','pengabdian_id','dosen_id'
+        'penelitian_id','pengabdian_id','file_name','mime','size','gdrive_path'
     ];
 
-    public function dosen()       { return $this->belongsTo(Dosen::class); }
-    public function penelitian()  { return $this->belongsTo(Penelitian::class); }
-    public function pengabdian()  { return $this->belongsTo(Pengabdian::class); }
+    // Dokumen MILIK satu penelitian
+    public function penelitian()
+    {
+        // FK di tabel dokumentasi = penelitian_id, PK di penelitian = id
+        return $this->belongsTo(Penelitian::class, 'penelitian_id', 'id');
+    }
+
+    // Dokumen MILIK satu pengabdian
+    public function pengabdian()
+    {
+        // FK di tabel dokumentasi = pengabdian_id, PK di pengabdians = id
+        return $this->belongsTo(Pengabdian::class, 'pengabdian_id', 'id');
+    }
 }

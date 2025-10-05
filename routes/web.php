@@ -6,6 +6,8 @@ use App\Http\Controllers\Dosen\DashboardController;
 use App\Http\Controllers\Dosen\PenelitianController;
 use App\Http\Controllers\Dosen\PengabdianController;
 use App\Http\Controllers\Dosen\DokumentasiController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -36,11 +38,16 @@ Route::get('/dashboard', function () {
 | Route untuk pengaturan profil user
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
-    Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+// routes/web.php
+
+
+Route::middleware(['auth'])->prefix('dosen')->name('dosen.')->group(function () {
+    Route::resource('penelitian', PenelitianController::class)->only([
+        'index','create','store','show','edit','update','destroy'
+    ]);
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -75,3 +82,13 @@ Route::middleware(['auth','verified','role:dosen'])
     ->group(function () {
         Route::resource('pengabdian', PengabdianController::class);
     });
+
+    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+
+Route::get('/forgot-password', fn()=>view('auth.forgot-password'))->name('password.request');
+
+// (opsional) Google OAuth
+Route::get('/auth/google/redirect', [\App\Http\Controllers\Auth\GoogleController::class, 'redirect'])->name('auth.google.redirect');
+Route::get('/auth/google/callback', [\App\Http\Controllers\Auth\GoogleController::class, 'callback']);
+

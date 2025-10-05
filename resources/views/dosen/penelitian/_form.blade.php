@@ -1,104 +1,131 @@
-@php $isEdit = isset($penelitian); @endphp
-
-{{-- Alert error validasi --}}
-@if ($errors->any())
-  <div class="alert alert-danger">
-    <div class="fw-semibold mb-1">Periksa kembali isian berikut:</div>
-    <ul class="mb-0 ps-3">
-      @foreach ($errors->all() as $err)
-        <li>{{ $err }}</li>
-      @endforeach
-    </ul>
-  </div>
-@endif
-
-<div class="row g-3">
-  {{-- Judul --}}
-  <div class="col-12">
-    <label class="form-label">Judul <span class="text-danger">*</span></label>
-    <input type="text" name="judul"
-           value="{{ old('judul', $isEdit ? $penelitian->judul : '') }}"
-           class="form-control @error('judul') is-invalid @enderror"
-           placeholder="Masukkan judul penelitian" required>
-    @error('judul') <div class="invalid-feedback">{{ $message }}</div> @enderror
-    <div class="form-text">Tulis singkat, jelas, dan spesifik.</div>
-  </div>
-
-  {{-- Tahun --}}
-  <div class="col-md-6">
-    <label class="form-label">Tahun <span class="text-danger">*</span></label>
-    <input type="number" name="tahun" min="2000" max="{{ date('Y')+1 }}"
-           value="{{ old('tahun', $isEdit ? $penelitian->tahun : date('Y')) }}"
-           class="form-control @error('tahun') is-invalid @enderror" required>
-    @error('tahun') <div class="invalid-feedback">{{ $message }}</div> @enderror
-  </div>
-
-  {{-- Skema --}}
-  <div class="col-md-6">
-    <label class="form-label">Skema</label>
-    <input type="text" name="skema"
-           value="{{ old('skema', $isEdit ? ($penelitian->skema ?? '') : '') }}"
-           class="form-control" placeholder="Dasar / Terapan / Mandiri">
-  </div>
-
-  {{-- Sumber Dana --}}
-  <div class="col-md-6">
-    <label class="form-label">Sumber Dana</label>
-    <input type="text" name="sumber_dana"
-           value="{{ old('sumber_dana', $isEdit ? ($penelitian->sumber_dana ?? '') : '') }}"
-           class="form-control" placeholder="DRPM, Internal, Mandiri">
-  </div>
-
-  {{-- Dana (Rp) --}}
-  <div class="col-md-6">
-    <label class="form-label">Dana (Rp)</label>
-    <div class="input-group">
-      <span class="input-group-text">Rp</span>
-      <input type="text" inputmode="numeric" id="input-dana" name="dana"
-             value="{{ old('dana', $isEdit ? ($penelitian->dana ?? '') : '') }}"
-             class="form-control" placeholder="15.000.000">
+<x-app-layout>
+  <x-slot name="header">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-semibold text-gray-800">Tambah Penelitian</h2>
+      <a href="{{ route('dosen.penelitian.index') }}" class="text-sm text-gray-500 hover:text-gray-700">← Kembali</a>
     </div>
-    <div class="form-text">Isi angka, otomatis diberi pemisah ribuan.</div>
+  </x-slot>
+
+  <div class="py-8 bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+      <form method="POST" action="{{ route('dosen.penelitian.store') }}" enctype="multipart/form-data"
+            class="bg-white rounded-2xl border border-gray-200 shadow p-6 space-y-6">
+        @csrf
+
+        {{-- Judul --}}
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Judul <span class="text-rose-600">*</span></label>
+          <input name="judul" value="{{ old('judul') }}" required
+                 class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                 placeholder="Masukkan judul penelitian">
+          <p class="text-xs text-gray-500 mt-1">Tulis singkat, jelas, dan spesifik.</p>
+          @error('judul')<p class="text-rose-600 text-xs mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {{-- Tahun --}}
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Tahun <span class="text-rose-600">*</span></label>
+            <input type="number" name="tahun" value="{{ old('tahun', date('Y')) }}" required
+                   class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+            @error('tahun')<p class="text-rose-600 text-xs mt-1">{{ $message }}</p>@enderror
+          </div>
+
+          {{-- Skema --}}
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Skema</label>
+            <input name="skema" value="{{ old('skema') }}"
+                   class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="Dasar / Terapan / Mandiri">
+          </div>
+
+          {{-- Sumber Dana --}}
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Sumber Dana</label>
+            <input name="sumber_dana" value="{{ old('sumber_dana') }}"
+                   class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="DRPM, Internal, Mandiri">
+          </div>
+
+          {{-- Dana --}}
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Dana (Rp)</label>
+            <input name="dana" value="{{ old('dana') }}"
+                   class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="15000000">
+            <p class="text-xs text-gray-500 mt-1">Isi angka tanpa titik/koma (format akan diolah di backend).</p>
+          </div>
+
+          {{-- Tempat Terbit --}}
+          <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Tempat Terbit Jurnal</label>
+            <input name="tempat_terbit" value="{{ old('tempat_terbit') }}"
+                   class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                   placeholder="Nama jurnal atau prosiding">
+          </div>
+        </div>
+
+        {{-- Tim Penelitian (mengganti Status) --}}
+        <div class="border-t border-gray-100 pt-4">
+          <h3 class="font-semibold text-gray-800 mb-3">Tim Penelitian</h3>
+
+          {{-- Ketua --}}
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700">Ketua <span class="text-rose-600">*</span></label>
+            <select name="ketua_id" required
+                    class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+              <option value="">Pilih ketua</option>
+              @foreach($dosens as $d)
+                <option value="{{ $d->dosen_id }}" @selected(old('ketua_id')===$d->dosen_id)>
+                  {{ $d->nama }} — {{ $d->email }}
+                </option>
+              @endforeach
+            </select>
+            @error('ketua_id')<p class="text-rose-600 text-xs mt-1">{{ $message }}</p>@enderror
+          </div>
+
+          {{-- Anggota (dinamis) --}}
+          <div x-data="{rows: [0]}" class="space-y-3">
+            <label class="block text-sm font-medium text-gray-700">Anggota</label>
+
+            <template x-for="(r,idx) in rows" :key="r">
+              <div class="flex gap-2">
+                <select :name="`anggota_id[${idx}]`"
+                        class="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                  <option value="">Pilih anggota</option>
+                  @foreach($dosens as $d)
+                    <option value="{{ $d->dosen_id }}">{{ $d->nama }} — {{ $d->email }}</option>
+                  @endforeach
+                </select>
+                <button type="button" @click="rows.splice(idx,1)"
+                        class="px-3 py-2 text-sm rounded-lg bg-red-100 text-red-700 hover:bg-red-200">Hapus</button>
+              </div>
+            </template>
+
+            <button type="button" @click="rows.push(Date.now())"
+                    class="px-3 py-2 text-sm rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
+              + Tambah Anggota
+            </button>
+          </div>
+        </div>
+
+        {{-- Dokumentasi (gambar/foto) --}}
+        <div class="border-t border-gray-100 pt-4">
+          <h3 class="font-semibold text-gray-800 mb-3">Dokumentasi (Tersimpan ke Google Drive)</h3>
+          <input type="file" name="dokumentasi[]" multiple accept="image/*"
+                 class="block w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+          <p class="text-xs text-gray-500 mt-1">Boleh unggah beberapa gambar (.jpg/.jpeg/.png). Maks 4MB/berkas.</p>
+          @error('dokumentasi.*')<p class="text-rose-600 text-xs mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Simpan</button>
+          <a href="{{ route('dosen.penelitian.index') }}" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">Batal</a>
+        </div>
+      </form>
+    </div>
   </div>
 
-  {{-- Tempat Terbit Jurnal --}}
-  {{-- Tempat Terbit Jurnal --}}
-<div class="col-md-6">
-  <label class="form-label">Tempat Terbit Jurnal</label>
-  <input type="text" name="tempat_terbit"
-         value="{{ old('tempat_terbit', $isEdit ? ($penelitian->tempat_terbit ?? '') : '') }}"
-         class="form-control @error('tempat_terbit') is-invalid @enderror"
-         placeholder="Masukkan nama jurnal atau prosiding">
-  @error('tempat_terbit') 
-    <div class="invalid-feedback">{{ $message }}</div> 
-  @enderror
-  <div class="form-text">Tuliskan nama jurnal, prosiding, atau penerbit penelitian.</div>
-</div>
-
-
-  {{-- Status --}}
-  <div class="col-md-6">
-    <label class="form-label">Status <span class="text-danger">*</span></label>
-    <select name="status" class="form-select" required>
-        <option value="Menunggu" {{ old('status', $isEdit ? $penelitian->status : 'Menunggu')=='Menunggu'?'selected':'' }}>Menunggu</option>
-        <option value="Disetujui" {{ old('status', $isEdit ? $penelitian->status : '')=='Disetujui'?'selected':'' }}>Disetujui</option>
-        <option value="Ditolak" {{ old('status', $isEdit ? $penelitian->status : '')=='Ditolak'?'selected':'' }}>Ditolak</option>
-    </select>
-    @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-    <div class="form-text">Status otomatis <b>Menunggu</b> ketika diajukan verifikasi.</div>
-  </div>
-</div>
-
-{{-- Formatter angka Rp (titik ribuan) --}}
-<script>
-  (function(){
-    const el = document.getElementById('input-dana');
-    if(!el) return;
-    const toNumber = s => s.replace(/[^\d]/g,'');
-    const format = v => v.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    el.addEventListener('input', () => {
-      const raw = toNumber(el.value);
-      el.value = raw ? format(raw) : '';
-    });
-  })();
-</script>
+  {{-- AlpineJS untuk field anggota dinamis (jika belum ada) --}}
+  <script src="https://unpkg.com/alpinejs" defer></script>
+</x-app-layout>

@@ -59,4 +59,12 @@ class Dosen extends Model
     {
         return $this->hasMany(Dokumentasi::class);
     }
+
+    public function penelitian()
+{
+    return $this->belongsToMany(Penelitian::class, 'penelitian_dosen', 'dosen_id', 'penelitian_id')
+                ->withPivot('role')
+                ->withTimestamps();
+}
+
 }

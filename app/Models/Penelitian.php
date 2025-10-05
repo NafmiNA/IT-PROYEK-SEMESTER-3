@@ -28,7 +28,29 @@ class Penelitian extends Model
 
     // relasi opsional
     public function dosen()
-    {
-        return $this->belongsTo(Dosen::class);
-    }
+{
+    // many-to-many dengan pivot 'role'
+    return $this->belongsToMany(Dosen::class, 'penelitian_dosen', 'penelitian_id', 'dosen_id')
+                ->withPivot('role')
+                ->withTimestamps();
+}
+
+public function ketua()
+{
+    return $this->dosen()->wherePivot('role', 'ketua');
+}
+
+public function anggota()
+{
+    return $this->belongsToMany(Dosen::class, 'penelitian_dosen')
+                ->withPivot('peran')
+                ->withTimestamps();
+}
+
+public function dokumentasi()
+{
+    return $this->hasMany(Dokumentasi::class, 'penelitian_id', 'penelitian_id');
+}
+
+
 }

@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
   public function up(): void {
     Schema::create('pengabdians', function (Blueprint $t) {
-      $t->id();
-      $t->foreignId('dosen_id')->constrained('dosens')->cascadeOnDelete(); // sesuaikan nama tabel dosenmu
+      $t->id(); // <-- tadinya salah pakai $table->id()
+      $t->foreignId('dosen_id')->constrained('dosens')->cascadeOnDelete();
       $t->string('judul');
       $t->year('tahun');
       $t->string('skema')->nullable();
