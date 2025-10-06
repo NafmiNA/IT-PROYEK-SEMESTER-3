@@ -76,7 +76,7 @@
                     class="mt-1 w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
               <option value="">Pilih ketua</option>
               @foreach($dosens as $d)
-                <option value="{{ $d->dosen_id }}" @selected(old('ketua_id')===$d->dosen_id)>
+                <option value="{{ $d->id }}" @selected(old('ketua_id')===$d->id)>
                   {{ $d->nama }} — {{ $d->email }}
                 </option>
               @endforeach
@@ -94,7 +94,7 @@
                         class="flex-1 rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                   <option value="">Pilih anggota</option>
                   @foreach($dosens as $d)
-                    <option value="{{ $d->dosen_id }}">{{ $d->nama }} — {{ $d->email }}</option>
+                    <option value="{{ $d->id }}">{{ $d->nama }} — {{ $d->email }}</option>
                   @endforeach
                 </select>
                 <button type="button" @click="rows.splice(idx,1)"

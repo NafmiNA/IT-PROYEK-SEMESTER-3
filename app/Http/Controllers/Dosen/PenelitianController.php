@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
-use App\Models\Penelitian;
-use App\Models\Dosen;
 use App\Models\Dokumentasi;
+use App\Models\Dosen;
+use App\Models\Penelitian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -16,10 +16,9 @@ class PenelitianController extends Controller
     {
         $dosen = $request->user()->dosen;
 
-        $penelitian = Penelitian::query()
-            ->where('dosen_id', $dosen->id)
-            ->orWhereHas('dosens', function ($q) use ($dosen) {
-                $q->where('dosen_id', $dosen->id);
+        $penelitian = Penelitian::with(['ketua'])
+            ->whereHas('dosens', function ($query) use ($dosen) {
+                $query->where('dosen_id', $dosen->id);
             })
             ->latest()
             ->paginate(10);
@@ -34,13 +33,11 @@ class PenelitianController extends Controller
     }
 
     public function show(Penelitian $penelitian)
-{
-    // Muat relasi biar efisien (ketua, anggota, dokumentasi)
-    $penelitian->load(['ketua', 'dosens', 'dokumentasi']);
+    {
+        $penelitian->load(['ketua', 'dosens', 'dokumentasi']);
 
-    return view('dosen.penelitian.show', compact('penelitian'));
-}
-
+        return view('dosen.penelitian.show', compact('penelitian'));
+    }
 
     public function store(Request $request)
     {
@@ -50,16 +47,14 @@ class PenelitianController extends Controller
             'skema'         => 'nullable|string|max:255',
             'sumber_dana'   => 'nullable|string|max:255',
             'dana'          => 'nullable|numeric',
-            'ketua_id'      => 'required|exists:dosen,id',  // ✅ perbaikan disini
+            'ketua_id'      => 'required|exists:dosens,id',
             'anggota_id'    => 'nullable|array',
-            'anggota_id.*'  => 'different:ketua_id|exists:dosen,id',
+            'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
             'dokumentasi'   => 'nullable|array',
             'dokumentasi.*' => 'nullable|image|max:4096',
         ]);
 
         DB::transaction(function () use ($validated, $request) {
-
-            // simpan penelitian
             $penelitian = Penelitian::create([
                 'judul'       => $validated['judul'],
                 'tahun'       => $validated['tahun'],
@@ -70,21 +65,22 @@ class PenelitianController extends Controller
                 'status'      => 'Menunggu',
             ]);
 
-            // sinkronisasi dosen (ketua + anggota)
             $sync = [];
             $sync[$validated['ketua_id']] = ['peran' => 'Ketua'];
             if (!empty($validated['anggota_id'])) {
-                foreach ($validated['anggota_id'] as $anggota) {
+                foreach (array_unique($validated['anggota_id']) as $anggota) {
+                    if ((int) $anggota === (int) $validated['ketua_id']) {
+                        continue;
+                    }
                     $sync[$anggota] = ['peran' => 'Anggota'];
                 }
             }
             $penelitian->dosens()->sync($sync);
 
-            // upload dokumentasi
             if ($request->hasFile('dokumentasi')) {
-                foreach ($request->file('dokumentasi') as $file) {
+                foreach ((array) $request->file('dokumentasi') as $file) {
                     $folder   = "penelitian/{$penelitian->id}";
-                    $filename = time().'_'.$file->getClientOriginalName();
+                    $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
 
                     $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
@@ -97,13 +93,23 @@ class PenelitianController extends Controller
                     ]);
                 }
             }
-
-            return $penelitian; // ✅ return agar transaksinya bersih
         });
 
         return redirect()
             ->route('dosen.penelitian.index')
             ->with('success', 'Penelitian berhasil disimpan!');
+    }
+
+    public function edit(Penelitian $penelitian)
+    {
+        $penelitian->load(['dosens', 'ketua', 'dokumentasi']);
+        $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
+        $anggotaTerpilih = $penelitian->dosens
+            ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
+            ->pluck('id')
+            ->all();
+
+        return view('dosen.penelitian.edit', compact('penelitian', 'dosens', 'anggotaTerpilih'));
     }
 
     public function update(Request $request, Penelitian $penelitian)
@@ -114,11 +120,12 @@ class PenelitianController extends Controller
             'skema'         => 'nullable|string|max:100',
             'sumber_dana'   => 'nullable|string|max:100',
             'dana'          => 'nullable|numeric|min:0',
-            'ketua_id'      => 'required|exists:dosen,id',  // ✅ konsisten
+            'ketua_id'      => 'required|exists:dosens,id',
             'anggota_id'    => 'nullable|array',
-            'anggota_id.*'  => 'different:ketua_id|exists:dosen,id',
+            'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
             'dokumentasi'   => 'nullable|array',
             'dokumentasi.*' => 'nullable|image|max:4096',
+            'status'        => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak',
         ]);
 
         DB::transaction(function () use ($data, $request, $penelitian) {
@@ -129,22 +136,25 @@ class PenelitianController extends Controller
                 'sumber_dana' => $data['sumber_dana'] ?? null,
                 'dana'        => $data['dana'] ?? null,
                 'dosen_id'    => $data['ketua_id'],
+                'status'      => $data['status'] ?? $penelitian->status,
             ]);
 
             $sync = [];
             $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
             if (!empty($data['anggota_id'])) {
-                foreach ($data['anggota_id'] as $id) {
-                    if ((int)$id === (int)$data['ketua_id']) continue;
+                foreach (array_unique($data['anggota_id']) as $id) {
+                    if ((int) $id === (int) $data['ketua_id']) {
+                        continue;
+                    }
                     $sync[$id] = ['peran' => 'Anggota'];
                 }
             }
             $penelitian->dosens()->sync($sync);
 
             if ($request->hasFile('dokumentasi')) {
-                foreach ($request->file('dokumentasi') as $file) {
+                foreach ((array) $request->file('dokumentasi') as $file) {
                     $folder   = "penelitian/{$penelitian->id}";
-                    $filename = time().'_'.$file->getClientOriginalName();
+                    $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
 
                     $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
@@ -159,6 +169,25 @@ class PenelitianController extends Controller
             }
         });
 
-        return back()->with('ok', 'Perubahan disimpan!');
+        return redirect()->route('dosen.penelitian.show', $penelitian)->with('ok', 'Perubahan disimpan!');
+    }
+
+    public function destroy(Penelitian $penelitian)
+    {
+        DB::transaction(function () use ($penelitian) {
+            foreach ($penelitian->dokumentasi as $dok) {
+                if ($dok->gdrive_path && Storage::disk('public')->exists($dok->gdrive_path)) {
+                    Storage::disk('public')->delete($dok->gdrive_path);
+                }
+                $dok->delete();
+            }
+
+            $penelitian->dosens()->detach();
+            $penelitian->delete();
+        });
+
+        return redirect()
+            ->route('dosen.penelitian.index')
+            ->with('success', 'Penelitian berhasil dihapus.');
     }
 }

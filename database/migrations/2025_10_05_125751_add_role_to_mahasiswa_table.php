@@ -9,14 +9,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mahasiswa', function (Blueprint $table) {
-            $table->string('role')->default('mahasiswa')->after('password');
+            if (!Schema::hasColumn('mahasiswa', 'role')) {
+                $column = $table->string('role')->default('mahasiswa');
+
+                if (Schema::hasColumn('mahasiswa', 'peran')) {
+                    $column->after('peran');
+                }
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('mahasiswa', function (Blueprint $table) {
-            $table->dropColumn('role');
+            if (Schema::hasColumn('mahasiswa', 'role')) {
+                $table->dropColumn('role');
+            }
         });
     }
 };
