@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Penelitian extends Model
 {
     use HasFactory;
 
-    // Jika nama tabel tunggal (bukan jamak), tulis secara eksplisit
     protected $table = 'penelitian';
 
-    // Kolom yang boleh diisi massal
     protected $fillable = [
         'judul',
         'tahun',
@@ -23,20 +21,13 @@ class Penelitian extends Model
         'dosen_id',
     ];
 
-    // Cast otomatis
     protected $casts = [
         'tahun' => 'integer',
-        'dana'  => 'integer',
+        'dana'  => 'decimal:2',
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | RELASI
-    |--------------------------------------------------------------------------
-    */
-
     /**
-     * Dosen ketua (relasi langsung dari kolom dosen_id)
+     * Dosen ketua (relasi langsung dari kolom dosen_id).
      */
     public function ketua()
     {
@@ -44,28 +35,27 @@ class Penelitian extends Model
     }
 
     /**
-     * Semua dosen yang terlibat (ketua + anggota)
-     * Pivot: penelitian_dosen (penelitian_id, dosen_id, peran)
+     * Semua dosen yang terlibat (ketua + anggota).
      */
     public function dosens()
     {
         return $this->belongsToMany(Dosen::class, 'penelitian_dosen', 'penelitian_id', 'dosen_id')
-                    ->withPivot('peran')
-                    ->withTimestamps();
+            ->withPivot('peran')
+            ->withTimestamps();
     }
 
     /**
-     * Hanya dosen anggota (bukan ketua)
+     * Hanya dosen anggota (bukan ketua).
      */
     public function anggota()
     {
         return $this->belongsToMany(Dosen::class, 'penelitian_dosen', 'penelitian_id', 'dosen_id')
-                    ->wherePivot('peran', 'Anggota')
-                    ->withTimestamps();
+            ->wherePivot('peran', 'Anggota')
+            ->withTimestamps();
     }
 
     /**
-     * Dokumentasi penelitian (bisa banyak)
+     * Dokumentasi penelitian (bisa banyak).
      */
     public function dokumentasi()
     {

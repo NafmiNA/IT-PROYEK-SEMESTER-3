@@ -3,20 +3,40 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
-    public function handle($request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, string $role)
     {
-        if (!Auth::check()) {
-            return redirect('/login');
+        $user = $request->user();
+
+        if (!$user) {
+            return redirect()->route('login');
         }
 
-        if (Auth::user()->role !== $role) {
-            abort(403, 'AKSES DITOLAK. ANDA BUKAN ' . strtoupper($role) . '.');
+        if ($this->userMatchesRole($user, $role)) {
+            return $next($request);
         }
 
-        return $next($request);
+        abort(403, 'AKSES DITOLAK. ANDA BUKAN ' . strtoupper($role) . '.');
+    }
+
+    protected function userMatchesRole($user, string $role): bool
+    {
+        if ($user->role === $role) {
+            return true;
+        }
+
+        if ($role === 'dosen') {
+            if (!$user->relationLoaded('dosen')) {
+                $user->load('dosen');
+            }
+
+            return (bool) $user->dosen;
+        }
+
+        return false;
     }
 }

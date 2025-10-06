@@ -1,90 +1,114 @@
 <x-app-layout>
   <x-slot name="header">
-    <div class="flex items-center justify-between">
-      <h2 class="text-xl font-semibold text-gray-800">Kelola Penelitian</h2>
-      <a href="{{ route('dosen.penelitian.create') }}"
-         class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 shadow">
-        + Tambah Penelitian
-      </a>
+    <div class="d-flex align-items-center justify-content-between">
+      <h2 class="h4 mb-0">Edit Penelitian</h2>
+      <a href="{{ route('dosen.penelitian.index') }}" class="btn btn-link">← Kembali</a>
     </div>
   </x-slot>
 
-  <div class="py-8 bg-gray-50 min-h-screen">
-    <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+  <div class="container py-4">
+    <form action="{{ route('dosen.penelitian.update', $penelitian) }}" method="POST" enctype="multipart/form-data" class="card shadow-sm p-4">
+      @csrf
+      @method('PUT')
 
-      {{-- BOX: DAFTAR PENELITIAN --}}
-      <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-100">
-          <h3 class="text-lg font-semibold text-gray-800">Daftar Penelitian</h3>
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label fw-semibold">Judul *</label>
+          <input type="text" name="judul" class="form-control" value="{{ old('judul', $penelitian->judul) }}" required>
+          @error('judul') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Tahun *</label>
+          <input type="number" name="tahun" class="form-control" value="{{ old('tahun', $penelitian->tahun) }}" min="2000" max="2100" required>
+          @error('tahun') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 text-sm text-gray-700">
-            <thead class="bg-gray-50">
-              <tr class="text-left text-gray-600 font-medium">
-                <th class="px-6 py-3 w-1/2">Judul</th>
-                <th class="px-6 py-3 text-center">Tahun</th>
-                <th class="px-6 py-3 text-center">Status</th>
-                <th class="px-6 py-3 text-center">Aksi</th>
-              </tr>
-            </thead>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Skema</label>
+          <input type="text" name="skema" class="form-control" value="{{ old('skema', $penelitian->skema) }}" placeholder="Dasar / Terapan / Mandiri">
+          @error('skema') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+        </div>
 
-            <tbody class="divide-y divide-gray-100 bg-white">
-              @forelse ($penelitians as $penelitian)
-              <tr class="hover:bg-blue-50 transition duration-200">
-                {{-- JUDUL --}}
-                <td class="px-6 py-4">
-                  <div class="font-semibold text-gray-900">{{ $penelitian->judul }}</div>
-                  <div class="text-xs text-gray-500 mt-1">{{ $penelitian->created_at->diffForHumans() }}</div>
-                </td>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Sumber Dana</label>
+          <input type="text" name="sumber_dana" class="form-control" value="{{ old('sumber_dana', $penelitian->sumber_dana) }}" placeholder="DRPM / Internal / Mandiri">
+          @error('sumber_dana') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+        </div>
 
-                {{-- TAHUN --}}
-                <td class="px-6 py-4 text-center text-gray-700">{{ $penelitian->tahun }}</td>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Dana (Rp)</label>
+          <input type="number" name="dana" class="form-control" value="{{ old('dana', $penelitian->dana) }}" min="0">
+          <div class="form-text">Isi angka tanpa titik, akan diformat otomatis.</div>
+          @error('dana') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+        </div>
 
-                {{-- STATUS --}}
-                <td class="px-6 py-4 text-center">
-                  @if ($penelitian->status === 'Menunggu')
-                    <span class="px-3 py-1 text-xs font-semibold text-yellow-700 bg-yellow-100 rounded-full">Menunggu</span>
-                  @elseif ($penelitian->status === 'Disetujui')
-                    <span class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Disetujui</span>
-                  @elseif ($penelitian->status === 'Ditolak')
-                    <span class="px-3 py-1 text-xs font-semibold text-red-700 bg-red-100 rounded-full">Ditolak</span>
-                  @else
-                    <span class="px-3 py-1 text-xs font-semibold text-gray-600 bg-gray-100 rounded-full">Draft</span>
-                  @endif
-                </td>
-
-                {{-- AKSI --}}
-                <td class="px-6 py-4 text-center space-x-2">
-                  <a href="{{ route('dosen.penelitian.show', $penelitian->id) }}"
-                     class="inline-block px-3 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200">
-                    Detail
-                  </a>
-                  <a href="{{ route('dosen.penelitian.edit', $penelitian->id) }}"
-                     class="inline-block px-3 py-1 text-xs font-medium text-yellow-600 bg-yellow-100 rounded-md hover:bg-yellow-200">
-                    Edit
-                  </a>
-                  <form action="{{ route('dosen.penelitian.destroy', $penelitian->id) }}" method="POST" class="inline-block">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit"
-                            onclick="return confirm('Yakin ingin menghapus data ini?')"
-                            class="px-3 py-1 text-xs font-medium text-red-600 bg-red-100 rounded-md hover:bg-red-200">
-                      Hapus
-                    </button>
-                  </form>
-                </td>
-              </tr>
-              @empty
-              <tr>
-                <td colspan="4" class="px-6 py-4 text-center text-gray-500 italic">Belum ada data penelitian.</td>
-              </tr>
-              @endforelse
-            </tbody>
-          </table>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Status</label>
+          <select name="status" class="form-select">
+            @foreach(['Draft','Menunggu','Disetujui','Ditolak'] as $status)
+              <option value="{{ $status }}" @selected(old('status', $penelitian->status) === $status)>{{ $status }}</option>
+            @endforeach
+          </select>
+          @error('status') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
       </div>
 
-    </div>
+      <hr class="my-4">
+
+      <h6 class="mb-3">Tim Penelitian</h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Ketua *</label>
+          <select name="ketua_id" class="form-select" required>
+            <option value="">Pilih ketua</option>
+            @foreach($dosens as $d)
+              <option value="{{ $d->id }}" @selected(old('ketua_id', $penelitian->ketua?->id) == $d->id)>
+                {{ $d->nama }} — {{ $d->email }}
+              </option>
+            @endforeach
+          </select>
+          @error('ketua_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Anggota</label>
+          <select name="anggota_id[]" class="form-select" multiple>
+            @foreach($dosens as $d)
+              <option value="{{ $d->id }}" @selected(in_array($d->id, old('anggota_id', $anggotaTerpilih ?? [])))>
+                {{ $d->nama }} — {{ $d->email }}
+              </option>
+            @endforeach
+          </select>
+          <div class="form-text">Tekan Ctrl/Cmd untuk memilih lebih dari satu.</div>
+          @error('anggota_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+          @error('anggota_id.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <h6 class="mb-3">Dokumentasi</h6>
+      <input type="file" name="dokumentasi[]" class="form-control" accept="image/*" multiple>
+      <div class="form-text">Unggah beberapa gambar (maks 4MB per berkas).</div>
+      @error('dokumentasi.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+
+      @if($penelitian->dokumentasi->isNotEmpty())
+        <div class="mt-3">
+          <span class="small text-muted d-block mb-2">Dokumentasi tersimpan:</span>
+          <div class="d-flex flex-wrap gap-3">
+            @foreach($penelitian->dokumentasi as $doc)
+              <div class="border rounded p-2 text-center" style="width:160px">
+                <img src="{{ asset('storage/'.$doc->gdrive_path) }}" class="img-fluid rounded mb-2" alt="{{ $doc->file_name }}">
+                <div class="small text-truncate" title="{{ $doc->file_name }}">{{ $doc->file_name }}</div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      @endif
+
+      <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+        <a href="{{ route('dosen.penelitian.show', $penelitian) }}" class="btn btn-light">Batal</a>
+      </div>
+    </form>
   </div>
 </x-app-layout>

@@ -49,7 +49,6 @@
                     bg-emerald-600 text-white hover:bg-emerald-700 transition">
             + Pengabdian
           </a>
-          </a>
         </div>
       </div>
     </section>
@@ -133,9 +132,9 @@
             <article class="py-3 flex justify-between text-sm">
               <div>
                 <p class="font-medium">{{ $item->judul }}</p>
-                <p class="text-xs text-gray-500">Skema: {{ $item->skema }} • Tahun: {{ $item->tahun }}</p>
+                <p class="text-xs text-gray-500">Skema: {{ $item->skema ?? '-' }} • Tahun: {{ $item->tahun }}</p>
               </div>
-              <span class="text-xs text-gray-400 whitespace-nowrap">{{ $item->created_at->diffForHumans() }}</span>
+              <span class="text-xs text-gray-400 whitespace-nowrap">{{ optional($item->created_at)->diffForHumans() }}</span>
             </article>
           @empty
             <p class="text-gray-500 text-sm py-6 text-center">Tidak ada data</p>
@@ -154,9 +153,9 @@
             <article class="py-3 flex justify-between text-sm">
               <div>
                 <p class="font-medium">{{ $item->judul }}</p>
-                <p class="text-xs text-gray-500">Bidang: {{ $item->bidang }} • Tahun: {{ $item->tahun }}</p>
+                <p class="text-xs text-gray-500">Bidang: {{ $item->bidang ?? '-' }} • Tahun: {{ $item->tahun }}</p>
               </div>
-              <span class="text-xs text-gray-400 whitespace-nowrap">{{ $item->created_at->diffForHumans() }}</span>
+              <span class="text-xs text-gray-400 whitespace-nowrap">{{ optional($item->created_at)->diffForHumans() }}</span>
             </article>
           @empty
             <p class="text-gray-500 text-sm py-6 text-center">Tidak ada data</p>
@@ -170,11 +169,10 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Fallback data jika controller belum kirim $trendFiveYears
-   
+    const trend = @json($trend ?? []);
 
     const ctx = document.getElementById('trendChart');
-    if (ctx) {
+    if (ctx && trend.length) {
       new Chart(ctx, {
         type: 'line',
         data: {

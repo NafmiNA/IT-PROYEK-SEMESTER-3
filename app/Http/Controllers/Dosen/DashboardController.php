@@ -3,69 +3,102 @@
 namespace App\Http\Controllers\Dosen;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dokumentasi;
 use App\Models\Penelitian;
 use App\Models\Pengabdian;
-use App\Models\Dokumentasi;
 use App\Models\Verifikasi;
 use Illuminate\Http\Request;
-use Carbon\CarbonPeriod;
 
 class DashboardController extends Controller
 {
-
-// Removed duplicate index() method to resolve duplicate symbol declaration error.
-
     public function index(Request $request)
     {
-        $dosen = $request->user()->dosen; // relasi user->dosen
-
-        $totalPenelitian   = Penelitian::where('dosen_id', $dosen->id)->count();
-        $totalPengabdian   = Pengabdian::where('dosen_id', $dosen->id)->count();
-        $totalDokumentasi = Dokumentasi::whereHas('penelitian', function ($q) use ($dosen) {
-            $q->where('dosen_id', $dosen->id);
-        })->orWhereHas('pengabdian', function ($q) use ($dosen) {
-            $q->where('dosen_id', $dosen->id);
-        })->count();
-        
-
-        $menungguVerif = Verifikasi::where('dosen_id', $dosen->id)
-            ->where('status','Menunggu')->count();
-
-        $recentPenelitian = Penelitian::where('dosen_id',$dosen->id)
-            ->latest()->take(5)->get();
-
-        $recentPengabdian = Pengabdian::where('dosen_id',$dosen->id)
-            ->latest()->take(5)->get();
-
-        $recentVerif = Verifikasi::where('dosen_id',$dosen->id)
-            ->latest()->take(5)->get();
-
-        return view('dosen.dashboard', compact(
-            'dosen','totalPenelitian','totalPengabdian','totalDokumentasi',
-            'menungguVerif','recentPenelitian','recentPengabdian','recentVerif'
-        ));
-
         $dosen = $request->user()->dosen;
 
-// ---- PENELITIAN: ketua atau anggota
-$penelitianQuery = Penelitian::with(['ketua'])
-    ->where('dosen_id', $dosen->id)
-    ->orWhereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id));
+        if (!$dosen) {
+            abort(403, 'Data dosen tidak ditemukan untuk pengguna ini.');
+        }
 
-$totalPenelitian  = (clone $penelitianQuery)->count();
-$recentPenelitian = (clone $penelitianQuery)->latest()->take(5)->get();
+        $penelitianBuilder = fn () => Penelitian::query()
+            ->with('ketua')
+            ->whereHas('dosens', function ($query) use ($dosen) {
+                $query->where('dosen_id', $dosen->id);
+            });
 
-// ---- PENGABDIAN: ketua atau anggota
-$pengabdianQuery = Pengabdian::with(['ketua'])
-    ->where('dosen_id', $dosen->id)
-    ->orWhereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id));
+        $pengabdianBuilder = fn () => Pengabdian::query()
+            ->with('ketua')
+            ->whereHas('dosens', function ($query) use ($dosen) {
+                $query->where('dosen_id', $dosen->id);
+            });
 
-$totalPengabdian  = (clone $pengabdianQuery)->count();
-$recentPengabdian = (clone $pengabdianQuery)->latest()->take(5)->get();
+        $totalPenelitian = $penelitianBuilder()->count();
+        $totalPengabdian = $pengabdianBuilder()->count();
 
+        $totalDokumentasi = Dokumentasi::query()
+            ->where(function ($query) use ($dosen) {
+                $query->whereHas('penelitian.dosens', function ($subQuery) use ($dosen) {
+                    $subQuery->where('dosen_id', $dosen->id);
+                })->orWhereHas('pengabdian.dosens', function ($subQuery) use ($dosen) {
+                    $subQuery->where('dosen_id', $dosen->id);
+                });
+            })
+            ->count();
 
-        
+        $menungguVerif = Verifikasi::where('dosen_id', $dosen->id)
+            ->where('status', 'Menunggu')
+            ->count();
+
+        $latestPenelitian = $penelitianBuilder()->latest()->take(5)->get();
+        $latestPengabdian = $pengabdianBuilder()->latest()->take(5)->get();
+
+        $currentYear = (int) now()->year;
+        $startYear = $currentYear - 4;
+
+        $penelitianPerYear = $penelitianBuilder()
+            ->selectRaw('tahun, COUNT(*) as total')
+            ->whereBetween('tahun', [$startYear, $currentYear])
+            ->groupBy('tahun')
+            ->pluck('total', 'tahun');
+
+        $pengabdianPerYear = $pengabdianBuilder()
+            ->selectRaw('tahun, COUNT(*) as total')
+            ->whereBetween('tahun', [$startYear, $currentYear])
+            ->groupBy('tahun')
+            ->pluck('total', 'tahun');
+
+        $trend = [];
+        foreach (range($startYear, $currentYear) as $year) {
+            $trend[] = [
+                'tahun' => $year,
+                'penelitian' => (int) ($penelitianPerYear[$year] ?? 0),
+                'pengabdian' => (int) ($pengabdianPerYear[$year] ?? 0),
+            ];
+        }
+
+        $yearSummary = [
+            'penelitian' => (int) ($penelitianPerYear[$currentYear] ?? 0),
+            'pengabdian' => (int) ($pengabdianPerYear[$currentYear] ?? 0),
+            'approved' => $penelitianBuilder()->where('tahun', $currentYear)->where('status', 'Disetujui')->count()
+                + $pengabdianBuilder()->where('tahun', $currentYear)->where('status', 'Disetujui')->count(),
+            'rejected' => $penelitianBuilder()->where('tahun', $currentYear)->where('status', 'Ditolak')->count()
+                + $pengabdianBuilder()->where('tahun', $currentYear)->where('status', 'Ditolak')->count(),
+        ];
+
+        $kpi = [
+            'penelitian' => $totalPenelitian,
+            'pengabdian' => $totalPengabdian,
+            'dokumentasi' => $totalDokumentasi,
+            'pending' => $menungguVerif,
+        ];
+
+        return view('dosen.dashboard', compact(
+            'dosen',
+            'kpi',
+            'yearSummary',
+            'trend',
+            'latestPenelitian',
+            'latestPengabdian',
+            'menungguVerif'
+        ));
     }
-
-    
 }

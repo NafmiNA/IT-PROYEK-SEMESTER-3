@@ -3,23 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dosen extends Model
 {
-    /**
-     * Nama tabel yang direpresentasikan model.
-     *
-     * @var string
-     */
     protected $table = 'dosens';
 
-    /**
-     * Kolom yang boleh diisi secara mass-assignment.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'nidn',
         'nama',
@@ -28,83 +19,68 @@ class Dosen extends Model
         'user_id',
     ];
 
-    /**
-     * Relasi ke model User (dosen dimiliki oleh satu user).
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Relasi ke Penelitian (satu dosen banyak penelitian).
-     */
     public function penelitians(): HasMany
     {
         return $this->hasMany(Penelitian::class);
     }
 
-    /**
-     * Relasi ke Pengabdian (satu dosen banyak pengabdian).
-     */
-    public function pengabdians()
-{
-    return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen')
-                ->withPivot('peran')->withTimestamps();
-}
+    public function pengabdians(): BelongsToMany
+    {
+        return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
 
-
-    /**
-     * Relasi ke Dokumentasi (satu dosen banyak dokumentasi).
-     */
     public function dokumentasis(): HasMany
     {
         return $this->hasMany(Dokumentasi::class);
     }
 
-    public function penelitian()
-{
-    return $this->belongsToMany(Penelitian::class, 'penelitian_dosen', 'dosen_id', 'penelitian_id')
-                ->withPivot('role')
-                ->withTimestamps();
-}
+    public function penelitian(): BelongsToMany
+    {
+        return $this->belongsToMany(Penelitian::class, 'penelitian_dosen', 'dosen_id', 'penelitian_id')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
 
-// Sebagai ketua
-public function penelitianKetua()
-{
-    return $this->hasMany(Penelitian::class, 'dosen_id');
-}
-public function pengabdianKetua()
-{
-    return $this->hasMany(Pengabdian::class, 'dosen_id');
-}
+    public function penelitianKetua(): HasMany
+    {
+        return $this->hasMany(Penelitian::class, 'dosen_id');
+    }
 
-// Sebagai anggota (via pivot)
-public function penelitianAnggota()
-{
-    return $this->belongsToMany(Penelitian::class, 'penelitian_dosen')
-        ->withPivot('peran')
-        ->withTimestamps();
-}
-public function pengabdianAnggota()
-{
-    return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen')
-        ->withPivot('peran')
-        ->withTimestamps();
-}
+    public function pengabdianKetua(): HasMany
+    {
+        return $this->hasMany(Pengabdian::class, 'dosen_id');
+    }
 
-    public function pengabdianDikelola()
-{
-    return $this->hasMany(Pengabdian::class, 'dosen_id');
-}
+    public function penelitianAnggota(): BelongsToMany
+    {
+        return $this->belongsToMany(Penelitian::class, 'penelitian_dosen')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
 
-public function pengabdianTerlibat()
-{
-    return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen', 'dosen_id', 'pengabdian_id')
-                ->withPivot('peran')
-                ->withTimestamps();
-}
+    public function pengabdianAnggota(): BelongsToMany
+    {
+        return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
 
+    public function pengabdianDikelola(): HasMany
+    {
+        return $this->hasMany(Pengabdian::class, 'dosen_id');
+    }
 
-
+    public function pengabdianTerlibat(): BelongsToMany
+    {
+        return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen', 'dosen_id', 'pengabdian_id')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
 }

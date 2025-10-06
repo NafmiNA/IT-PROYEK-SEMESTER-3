@@ -15,32 +15,37 @@
       <div class="row g-3">
         <div class="col-md-8">
           <label class="form-label">Judul *</label>
-          <input type="text" name="judul" class="form-control" required>
+          <input type="text" name="judul" class="form-control" value="{{ old('judul') }}" required>
+          @error('judul') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-4">
           <label class="form-label">Tahun *</label>
-          <input type="number" name="tahun" class="form-control" value="{{ date('Y') }}" required>
+          <input type="number" name="tahun" class="form-control" value="{{ old('tahun', date('Y')) }}" required>
+          @error('tahun') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
 
         <div class="col-md-6">
           <label class="form-label">Bidang</label>
-          <input type="text" name="bidang" class="form-control">
+          <input type="text" name="bidang" class="form-control" value="{{ old('bidang') }}">
+          @error('bidang') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
 
-        {{-- 🟢 Tambahan --}}
         <div class="col-md-6">
           <label class="form-label">Skema</label>
-          <input type="text" name="skema" class="form-control">
+          <input type="text" name="skema" class="form-control" value="{{ old('skema') }}">
+          @error('skema') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
 
         <div class="col-md-6">
           <label class="form-label">Sumber Dana</label>
-          <input type="text" name="sumber_dana" class="form-control">
+          <input type="text" name="sumber_dana" class="form-control" value="{{ old('sumber_dana') }}">
+          @error('sumber_dana') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
 
         <div class="col-md-6">
           <label class="form-label">Dana (Rp)</label>
-          <input type="number" name="dana" class="form-control">
+          <input type="number" name="dana" class="form-control" value="{{ old('dana') }}" min="0">
+          @error('dana') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
       </div>
 
@@ -54,18 +59,21 @@
           <select name="ketua_id" class="form-select" required>
             <option value="">Pilih ketua</option>
             @foreach($dosens as $d)
-              <option value="{{ $d->id }}">{{ $d->nama }} — {{ $d->email }}</option>
+              <option value="{{ $d->id }}" @selected(old('ketua_id') == $d->id)>{{ $d->nama }} — {{ $d->email }}</option>
             @endforeach
           </select>
+          @error('ketua_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
         <div class="col-md-12">
           <label class="form-label">Anggota (opsional)</label>
           <select name="anggota_id[]" class="form-select" multiple>
             @foreach($dosens as $d)
-              <option value="{{ $d->id }}">{{ $d->nama }} — {{ $d->email }}</option>
+              <option value="{{ $d->id }}" @selected(collect(old('anggota_id', []))->contains($d->id))>{{ $d->nama }} — {{ $d->email }}</option>
             @endforeach
           </select>
           <div class="form-text">Tekan Ctrl/Cmd untuk pilih banyak.</div>
+          @error('anggota_id') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+          @error('anggota_id.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
         </div>
       </div>
 
@@ -75,6 +83,7 @@
       <h6 class="mb-3">Dokumentasi</h6>
       <input type="file" name="dokumentasi[]" class="form-control" accept="image/*" multiple>
       <div class="form-text">Boleh banyak file (jpg/jpeg/png), maks 4MB/berkas.</div>
+      @error('dokumentasi.*') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
 
       <div class="mt-4 d-flex gap-2">
         <button class="btn btn-primary">Simpan</button>
