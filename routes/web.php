@@ -11,6 +11,7 @@ use App\Http\Controllers\Dosen\{
     DokumentasiController
 };
 use App\Http\Controllers\MahasiswaController;
+use App\Http\Controllers\MahasiswaDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,14 +68,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Area MAHASISWA (prefix: /mahasiswa , name: mahasiswa.*)
+    | Area MAHASISWA (resource /mahasiswa)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->group(function () {
-        Route::get('/dashboard', [MahasiswaController::class, 'index'])->name('dashboard');
-        Route::get('/create',   [MahasiswaController::class, 'create'])->name('create');
-        Route::post('/',        [MahasiswaController::class, 'store'])->name('store');
-        Route::delete('/{id}',  [MahasiswaController::class, 'destroy'])->name('destroy');
+    Route::middleware('role:mahasiswa')->group(function () {
+        Route::get('/mahasiswa/dashboard', [MahasiswaDashboardController::class, 'index'])
+            ->name('mahasiswa.dashboard');
+
+        Route::resource('mahasiswa', MahasiswaController::class)->except(['show']);
     });
 });
 
