@@ -17,6 +17,10 @@ return new class extends Migration {
             $table->foreign('dosen_id')->references('id')->on('dosens')->onDelete('cascade');
 
             $table->unique(['penelitian_id','dosen_id']); // supaya tidak dobel
+              $table->id();
+        $table->foreignId('penelitian_id')->constrained()->onDelete('cascade');
+        $table->foreignId('dosen_id')->constrained()->onDelete('cascade');
+        $table->timestamps();
         });
     }
 

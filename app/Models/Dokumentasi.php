@@ -13,6 +13,8 @@ class Dokumentasi extends Model
         'penelitian_id','pengabdian_id','file_name','mime','size','gdrive_path'
     ];
 
+    
+
     // Dokumen MILIK satu penelitian
     public function penelitian()
     {

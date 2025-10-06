@@ -30,12 +30,11 @@
             </p>
           </div>
 
-          <!-- Tombol Google -->
-          <a href="{{ route('auth.google.redirect', []) ?? '#' }}"
-             class="w-full border border-gray-300 rounded-lg py-2.5 px-4 flex items-center justify-center gap-3 hover:bg-gray-50 transition mb-4">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="h-4 w-4" alt="">
-            <span class="font-semibold text-gray-700 text-sm">Masuk dengan Google</span>
-          </a>
+          <!-- Tombol Google Dummy-->
+  <a href="#" class="w-full border border-gray-300 rounded-lg py-2.5 px-4 flex items-center justify-center gap-3 hover:bg-gray-50 transition">
+    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="h-4 w-4" alt="">
+    <span class="font-semibold text-gray-700 text-sm">Masuk dengan Google</span>
+</a>
 
           <!-- Garis Pembatas -->
           <div class="flex items-center gap-2 mb-4">

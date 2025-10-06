@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Penelitian extends Model
 {
-    // kalau nama tabel kamu 'penelitian' (bukan jamak) tulis ini:
+    use HasFactory;
+
+    // Jika nama tabel tunggal (bukan jamak), tulis secara eksplisit
     protected $table = 'penelitian';
 
-    // izinkan kolom-kolom yang di-create/update massal
+    // Kolom yang boleh diisi massal
     protected $fillable = [
         'judul',
         'tahun',
@@ -20,37 +23,52 @@ class Penelitian extends Model
         'dosen_id',
     ];
 
-    // opsional: casting angka
+    // Cast otomatis
     protected $casts = [
         'tahun' => 'integer',
         'dana'  => 'integer',
     ];
 
-    // relasi opsional
-    public function dosen()
-{
-    // many-to-many dengan pivot 'role'
-    return $this->belongsToMany(Dosen::class, 'penelitian_dosen', 'penelitian_id', 'dosen_id')
-                ->withPivot('role')
-                ->withTimestamps();
-}
+    /*
+    |--------------------------------------------------------------------------
+    | RELASI
+    |--------------------------------------------------------------------------
+    */
 
-public function ketua()
-{
-    return $this->dosen()->wherePivot('role', 'ketua');
-}
+    /**
+     * Dosen ketua (relasi langsung dari kolom dosen_id)
+     */
+    public function ketua()
+    {
+        return $this->belongsTo(Dosen::class, 'dosen_id');
+    }
 
-public function anggota()
-{
-    return $this->belongsToMany(Dosen::class, 'penelitian_dosen')
-                ->withPivot('peran')
-                ->withTimestamps();
-}
+    /**
+     * Semua dosen yang terlibat (ketua + anggota)
+     * Pivot: penelitian_dosen (penelitian_id, dosen_id, peran)
+     */
+    public function dosens()
+    {
+        return $this->belongsToMany(Dosen::class, 'penelitian_dosen', 'penelitian_id', 'dosen_id')
+                    ->withPivot('peran')
+                    ->withTimestamps();
+    }
 
-public function dokumentasi()
-{
-    return $this->hasMany(Dokumentasi::class, 'penelitian_id', 'penelitian_id');
-}
+    /**
+     * Hanya dosen anggota (bukan ketua)
+     */
+    public function anggota()
+    {
+        return $this->belongsToMany(Dosen::class, 'penelitian_dosen', 'penelitian_id', 'dosen_id')
+                    ->wherePivot('peran', 'Anggota')
+                    ->withTimestamps();
+    }
 
-
+    /**
+     * Dokumentasi penelitian (bisa banyak)
+     */
+    public function dokumentasi()
+    {
+        return $this->hasMany(Dokumentasi::class, 'penelitian_id');
+    }
 }
