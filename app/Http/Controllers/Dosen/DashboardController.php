@@ -44,6 +44,27 @@ class DashboardController extends Controller
             'dosen','totalPenelitian','totalPengabdian','totalDokumentasi',
             'menungguVerif','recentPenelitian','recentPengabdian','recentVerif'
         ));
+
+        $dosen = $request->user()->dosen;
+
+// ---- PENELITIAN: ketua atau anggota
+$penelitianQuery = Penelitian::with(['ketua'])
+    ->where('dosen_id', $dosen->id)
+    ->orWhereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id));
+
+$totalPenelitian  = (clone $penelitianQuery)->count();
+$recentPenelitian = (clone $penelitianQuery)->latest()->take(5)->get();
+
+// ---- PENGABDIAN: ketua atau anggota
+$pengabdianQuery = Pengabdian::with(['ketua'])
+    ->where('dosen_id', $dosen->id)
+    ->orWhereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id));
+
+$totalPengabdian  = (clone $pengabdianQuery)->count();
+$recentPengabdian = (clone $pengabdianQuery)->latest()->take(5)->get();
+
+
+        
     }
 
     

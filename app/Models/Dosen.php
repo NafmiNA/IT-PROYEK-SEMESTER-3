@@ -47,10 +47,12 @@ class Dosen extends Model
     /**
      * Relasi ke Pengabdian (satu dosen banyak pengabdian).
      */
-    public function pengabdians(): HasMany
-    {
-        return $this->hasMany(Pengabdian::class);
-    }
+    public function pengabdians()
+{
+    return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen')
+                ->withPivot('peran')->withTimestamps();
+}
+
 
     /**
      * Relasi ke Dokumentasi (satu dosen banyak dokumentasi).
@@ -66,5 +68,43 @@ class Dosen extends Model
                 ->withPivot('role')
                 ->withTimestamps();
 }
+
+// Sebagai ketua
+public function penelitianKetua()
+{
+    return $this->hasMany(Penelitian::class, 'dosen_id');
+}
+public function pengabdianKetua()
+{
+    return $this->hasMany(Pengabdian::class, 'dosen_id');
+}
+
+// Sebagai anggota (via pivot)
+public function penelitianAnggota()
+{
+    return $this->belongsToMany(Penelitian::class, 'penelitian_dosen')
+        ->withPivot('peran')
+        ->withTimestamps();
+}
+public function pengabdianAnggota()
+{
+    return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen')
+        ->withPivot('peran')
+        ->withTimestamps();
+}
+
+    public function pengabdianDikelola()
+{
+    return $this->hasMany(Pengabdian::class, 'dosen_id');
+}
+
+public function pengabdianTerlibat()
+{
+    return $this->belongsToMany(Pengabdian::class, 'pengabdian_dosen', 'dosen_id', 'pengabdian_id')
+                ->withPivot('peran')
+                ->withTimestamps();
+}
+
+
 
 }

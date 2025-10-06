@@ -12,28 +12,35 @@ use Illuminate\Support\Facades\Storage;
 
 class PenelitianController extends Controller
 {
+    public function index(Request $request)
+    {
+        $dosen = $request->user()->dosen;
 
-// app/Http/Controllers/Dosen/PenelitianController.php
-public function index(Request $request)
-{
-    $dosen = $request->user()->dosen;              // relasi user->dosen
-    $penelitian = \App\Models\Penelitian::where('dosen_id', $dosen->id)
-                    ->latest()
-                    ->paginate(10);
+        $penelitian = Penelitian::query()
+            ->where('dosen_id', $dosen->id)
+            ->orWhereHas('dosens', function ($q) use ($dosen) {
+                $q->where('dosen_id', $dosen->id);
+            })
+            ->latest()
+            ->paginate(10);
 
-    return view('dosen.penelitian.index', compact('penelitian'));
-}
-
-
-
+        return view('dosen.penelitian.index', compact('penelitian'));
+    }
 
     public function create()
     {
-        // daftar dosen untuk ketua & anggota
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-
         return view('dosen.penelitian.create', compact('dosens'));
     }
+
+    public function show(Penelitian $penelitian)
+{
+    // Muat relasi biar efisien (ketua, anggota, dokumentasi)
+    $penelitian->load(['ketua', 'dosens', 'dokumentasi']);
+
+    return view('dosen.penelitian.show', compact('penelitian'));
+}
+
 
     public function store(Request $request)
     {
@@ -43,66 +50,60 @@ public function index(Request $request)
             'skema'         => 'nullable|string|max:255',
             'sumber_dana'   => 'nullable|string|max:255',
             'dana'          => 'nullable|numeric',
-            'ketua_id'      => 'required|exists:dosens,id',
+            'ketua_id'      => 'required|exists:dosen,id',  // ✅ perbaikan disini
             'anggota_id'    => 'nullable|array',
-            'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
+            'anggota_id.*'  => 'different:ketua_id|exists:dosen,id',
             'dokumentasi'   => 'nullable|array',
             'dokumentasi.*' => 'nullable|image|max:4096',
         ]);
 
         DB::transaction(function () use ($validated, $request) {
+
             // simpan penelitian
             $penelitian = Penelitian::create([
                 'judul'       => $validated['judul'],
                 'tahun'       => $validated['tahun'],
-                'skema'       => $validated['skema']        ?? null,
-                'sumber_dana' => $validated['sumber_dana']  ?? null,
-                'dana'        => $validated['dana']         ?? null,
-                'dosen_id'    => $validated['ketua_id'], // ketua
+                'skema'       => $validated['skema'] ?? null,
+                'sumber_dana' => $validated['sumber_dana'] ?? null,
+                'dana'        => $validated['dana'] ?? null,
+                'dosen_id'    => $validated['ketua_id'],
                 'status'      => 'Menunggu',
             ]);
 
-            // buat records pivot: ketua + anggota
+            // sinkronisasi dosen (ketua + anggota)
             $sync = [];
             $sync[$validated['ketua_id']] = ['peran' => 'Ketua'];
-
             if (!empty($validated['anggota_id'])) {
                 foreach ($validated['anggota_id'] as $anggota) {
-                    if ((int) $anggota === (int) $validated['ketua_id']) {
-                        continue; // pengaman (sudah divalidasi 'different')
-                    }
                     $sync[$anggota] = ['peran' => 'Anggota'];
                 }
             }
-
-            // sinkronkan ke pivot penelitian_dosen (pastikan relasi dosens() ada di model Penelitian)
             $penelitian->dosens()->sync($sync);
 
-            // upload dokumentasi (optional) -> SIMPAN KE DISK 'public'
+            // upload dokumentasi
             if ($request->hasFile('dokumentasi')) {
                 foreach ($request->file('dokumentasi') as $file) {
-                    // folder: storage/app/public/penelitian/{id}/
                     $folder   = "penelitian/{$penelitian->id}";
-                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $filename = time().'_'.$file->getClientOriginalName();
 
-                    // simpan file
                     $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
-                    // simpan metadata ke DB (pakai kolom gdrive_path sebagai path lokal)
                     Dokumentasi::create([
                         'penelitian_id' => $penelitian->id,
                         'file_name'     => $file->getClientOriginalName(),
                         'mime'          => $file->getMimeType(),
                         'size'          => $file->getSize(),
-                        'gdrive_path'   => $path, // contoh: "penelitian/12/1717xxxx_foto.jpg"
+                        'gdrive_path'   => $path,
                     ]);
                 }
             }
-        }); // <= penting: tutup transaction
+
+            return $penelitian; // ✅ return agar transaksinya bersih
+        });
 
         return redirect()
             ->route('dosen.penelitian.index')
-            ->with('success', 'Penelitian berhasil ditambahkan!');
+            ->with('success', 'Penelitian berhasil disimpan!');
     }
 
     public function update(Request $request, Penelitian $penelitian)
@@ -113,44 +114,38 @@ public function index(Request $request)
             'skema'         => 'nullable|string|max:100',
             'sumber_dana'   => 'nullable|string|max:100',
             'dana'          => 'nullable|numeric|min:0',
-            'tempat_terbit' => 'nullable|string|max:255',
-            'ketua_id'      => 'required|exists:dosens,id',
+            'ketua_id'      => 'required|exists:dosen,id',  // ✅ konsisten
             'anggota_id'    => 'nullable|array',
-            'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
+            'anggota_id.*'  => 'different:ketua_id|exists:dosen,id',
             'dokumentasi'   => 'nullable|array',
             'dokumentasi.*' => 'nullable|image|max:4096',
         ]);
 
         DB::transaction(function () use ($data, $request, $penelitian) {
-            // update penelitian
             $penelitian->update([
-                'judul'         => $data['judul'],
-                'tahun'         => $data['tahun'],
-                'skema'         => $data['skema']         ?? null,
-                'sumber_dana'   => $data['sumber_dana']   ?? null,
-                'dana'          => $data['dana']          ?? null,
-                'tempat_terbit' => $data['tempat_terbit'] ?? null,
-                'dosen_id'      => $data['ketua_id'], // update ketua utama juga
+                'judul'       => $data['judul'],
+                'tahun'       => $data['tahun'],
+                'skema'       => $data['skema'] ?? null,
+                'sumber_dana' => $data['sumber_dana'] ?? null,
+                'dana'        => $data['dana'] ?? null,
+                'dosen_id'    => $data['ketua_id'],
             ]);
 
-            // sinkronisasi tim (ketua + anggota)
             $sync = [];
             $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
             if (!empty($data['anggota_id'])) {
                 foreach ($data['anggota_id'] as $id) {
-                    if ((int) $id === (int) $data['ketua_id']) {
-                        continue;
-                    }
+                    if ((int)$id === (int)$data['ketua_id']) continue;
                     $sync[$id] = ['peran' => 'Anggota'];
                 }
             }
             $penelitian->dosens()->sync($sync);
 
-            // tambahan dokumentasi (local disk 'public')
             if ($request->hasFile('dokumentasi')) {
                 foreach ($request->file('dokumentasi') as $file) {
-                    $folder     = "penelitian/{$penelitian->id}";
-                    $filename   = time() . '_' . $file->getClientOriginalName();
+                    $folder   = "penelitian/{$penelitian->id}";
+                    $filename = time().'_'.$file->getClientOriginalName();
+
                     $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
                     Dokumentasi::create([
@@ -158,12 +153,12 @@ public function index(Request $request)
                         'file_name'     => $file->getClientOriginalName(),
                         'mime'          => $file->getMimeType(),
                         'size'          => $file->getSize(),
-                        'gdrive_path'   => $storedPath, // simpan path lokal
+                        'gdrive_path'   => $storedPath,
                     ]);
                 }
             }
         });
 
-        return back()->with('ok', 'Perubahan disimpan');
+        return back()->with('ok', 'Perubahan disimpan!');
     }
 }

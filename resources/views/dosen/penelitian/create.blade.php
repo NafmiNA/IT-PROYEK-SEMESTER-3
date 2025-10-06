@@ -189,17 +189,12 @@
     </section>
 
     {{-- Aksi --}}
-    <div class="flex items-center gap-3">
-      <a href="{{ url()->previous() }}"
-         class="inline-flex items-center rounded-lg bg-white px-4 py-2 text-sm font-medium text-slate-700
-                ring-1 ring-slate-200 hover:bg-slate-50">
-        Batal
-      </a>
-      <button type="submit"
-        class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white
-               shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-        Simpan
-      </button>
+    <div class="mt-4 d-flex gap-2">
+    <button type="submit" class="btn btn-primary">💾 Simpan</button>
+    <a href="{{ route('dosen.penelitian.index') }}" class="btn btn-light">Batal</a>
+</div>
+
+
     </div>
   </form>
 </div>
