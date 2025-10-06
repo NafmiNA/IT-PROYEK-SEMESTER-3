@@ -1,26 +1,32 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+// Controllers
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Dosen\{
     DashboardController,
     PenelitianController,
     PengabdianController,
     DokumentasiController
 };
+use App\Http\Controllers\MahasiswaController;
 
 /*
 |--------------------------------------------------------------------------
 | Redirect root ke dashboard dosen
 |--------------------------------------------------------------------------
 */
-Route::get('/', fn () => redirect()->route('dosen.dashboard'));
+Route::get('/', function () {
+    return redirect()->route('dosen.dashboard');
+});
 
 /*
 |--------------------------------------------------------------------------
 | Route bawaan Breeze (login, register, dsb.)
 |--------------------------------------------------------------------------
 */
-require __DIR__ . '/auth.php';
+require _DIR_ . '/auth.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -29,32 +35,56 @@ require __DIR__ . '/auth.php';
 */
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // Dashboard umum → redirect ke dashboard dosen
     Route::get('/dashboard', fn () => redirect()->route('dosen.dashboard'))
         ->name('dashboard');
 
     /*
     |--------------------------------------------------------------------------
-    | Area DOSEN  (prefix: /dosen , name: dosen.*)
+    | Area DOSEN (prefix: /dosen , name: dosen.*)
     |--------------------------------------------------------------------------
     */
     Route::prefix('dosen')->name('dosen.')->middleware('role:dosen')->group(function () {
 
-        // Dashboard
+        // Dashboard Dosen
         Route::get('/dashboard', [DashboardController::class, 'index'])
             ->name('dashboard');
 
-        // Penelitian
+        // Kelola Penelitian
         Route::resource('penelitian', PenelitianController::class)
-            ->names('penelitian')        // dosen.penelitian.index|create|store|...
+            ->names('penelitian')
             ->parameters(['penelitian' => 'penelitian']);
 
-        // Pengabdian
+        // Kelola Pengabdian
         Route::resource('pengabdian', PengabdianController::class)
             ->names('pengabdian')
             ->parameters(['pengabdian' => 'pengabdian']);
 
-        // Dokumentasi (batasi sesuai kebutuhan)
+        // Kelola Dokumentasi (dibatasi sesuai kebutuhan)
         Route::resource('dokumentasi', DokumentasiController::class)
-            ->only(['store','destroy']);
+            ->only(['store', 'destroy']);
     });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Area MAHASISWA (prefix: /mahasiswa , name: mahasiswa.*)
+    |--------------------------------------------------------------------------
+    */
+    Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->group(function () {
+        Route::get('/dashboard', [MahasiswaController::class, 'index'])->name('dashboard');
+        Route::get('/create',   [MahasiswaController::class, 'create'])->name('create');
+        Route::post('/',        [MahasiswaController::class, 'store'])->name('store');
+        Route::delete('/{id}',  [MahasiswaController::class, 'destroy'])->name('destroy');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| Pengaturan profil user
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/profile',  [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
