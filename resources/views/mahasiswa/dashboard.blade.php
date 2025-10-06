@@ -176,43 +176,133 @@
             </div>
         </div>
 
-        <p>Selamat datang di dashboard mahasiswa. Kamu tergabung dalam kegiatan <strong>Penelitian dan Pengabdian Dosen</strong>.</p>
+        @if (session('success'))
+            <div class="alert alert-success shadow-sm border-0 rounded-3">{{ session('success') }}</div>
+        @endif
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold text-primary">📚 Daftar Penelitian Dosen</h5>
-            <a href="{{ route('mahasiswa.create') }}" class="btn btn-success shadow-sm">+ Tambah Dokumen</a>
-        </div>
-
-        <div class="card-penelitian d-flex justify-content-between px-3 py-2">
-            <div class="w-50">Judul Penelitian</div>
-            <div class="w-25 text-center">Status</div>
-            <div class="w-10 text-center">Tahun</div>
-            <div class="w-25 text-center">Peran</div>
-        </div>
-
-        @foreach ($mahasiswa as $mhs)
-        <div class="card mt-3 shadow-sm p-3">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ $mhs->nama }}</strong><br>
-                    <small class="text-muted">{{ $mhs->email }}</small>
+        <section class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                    <div>
+                        <h5 class="fw-bold text-primary mb-1">📚 Daftar Penelitian Dosen</h5>
+                        <p class="text-muted mb-0">Total {{ $penelitianList->count() }} penelitian aktif dan arsip.</p>
+                    </div>
                 </div>
-                <div class="text-center">{{ $mhs->status }}</div>
-                <div class="text-center">{{ $mhs->tahun }}</div>
-                <div class="text-center">{{ $mhs->peran }}</div>
-                <div class="d-flex gap-2 justify-content-end">
-                    <a href="{{ route('mahasiswa.edit', $mhs->id) }}" class="btn btn-outline-primary btn-sm">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <form action="{{ route('mahasiswa.destroy', $mhs->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-                    </form>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Judul Penelitian</th>
+                                <th scope="col" class="text-nowrap">Ketua</th>
+                                <th scope="col" class="text-nowrap">Status</th>
+                                <th scope="col" class="text-nowrap">Tahun</th>
+                                <th scope="col" class="text-end">Unggah Dokumen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($penelitianList as $item)
+                                @php
+                                    $badge = [
+                                        'Menunggu' => 'bg-warning text-dark',
+                                        'Disetujui' => 'bg-success',
+                                        'Ditolak' => 'bg-danger',
+                                        'Draft' => 'bg-secondary',
+                                    ][$item->status] ?? 'bg-secondary';
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold text-body">{{ $item->judul }}</div>
+                                        <div class="small text-muted">{{ $item->skema ?? '—' }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ $item->ketua->nama ?? '—' }}</div>
+                                        <div class="small text-muted">{{ $item->ketua->email ?? '—' }}</div>
+                                    </td>
+                                    <td><span class="badge {{ $badge }}">{{ $item->status }}</span></td>
+                                    <td>{{ $item->tahun }}</td>
+                                    <td class="text-end">
+                                        <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center gap-2">
+                                            @csrf
+                                            <input type="hidden" name="context" value="penelitian">
+                                            <input type="hidden" name="context_id" value="{{ $item->id }}">
+                                            <input type="file" name="dokumentasi[]" class="form-control form-control-sm" multiple required>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Unggah</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Belum ada data penelitian.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
-        @endforeach
+        </section>
+
+        <section class="card border-0 shadow-sm rounded-4">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+                    <div>
+                        <h5 class="fw-bold text-primary mb-1">🤝 Daftar Pengabdian Dosen</h5>
+                        <p class="text-muted mb-0">Total {{ $pengabdianList->count() }} program pengabdian masyarakat.</p>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col">Judul Pengabdian</th>
+                                <th scope="col" class="text-nowrap">Ketua</th>
+                                <th scope="col" class="text-nowrap">Status</th>
+                                <th scope="col" class="text-nowrap">Tahun</th>
+                                <th scope="col" class="text-end">Unggah Dokumen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($pengabdianList as $item)
+                                @php
+                                    $badge = [
+                                        'Menunggu' => 'bg-warning text-dark',
+                                        'Disetujui' => 'bg-success',
+                                        'Ditolak' => 'bg-danger',
+                                        'Draft' => 'bg-secondary',
+                                    ][$item->status] ?? 'bg-secondary';
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div class="fw-semibold text-body">{{ $item->judul }}</div>
+                                        <div class="small text-muted">{{ $item->bidang ?? '—' }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ $item->ketua->nama ?? '—' }}</div>
+                                        <div class="small text-muted">{{ $item->ketua->email ?? '—' }}</div>
+                                    </td>
+                                    <td><span class="badge {{ $badge }}">{{ $item->status }}</span></td>
+                                    <td>{{ $item->tahun }}</td>
+                                    <td class="text-end">
+                                        <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center gap-2">
+                                            @csrf
+                                            <input type="hidden" name="context" value="pengabdian">
+                                            <input type="hidden" name="context_id" value="{{ $item->id }}">
+                                            <input type="file" name="dokumentasi[]" class="form-control form-control-sm" multiple required>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary">Unggah</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">Belum ada data pengabdian.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 </div>
 @endsection

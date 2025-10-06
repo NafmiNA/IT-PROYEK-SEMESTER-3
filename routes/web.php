@@ -12,6 +12,7 @@ use App\Http\Controllers\Dosen\{
 };
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\MahasiswaDashboardController;
+use App\Http\Controllers\Mahasiswa\DokumentasiController as MahasiswaDokumentasiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,7 +76,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/mahasiswa/dashboard', [MahasiswaDashboardController::class, 'index'])
             ->name('mahasiswa.dashboard');
 
-        Route::resource('mahasiswa', MahasiswaController::class)->except(['show']);
+        Route::resource('mahasiswa', MahasiswaController::class)->only(['index']);
+
+        Route::post('/mahasiswa/dokumentasi', [MahasiswaDokumentasiController::class, 'store'])
+            ->name('mahasiswa.dokumentasi.store');
     });
 });
 
