@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Dokumentasi;
 use App\Models\Dosen;
+use App\Models\Mahasiswa;
 use App\Models\Penelitian;
 use App\Models\Pengabdian;
 use App\Models\User;
@@ -18,6 +19,7 @@ class DemoDataSeeder extends Seeder
      * @var array<string, \App\Models\Dosen>
      */
     protected array $dosens = [];
+    protected array $mahasiswaUsers = [];
 
     public function run(): void
     {
@@ -25,6 +27,7 @@ class DemoDataSeeder extends Seeder
         $this->seedDosens();
         $this->seedPenelitian();
         $this->seedPengabdian();
+        $this->seedMahasiswa();
     }
 
     protected function seedAdmin(): void
@@ -231,6 +234,50 @@ class DemoDataSeeder extends Seeder
                     ]
                 );
             }
+        }
+    }
+
+    protected function seedMahasiswa(): void
+    {
+        $mahasiswaList = [
+            [
+                'name'   => 'Nurlaila Putri',
+                'email'  => 'nurlaila@mhs.ac.id',
+                'status' => 'Aktif',
+                'tahun'  => (string) now()->year,
+                'peran'  => 'Anggota',
+            ],
+            [
+                'name'   => 'Rangga Rahman',
+                'email'  => 'rangga@mhs.ac.id',
+                'status' => 'Aktif',
+                'tahun'  => (string) (now()->year - 1),
+                'peran'  => 'Kontributor',
+            ],
+        ];
+
+        foreach ($mahasiswaList as $data) {
+            $user = User::updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name'              => $data['name'],
+                    'password'          => Hash::make('password123'),
+                    'role'              => 'mahasiswa',
+                    'email_verified_at' => now(),
+                ]
+            );
+
+            Mahasiswa::updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'nama'   => $data['name'],
+                    'status' => $data['status'],
+                    'tahun'  => $data['tahun'],
+                    'peran'  => $data['peran'],
+                ]
+            );
+
+            $this->mahasiswaUsers[] = $user;
         }
     }
 }
