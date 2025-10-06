@@ -1,13 +1,18 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="d-flex align-items-center justify-content-between">
-            <h2 class="h4 mb-0">Tambah Penelitian</h2>
-            <a href="{{ route('dosen.penelitian.index') }}" class="btn btn-link">← Kembali</a>
-        </div>
-    </x-slot>
 
     <div class="py-8 bg-gray-50">
         <div class="mx-auto max-w-5xl px-4">
+            <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
+                <div>
+                    <p class="text-xs uppercase tracking-wider text-[#2050A0]/70">Form Penelitian</p>
+                    <h2 class="text-2xl font-semibold text-[#2050A0]">Tambah Penelitian</h2>
+                </div>
+                <a href="{{ route('dosen.penelitian.index') }}"
+                   class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/20 bg-white px-4 py-2 text-sm font-semibold text-[#2050A0] shadow-sm transition hover:bg-[#2050A0] hover:text-white">
+                    <span class="text-lg">←</span>
+                    <span class="hidden sm:inline">Kembali</span>
+                </a>
+            </div>
             <form method="POST" action="{{ route('dosen.penelitian.store') }}" enctype="multipart/form-data" class="space-y-8">
                 @csrf
 
@@ -27,16 +32,26 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Skema</label>
-                            <input type="text" name="skema" value="{{ old('skema') }}" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500" placeholder="Dasar / Terapan / Mandiri">
-                            @error('skema') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
-                        </div>
+                        <label class="block text-sm font-medium text-slate-700">Skema</label>
+                        <select name="skema" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">Pilih skema</option>
+                            @foreach(($skemaOptions ?? []) as $option)
+                                <option value="{{ $option }}" @selected(old('skema') === $option)>{{ $option }}</option>
+                            @endforeach
+                        </select>
+                        @error('skema') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
+                    </div>
 
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700">Sumber Dana</label>
-                            <input type="text" name="sumber_dana" value="{{ old('sumber_dana') }}" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500" placeholder="DRPM, Internal, Mandiri">
-                            @error('sumber_dana') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
-                        </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Sumber Dana</label>
+                        <select name="sumber_dana" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">Pilih sumber dana</option>
+                            @foreach(($sumberDanaOptions ?? []) as $option)
+                                <option value="{{ $option }}" @selected(old('sumber_dana') === $option)>{{ $option }}</option>
+                            @endforeach
+                        </select>
+                        @error('sumber_dana') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
+                    </div>
 
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Dana (Rp)</label>
@@ -94,9 +109,17 @@
                     </div>
                 </section>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                    <a href="{{ route('dosen.penelitian.index') }}" class="btn btn-light">Batal</a>
+                <div class="flex justify-end gap-3 pt-4">
+                    <a href="{{ route('dosen.penelitian.index') }}"
+                       class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/20 px-5 py-2 text-sm font-semibold text-[#2050A0] transition hover:bg-[#2050A0]/10">
+                        <span class="text-lg">⟲</span>
+                        Batal
+                    </a>
+                    <button type="submit"
+                            class="inline-flex items-center gap-2 rounded-full bg-[#2050A0] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#163B78]">
+                        <span class="text-lg">✔</span>
+                        Simpan
+                    </button>
                 </div>
             </form>
         </div>

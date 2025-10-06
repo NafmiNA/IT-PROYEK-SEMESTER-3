@@ -33,8 +33,9 @@
                     </svg>
                     Edit Data
                 </a>
-                <a href="{{ route('dosen.penelitian.index') }}" class="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-100">
-                    ← Kembali
+                <a href="{{ route('dosen.penelitian.index') }}" class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/20 bg-white px-4 py-2 text-sm font-semibold text-[#2050A0] shadow-sm transition hover:bg-[#2050A0] hover:text-white">
+                    <span class="text-lg">←</span>
+                    <span class="hidden sm:inline">Kembali</span>
                 </a>
             </div>
         </div>

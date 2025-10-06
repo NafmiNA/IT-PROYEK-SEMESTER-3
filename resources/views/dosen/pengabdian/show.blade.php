@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout backUrl="{{ route('dosen.pengabdian.index') }}">
     @php
         $statusMap = [
             'Menunggu'  => ['bg' => 'bg-amber-100 text-amber-700 ring-1 ring-amber-200', 'label' => 'Menunggu Verifikasi'],
@@ -33,8 +33,9 @@
                     </svg>
                     Edit Data
                 </a>
-                <a href="{{ route('dosen.pengabdian.index') }}" class="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-100">
-                    ← Kembali
+                <a href="{{ route('dosen.pengabdian.index') }}" class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:bg-gray-100">
+                    <span class="text-lg">←</span>
+                    <span class="hidden sm:inline">Kembali</span>
                 </a>
             </div>
         </div>

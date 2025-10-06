@@ -1,20 +1,25 @@
-<x-app-layout>
-    <x-slot name="header">
+<x-app-layout backUrl="{{ route('dosen.dashboard') }}">
+    <div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
         <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
                 <p class="text-xs uppercase tracking-wider text-[#2050A0]/70">Manajemen Penelitian</p>
                 <h2 class="text-2xl font-semibold text-[#2050A0]">Kelola Penelitian</h2>
                 <p class="text-sm text-gray-500">Pantau seluruh proposal dan aktivitas penelitian Anda dalam satu tempat.</p>
             </div>
-            <a href="{{ route('dosen.penelitian.create') }}"
-               class="inline-flex items-center gap-2 rounded-full bg-[#2050A0] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#163B78]">
-                <span class="grid h-6 w-6 place-content-center rounded-full bg-white/15 text-lg">+</span>
-                Tambah Penelitian
-            </a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('dosen.dashboard') }}"
+                   class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/20 bg-white px-4 py-2 text-sm font-semibold text-[#2050A0] shadow-sm transition hover:bg-[#2050A0] hover:text-white">
+                    <span class="text-lg">←</span>
+                    <span class="hidden sm:inline">Kembali</span>
+                </a>
+                <a href="{{ route('dosen.penelitian.create') }}"
+                   class="inline-flex items-center gap-2 rounded-full bg-[#2050A0] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#163B78]">
+                    <span class="grid h-6 w-6 place-content-center rounded-full bg-white/15 text-lg">+</span>
+                    Tambah Penelitian
+                </a>
+            </div>
         </div>
-    </x-slot>
 
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
         @if (session('success'))
             <div class="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-sm">
                 <span class="mt-0.5 text-lg">✅</span>

@@ -29,7 +29,9 @@ class PengabdianController extends Controller
     public function create()
     {
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-        return view('dosen.pengabdian.create', compact('dosens'));
+        [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
+
+        return view('dosen.pengabdian.create', compact('dosens', 'bidangOptions', 'skemaOptions', 'sumberDanaOptions'));
     }
 
     public function show(Pengabdian $pengabdian)
@@ -108,7 +110,9 @@ class PengabdianController extends Controller
             ->pluck('id')
             ->all();
 
-        return view('dosen.pengabdian.edit', compact('pengabdian', 'dosens', 'anggotaTerpilih'));
+        [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
+
+        return view('dosen.pengabdian.edit', compact('pengabdian', 'dosens', 'anggotaTerpilih', 'bidangOptions', 'skemaOptions', 'sumberDanaOptions'));
     }
 
     public function update(Request $request, Pengabdian $pengabdian)
@@ -188,5 +192,37 @@ class PengabdianController extends Controller
 
         return redirect()->route('dosen.pengabdian.index')->with('success', 'Pengabdian berhasil dihapus.');
     }
-}
 
+    private function pengabdianOptions(): array
+    {
+        $bidangOptions = [
+            'Pendidikan',
+            'Kesehatan',
+            'Ekonomi Kreatif',
+            'Teknologi & Informasi',
+            'Lingkungan',
+            'Sosial Kemasyarakatan',
+            'Lainnya',
+        ];
+
+        $skemaOptions = [
+            'Program Kemitraan Masyarakat (PKM)',
+            'Kemitraan Masyarakat',
+            'Pengabdian Berbasis Riset',
+            'Pengabdian Mandiri',
+            'KKN Tematik',
+        ];
+
+        $sumberDanaOptions = [
+            'DRPM',
+            'Kemendikbud',
+            'Internal Kampus',
+            'Hibah Pemerintah Daerah',
+            'Corporate Social Responsibility (CSR)',
+            'Mandiri',
+            'Lainnya',
+        ];
+
+        return [$bidangOptions, $skemaOptions, $sumberDanaOptions];
+    }
+}
