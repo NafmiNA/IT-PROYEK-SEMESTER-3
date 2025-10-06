@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 class LoginController extends Controller
 {
@@ -29,11 +30,17 @@ class LoginController extends Controller
             // Arahkan sesuai role
             if ($user->role === 'mahasiswa') {
                 return redirect()->route('mahasiswa.dashboard');
-            } elseif ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            } else {
-                return redirect('/');
             }
+
+            if ($user->role === 'dosen' || optional($user->fresh()->dosen)->exists) {
+                return redirect()->route('dosen.dashboard');
+            }
+
+            if ($user->role === 'admin' && Route::has('admin.dashboard')) {
+                return redirect()->route('admin.dashboard');
+            }
+
+            return redirect()->route('dashboard');
         }
 
         return back()->withErrors([
