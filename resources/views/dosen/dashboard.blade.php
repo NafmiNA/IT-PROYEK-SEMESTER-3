@@ -14,7 +14,10 @@
   <!-- Topbar -->
   <header class="bg-white shadow-sm border-b border-gray-200">
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <h1 class="text-lg font-semibold text-[#2050A0]">Dashboard Dosen</h1>
+      <div class="flex items-center gap-3">
+        <img src="{{ asset('images/logo-full.png') }}" alt="Logo Politala" class="h-10 w-10 object-contain">
+        <h1 class="text-lg font-semibold text-[#2050A0]">Dashboard Dosen</h1>
+      </div>
       <span class="text-sm text-gray-400">{{ now()->format('d M Y') }}</span>
     </div>
   </header>

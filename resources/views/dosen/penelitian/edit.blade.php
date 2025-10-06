@@ -1,18 +1,18 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+
+    <div class="max-w-5xl mx-auto px-6 py-8">
+        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-6">
             <div>
                 <p class="text-xs uppercase tracking-wider text-[#2050A0]/70">Perbarui Penelitian</p>
                 <h2 class="text-2xl font-semibold text-[#2050A0]">Edit Penelitian</h2>
                 <p class="text-sm text-gray-500">Sesuaikan informasi penelitian berikut dan simpan perubahan Anda.</p>
             </div>
-            <a href="{{ route('dosen.penelitian.show', $penelitian) }}" class="inline-flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 transition hover:bg-gray-100">
-                ← Kembali
+            <a href="{{ route('dosen.penelitian.show', $penelitian) }}"
+               class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/20 bg-white px-4 py-2 text-sm font-semibold text-[#2050A0] shadow-sm transition hover:bg-[#2050A0] hover:text-white">
+                <span class="text-lg">←</span>
+                <span class="hidden sm:inline">Kembali</span>
             </a>
         </div>
-    </x-slot>
-
-    <div class="max-w-5xl mx-auto px-6 py-8">
         <form action="{{ route('dosen.penelitian.update', $penelitian) }}" method="POST" enctype="multipart/form-data" class="space-y-8">
             @csrf
             @method('PUT')
@@ -44,12 +44,24 @@
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Skema</label>
-                        <input type="text" name="skema" value="{{ old('skema', $penelitian->skema) }}" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500" placeholder="Dasar / Terapan / Mandiri">
+                        <select name="skema" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">Pilih skema</option>
+                            @foreach(($skemaOptions ?? []) as $option)
+                                <option value="{{ $option }}" @selected(old('skema', $penelitian->skema) === $option)>{{ $option }}</option>
+                            @endforeach
+                        </select>
+                        @error('skema') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Sumber Dana</label>
-                        <input type="text" name="sumber_dana" value="{{ old('sumber_dana', $penelitian->sumber_dana) }}" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500" placeholder="DRPM / Internal / Mandiri">
+                        <select name="sumber_dana" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
+                            <option value="">Pilih sumber dana</option>
+                            @foreach(($sumberDanaOptions ?? []) as $option)
+                                <option value="{{ $option }}" @selected(old('sumber_dana', $penelitian->sumber_dana) === $option)>{{ $option }}</option>
+                            @endforeach
+                        </select>
+                        @error('sumber_dana') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>

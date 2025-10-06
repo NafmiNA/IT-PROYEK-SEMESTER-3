@@ -29,7 +29,9 @@ class PenelitianController extends Controller
     public function create()
     {
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-        return view('dosen.penelitian.create', compact('dosens'));
+        [$skemaOptions, $sumberDanaOptions] = $this->penelitianOptions();
+
+        return view('dosen.penelitian.create', compact('dosens', 'skemaOptions', 'sumberDanaOptions'));
     }
 
     public function show(Penelitian $penelitian)
@@ -109,7 +111,9 @@ class PenelitianController extends Controller
             ->pluck('id')
             ->all();
 
-        return view('dosen.penelitian.edit', compact('penelitian', 'dosens', 'anggotaTerpilih'));
+        [$skemaOptions, $sumberDanaOptions] = $this->penelitianOptions();
+
+        return view('dosen.penelitian.edit', compact('penelitian', 'dosens', 'anggotaTerpilih', 'skemaOptions', 'sumberDanaOptions'));
     }
 
     public function update(Request $request, Penelitian $penelitian)
@@ -189,5 +193,27 @@ class PenelitianController extends Controller
         return redirect()
             ->route('dosen.penelitian.index')
             ->with('success', 'Penelitian berhasil dihapus.');
+    }
+
+    private function penelitianOptions(): array
+    {
+        $skemaOptions = [
+            'Penelitian Dasar',
+            'Penelitian Terapan',
+            'Penelitian Pengembangan',
+            'Penelitian Mandiri',
+            'Penelitian Kemitraan',
+        ];
+
+        $sumberDanaOptions = [
+            'DRPM',
+            'Kemendikbud',
+            'Internal Kampus',
+            'Hibah Industri',
+            'Mandiri',
+            'Lainnya',
+        ];
+
+        return [$skemaOptions, $sumberDanaOptions];
     }
 }
