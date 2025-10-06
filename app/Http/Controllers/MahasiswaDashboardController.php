@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Mahasiswa;
+use App\Models\Penelitian;
+use App\Models\Pengabdian;
 use Illuminate\Http\Request;
-// use App\Models\Dokumentasi; // Import Model Dokumentasi Anda untuk mengambil data
+use Illuminate\Support\Facades\Auth;
 
 class MahasiswaDashboardController extends Controller
 {
@@ -13,43 +16,18 @@ class MahasiswaDashboardController extends Controller
      */
     public function index()
     {
-        // 1. Ambil Data Mahasiswa yang Sedang Login
-        // GANTI INI: Gunakan Auth::user() atau logika otentikasi Anda yang sebenarnya
-        $mahasiswa = (object)[
-            'id' => 1,
-            'nama' => 'Nurlaila',
-        ];
+        $user = Auth::user();
 
-        // 2. Ambil Data Penelitian/Dokumentasi yang Terkait
-        // GANTI INI: Ganti data statis ini dengan query database yang memfilter berdasarkan mahasiswa_id
-        
-        /* Contoh jika Anda menggunakan database:
-         * $penelitian = Dokumentasi::where('mahasiswa_id', $mahasiswa->id)
-         * ->orderBy('tahun', 'desc')
-         * ->get();
-         */
-        
-        $penelitian = [
-            (object)[
-                'id' => 1, 
-                'judul' => 'Analisis Data Penduduk Kalsel', 
-                'dosen' => 'Jaka Permadi, S.Si., M.Kom', 
-                'status' => 'Selesai', 
-                'tahun' => 2025, 
-                'peran' => 'Kontributor'
-            ],
-            (object)[
-                'id' => 2, 
-                'judul' => 'Sistem informasi Desa Digital', 
-                'dosen' => 'Nindy Permatasari, S.Kom., M.Kom', 
-                'status' => 'Berjalan', 
-                'tahun' => 2024, 
-                'peran' => 'Anggota'
-            ],
-        ];
+        $profilMahasiswa = Mahasiswa::firstWhere('email', $user?->email);
 
-        // 3. Kirim data ke View
-        return view('mahasiswa.dashboard', compact('penelitian', 'mahasiswa'));
+        $penelitian = Penelitian::with('ketua')->latest()->get();
+        $pengabdian = Pengabdian::with('ketua')->latest()->get();
+
+        return view('mahasiswa.dashboard', [
+            'profilMahasiswa' => $profilMahasiswa,
+            'penelitianList'  => $penelitian,
+            'pengabdianList'  => $pengabdian,
+        ]);
     }
 
     // ---

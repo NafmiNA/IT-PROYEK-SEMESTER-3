@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -27,6 +28,20 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        $user = $request->user();
+
+        if ($user?->role === 'mahasiswa' && Route::has('mahasiswa.dashboard')) {
+            return redirect()->intended(route('mahasiswa.dashboard', absolute: false));
+        }
+
+        if ($user && ($user->role === 'dosen' || $user->dosen()->exists())) {
+            return redirect()->intended(route('dosen.dashboard', absolute: false));
+        }
+
+        if ($user?->role === 'admin' && Route::has('admin.dashboard')) {
+            return redirect()->intended(route('admin.dashboard', absolute: false));
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }
