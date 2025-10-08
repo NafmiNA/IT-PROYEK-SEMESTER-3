@@ -95,29 +95,41 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">Anggota (opsional)</label>
-                        <select name="anggota_id[]" multiple class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
-                            @foreach($dosens as $d)
-                                <option value="{{ $d->id }}" @selected(collect(old('anggota_id', []))->contains($d->id))>{{ $d->nama }} — {{ $d->email }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-gray-500">Tekan Ctrl/Cmd untuk memilih lebih dari satu.</p>
+                        <label class="block text-sm font-medium text-slate-700">Anggota</label>
+                        <div id="anggota-wrapper" class="mt-2 space-y-3">
+                            <div class="flex gap-3">
+                                <select name="anggota_id[]" class="flex-1 rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih anggota</option>
+                                    @foreach($dosens as $d)
+                                        <option value="{{ $d->id }}">{{ $d->nama }} — {{ $d->email }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-danger" onclick="this.closest('.flex').remove()">Hapus</button>
+                            </div>
+                        </div>
+                        <button type="button" id="tambah-anggota" class="mt-2 btn btn-outline-secondary">+ Tambah Anggota</button>
                         @error('anggota_id') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
                         @error('anggota_id.*') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-slate-700">Mahasiswa Pendukung</label>
-                        <select name="mahasiswa_id[]" multiple class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
-                            @foreach(($mahasiswas ?? []) as $m)
-                                <option value="{{ $m->id }}" @selected(collect(old('mahasiswa_id', []))->contains($m->id))>{{ $m->nama }} — {{ $m->email }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-gray-500">Tekan Ctrl/Cmd untuk memilih lebih dari satu.</p>
+                        <div id="mahasiswa-wrapper" class="mt-2 space-y-3">
+                            <div class="flex gap-3">
+                                <select name="mahasiswa_id[]" class="flex-1 rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
+                                    <option value="">Pilih mahasiswa (opsional)</option>
+                                    @foreach(($mahasiswas ?? []) as $m)
+                                        <option value="{{ $m->id }}">{{ $m->nama }} — {{ $m->email }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="button" class="btn btn-outline-danger" onclick="this.closest('.flex').remove()">Hapus</button>
+                            </div>
+                        </div>
+                        <button type="button" id="tambah-mahasiswa" class="mt-2 btn btn-outline-secondary">+ Tambah Mahasiswa</button>
                         @error('mahasiswa_id') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
                     </div>
-                </div>
-            </section>
+            </div>
+        </section>
 
             <section class="rounded-3xl border-2 border-gray-200 bg-white p-6 ring-1 ring-gray-200/70 shadow-lg space-y-4">
                 <div class="flex items-center justify-between">
@@ -144,3 +156,18 @@
         </form>
     </div>
 </x-app-layout>
+
+<script>
+    document.getElementById('tambah-anggota')?.addEventListener('click', () => {
+        const wrap = document.getElementById('anggota-wrapper');
+        const tpl = wrap.firstElementChild.cloneNode(true);
+        tpl.querySelector('select').value = '';
+        wrap.appendChild(tpl);
+    });
+    document.getElementById('tambah-mahasiswa')?.addEventListener('click', () => {
+        const wrap = document.getElementById('mahasiswa-wrapper');
+        const tpl = wrap.firstElementChild.cloneNode(true);
+        tpl.querySelector('select').value = '';
+        wrap.appendChild(tpl);
+    });
+</script>
