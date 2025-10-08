@@ -48,6 +48,12 @@ class DashboardController extends Controller
             ->where('status', 'Menunggu')
             ->count();
 
+        $menungguPengabdian = $pengabdianBuilder()
+            ->where('status', 'Menunggu')
+            ->count();
+
+        $menungguVerif += $menungguPengabdian;
+
         $latestPenelitian = $penelitianBuilder()->latest()->take(5)->get();
         $latestPengabdian = $pengabdianBuilder()->latest()->take(5)->get();
 

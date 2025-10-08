@@ -33,16 +33,6 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700">Status</label>
-                        <select name="status" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
-                            @foreach(['Draft','Menunggu','Disetujui','Ditolak'] as $status)
-                                <option value="{{ $status }}" @selected(old('status', $penelitian->status) === $status)>{{ $status }}</option>
-                            @endforeach
-                        </select>
-                        @error('status') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
-                    </div>
-
-                    <div>
                         <label class="block text-sm font-medium text-slate-700">Skema</label>
                         <select name="skema" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">Pilih skema</option>

@@ -31,8 +31,8 @@
                             @error('tahun') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
                         </div>
 
-                        <div>
-                        <label class="block text-sm font-medium text-slate-700">Skema</label>
+                    <div>
+                    <label class="block text-sm font-medium text-slate-700">Skema</label>
                         <select name="skema" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
                             <option value="">Pilih skema</option>
                             @foreach(($skemaOptions ?? []) as $option)
@@ -69,12 +69,12 @@
 
                 <section class="rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
                     <div class="p-6 space-y-4">
-                        <h2 class="text-base font-semibold text-slate-900">Tim Penelitian</h2>
+                        <h2 class="text-base font-semibold text-slate-900">Penulis</h2>
 
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Ketua <span class="text-rose-600">*</span></label>
+                            <label class="block text-sm font-medium text-slate-700">Penulis 1 <span class="text-rose-600">*</span></label>
                             <select name="ketua_id" required class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
-                                <option value="">Pilih ketua</option>
+                                <option value="">Pilih penulis 1</option>
                                 @foreach($dosens as $d)
                                     <option value="{{ $d->id }}" @selected(old('ketua_id') == $d->id)>{{ $d->nama }} — {{ $d->email }}</option>
                                 @endforeach
@@ -83,11 +83,11 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-slate-700">Anggota</label>
+                            <label class="block text-sm font-medium text-slate-700">Penulis lainnya</label>
                             <div id="anggota-wrapper" class="space-y-3">
                                 <div class="flex gap-3">
                                     <select name="anggota_id[]" class="flex-1 rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
-                                        <option value="">Pilih anggota (opsional)</option>
+                                        <option value="">Pilih penulis tambahan (opsional)</option>
                                         @foreach($dosens as $d)
                                             <option value="{{ $d->id }}">{{ $d->nama }} — {{ $d->email }}</option>
                                         @endforeach
@@ -95,17 +95,26 @@
                                     <button type="button" class="btn btn-outline-danger" onclick="this.closest('.flex').remove()">Hapus</button>
                                 </div>
                             </div>
-                            <button type="button" id="tambah-anggota" class="mt-3 btn btn-outline-secondary">+ Tambah Anggota</button>
+                            <button type="button" id="tambah-anggota" class="mt-3 btn btn-outline-secondary">+ Tambah Penulis</button>
                         </div>
                     </div>
                 </section>
 
                 <section class="rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-                    <div class="p-6">
-                        <h2 class="text-base font-semibold text-slate-900 mb-3">Dokumentasi</h2>
-                        <input type="file" name="dokumentasi[]" multiple accept="image/*" class="block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-8 text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-600 file:px-4 file:py-2 file:text-white hover:file:bg-indigo-700">
-                        <p class="mt-2 text-xs text-slate-500">Boleh unggah beberapa gambar (jpg/jpeg/png). Maks 4MB/berkas.</p>
-                        @error('dokumentasi.*') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
+                    <div class="p-6 space-y-4">
+                        <h2 class="text-base font-semibold text-slate-900">Laporan & Jurnal</h2>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Unggah Laporan Jurnal</label>
+                            <input type="file" name="laporan_jurnal" accept=".pdf,.doc,.docx" class="block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-6 text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-600 file:px-4 file:py-2 file:text-white hover:file:bg-indigo-700">
+                            <p class="mt-2 text-xs text-slate-500">Format pdf/doc/docx, maksimum 5MB.</p>
+                            @error('laporan_jurnal') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700">Link Jurnal</label>
+                            <input type="url" name="link_jurnal" value="{{ old('link_jurnal') }}" class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500" placeholder="https://contoh-jurnal.com/artikel">
+                            @error('link_jurnal') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
+                        </div>
                     </div>
                 </section>
 
