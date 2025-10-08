@@ -23,10 +23,19 @@ class MahasiswaDashboardController extends Controller
         $penelitian = Penelitian::with('ketua')->latest()->get();
         $pengabdian = Pengabdian::with('ketua')->latest()->get();
 
+        $penelitianAllowed = [];
+        $pengabdianAllowed = [];
+        if ($profilMahasiswa) {
+            $penelitianAllowed = $profilMahasiswa->penelitians()->pluck('penelitian.id')->all();
+            $pengabdianAllowed = $profilMahasiswa->pengabdians()->pluck('pengabdians.id')->all();
+        }
+
         return view('mahasiswa.dashboard', [
             'profilMahasiswa' => $profilMahasiswa,
             'penelitianList'  => $penelitian,
             'pengabdianList'  => $pengabdian,
+            'penelitianAllowed' => $penelitianAllowed,
+            'pengabdianAllowed' => $pengabdianAllowed,
         ]);
     }
 

@@ -209,6 +209,7 @@
                                         'Ditolak' => 'bg-danger',
                                         'Draft' => 'bg-secondary',
                                     ][$item->status] ?? 'bg-secondary';
+                                    $canUpload = in_array($item->id, ($penelitianAllowed ?? []));
                                 @endphp
                                 <tr>
                                     <td>
@@ -222,15 +223,19 @@
                                     <td><span class="badge {{ $badge }}">{{ $item->status }}</span></td>
                                     <td>{{ $item->tahun }}</td>
                                     <td class="text-end">
-                                        <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center gap-2">
-                                            @csrf
-                                            <input type="hidden" name="context" value="penelitian">
-                                            <input type="hidden" name="context_id" value="{{ $item->id }}">
-                                            <input type="file" name="dokumentasi[]" class="form-control form-control-sm" multiple required>
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">Unggah</button>
-                                        </form>
+                                        @if($canUpload)
+                                            <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center gap-2">
+                                                @csrf
+                                                <input type="hidden" name="context" value="penelitian">
+                                                <input type="hidden" name="context_id" value="{{ $item->id }}">
+                                                <input type="file" name="dokumentasi[]" class="form-control form-control-sm" multiple required>
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Unggah</button>
+                                            </form>
+                                        @else
+                                            <span class="badge bg-secondary">Bukan anggota tim</span>
+                                        @endif
                                     </td>
-                                </tr>
+                            </tr>
                             @empty
                                 <tr>
                                     <td colspan="5" class="text-center text-muted py-4">Belum ada data penelitian.</td>
@@ -271,6 +276,7 @@
                                         'Ditolak' => 'bg-danger',
                                         'Draft' => 'bg-secondary',
                                     ][$item->status] ?? 'bg-secondary';
+                                    $canUpload = in_array($item->id, ($pengabdianAllowed ?? []));
                                 @endphp
                                 <tr>
                                     <td>
@@ -284,13 +290,17 @@
                                     <td><span class="badge {{ $badge }}">{{ $item->status }}</span></td>
                                     <td>{{ $item->tahun }}</td>
                                     <td class="text-end">
-                                        <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center gap-2">
-                                            @csrf
-                                            <input type="hidden" name="context" value="pengabdian">
-                                            <input type="hidden" name="context_id" value="{{ $item->id }}">
-                                            <input type="file" name="dokumentasi[]" class="form-control form-control-sm" multiple required>
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">Unggah</button>
-                                        </form>
+                                        @if($canUpload)
+                                            <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center gap-2">
+                                                @csrf
+                                                <input type="hidden" name="context" value="pengabdian">
+                                                <input type="hidden" name="context_id" value="{{ $item->id }}">
+                                                <input type="file" name="dokumentasi[]" class="form-control form-control-sm" multiple required>
+                                                <button type="submit" class="btn btn-sm btn-outline-primary">Unggah</button>
+                                            </form>
+                                        @else
+                                            <span class="badge bg-secondary">Bukan anggota tim</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty

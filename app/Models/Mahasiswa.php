@@ -17,4 +17,18 @@ class Mahasiswa extends Model
         'tahun',
         'peran'
     ];
+
+    public function penelitians()
+    {
+        return $this->belongsToMany(Penelitian::class, 'penelitian_mahasiswa', 'mahasiswa_id', 'penelitian_id')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
+
+    public function pengabdians()
+    {
+        return $this->belongsToMany(Pengabdian::class, 'pengabdian_mahasiswa', 'mahasiswa_id', 'pengabdian_id')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
 }

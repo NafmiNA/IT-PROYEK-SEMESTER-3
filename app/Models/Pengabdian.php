@@ -60,4 +60,14 @@ class Pengabdian extends Model
     {
         return $this->dosens()->wherePivot('peran', 'Anggota');
     }
+
+    /**
+     * Mahasiswa pendukung pengabdian (many-to-many).
+     */
+    public function mahasiswas()
+    {
+        return $this->belongsToMany(Mahasiswa::class, 'pengabdian_mahasiswa', 'pengabdian_id', 'mahasiswa_id')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
 }

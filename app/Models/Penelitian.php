@@ -63,4 +63,14 @@ class Penelitian extends Model
     {
         return $this->hasMany(Dokumentasi::class, 'penelitian_id');
     }
+
+    /**
+     * Mahasiswa pendukung penelitian (many-to-many).
+     */
+    public function mahasiswas()
+    {
+        return $this->belongsToMany(Mahasiswa::class, 'penelitian_mahasiswa', 'penelitian_id', 'mahasiswa_id')
+            ->withPivot('peran')
+            ->withTimestamps();
+    }
 }

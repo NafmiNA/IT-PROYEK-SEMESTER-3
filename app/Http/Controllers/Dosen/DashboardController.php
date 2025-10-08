@@ -20,13 +20,13 @@ class DashboardController extends Controller
         }
 
         $penelitianBuilder = fn () => Penelitian::query()
-            ->with('ketua')
+            ->with(['ketua'])
             ->whereHas('dosens', function ($query) use ($dosen) {
                 $query->where('dosen_id', $dosen->id);
             });
 
         $pengabdianBuilder = fn () => Pengabdian::query()
-            ->with('ketua')
+            ->with(['ketua'])
             ->whereHas('dosens', function ($query) use ($dosen) {
                 $query->where('dosen_id', $dosen->id);
             });
