@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class PenelitianController extends Controller
 {
@@ -59,10 +60,13 @@ class PenelitianController extends Controller
             'anggota_id'     => 'nullable|array',
             'anggota_id.*'   => 'different:ketua_id|exists:dosens,id',
             'mahasiswa_id'   => 'nullable|array',
-            'mahasiswa_id.*' => 'exists:mahasiswa,id',
+            'mahasiswa_id.*' => 'nullable|exists:mahasiswa,id',
             'link_jurnal'    => 'nullable|url',
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
+
+        // Ensure pivot table exists before transaction (DDL outside tx)
+        $this->ensurePenelitianMahasiswaPivot();
 
         DB::transaction(function () use ($validated, $request) {
             $createData = [
@@ -92,13 +96,12 @@ class PenelitianController extends Controller
             }
             $penelitian->dosens()->sync($sync);
 
-            // Sinkron mahasiswa pendukung (hanya jika tabel pivot tersedia)
+            // Sinkron mahasiswa pendukung (jika tabel pivot tersedia)
             if (Schema::hasTable('penelitian_mahasiswa')) {
+                $ids = collect($validated['mahasiswa_id'] ?? [])->filter()->unique()->values();
                 $mahasiswaSync = [];
-                if (!empty($validated['mahasiswa_id'])) {
-                    foreach (array_unique($validated['mahasiswa_id']) as $mId) {
-                        $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
-                    }
+                foreach ($ids as $mId) {
+                    $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
                 }
                 $penelitian->mahasiswas()->sync($mahasiswaSync);
             }
@@ -150,10 +153,13 @@ class PenelitianController extends Controller
             'anggota_id'     => 'nullable|array',
             'anggota_id.*'   => 'different:ketua_id|exists:dosens,id',
             'mahasiswa_id'   => 'nullable|array',
-            'mahasiswa_id.*' => 'exists:mahasiswa,id',
+            'mahasiswa_id.*' => 'nullable|exists:mahasiswa,id',
             'link_jurnal'    => 'nullable|url',
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
+
+        // Ensure pivot table exists before transaction
+        $this->ensurePenelitianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request, $penelitian) {
             $updateData = [
@@ -183,13 +189,12 @@ class PenelitianController extends Controller
             }
             $penelitian->dosens()->sync($sync);
 
-            // Sinkron mahasiswa pendukung (hanya jika tabel pivot tersedia)
+            // Sinkron mahasiswa pendukung (jika tabel pivot tersedia)
             if (Schema::hasTable('penelitian_mahasiswa')) {
+                $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
                 $mahasiswaSync = [];
-                if (!empty($data['mahasiswa_id'])) {
-                    foreach (array_unique($data['mahasiswa_id']) as $mId) {
-                        $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
-                    }
+                foreach ($ids as $mId) {
+                    $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
                 }
                 $penelitian->mahasiswas()->sync($mahasiswaSync);
             }
@@ -254,5 +259,19 @@ class PenelitianController extends Controller
         ];
 
         return [$skemaOptions, $sumberDanaOptions];
+    }
+
+    private function ensurePenelitianMahasiswaPivot(): void
+    {
+        if (!Schema::hasTable('penelitian_mahasiswa')) {
+            Schema::create('penelitian_mahasiswa', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('penelitian_id')->constrained('penelitian')->cascadeOnDelete();
+                $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
+                $table->string('peran')->default('Pendukung');
+                $table->timestamps();
+                $table->unique(['penelitian_id','mahasiswa_id']);
+            });
+        }
     }
 }

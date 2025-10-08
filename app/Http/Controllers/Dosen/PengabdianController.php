@@ -9,6 +9,7 @@ use App\Models\Pengabdian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Schema\Blueprint;
 
 class PengabdianController extends Controller
 {
@@ -59,10 +60,13 @@ class PengabdianController extends Controller
             'anggota_id'    => 'nullable|array',
             'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
             'mahasiswa_id'  => 'nullable|array',
-            'mahasiswa_id.*'=> 'exists:mahasiswa,id',
+            'mahasiswa_id.*'=> 'nullable|exists:mahasiswa,id',
             'dokumentasi'   => 'nullable|array',
             'dokumentasi.*' => 'nullable|image|max:4096',
         ]);
+
+        // Ensure pivot exists before wrapping in transaction
+        $this->ensurePengabdianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request) {
             $pengabdian = Pengabdian::create([
@@ -90,11 +94,10 @@ class PengabdianController extends Controller
 
             // Sinkron mahasiswa pendukung (jika tabel pivot tersedia)
             if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+                $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
                 $mSync = [];
-                if (!empty($data['mahasiswa_id'])) {
-                    foreach (array_unique($data['mahasiswa_id']) as $mId) {
-                        $mSync[$mId] = ['peran' => 'Pendukung'];
-                    }
+                foreach ($ids as $mId) {
+                    $mSync[$mId] = ['peran' => 'Pendukung'];
                 }
                 $pengabdian->mahasiswas()->sync($mSync);
             }
@@ -155,6 +158,9 @@ class PengabdianController extends Controller
             'dokumentasi.*' => 'nullable|image|max:4096',
             'status'        => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak',
         ]);
+
+        // Ensure pivot exists before wrapping in transaction
+        $this->ensurePengabdianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request, $pengabdian) {
             $pengabdian->update([
@@ -259,5 +265,19 @@ class PengabdianController extends Controller
         ];
 
         return [$bidangOptions, $skemaOptions, $sumberDanaOptions];
+    }
+
+    private function ensurePengabdianMahasiswaPivot(): void
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+            \Illuminate\Support\Facades\Schema::create('pengabdian_mahasiswa', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('pengabdian_id')->constrained('pengabdians')->cascadeOnDelete();
+                $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
+                $table->string('peran')->default('Pendukung');
+                $table->timestamps();
+                $table->unique(['pengabdian_id','mahasiswa_id']);
+            });
+        }
     }
 }
