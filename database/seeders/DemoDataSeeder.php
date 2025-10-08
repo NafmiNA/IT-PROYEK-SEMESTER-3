@@ -103,7 +103,7 @@ class DemoDataSeeder extends Seeder
                 'skema'       => 'Penelitian Terapan',
                 'sumber_dana' => 'DRPM',
                 'dana'        => 25000000,
-                'status'      => 'Disetujui',
+                'status'      => 'Menunggu',
                 'ketua'       => 'andi',
                 'anggota'     => ['siti'],
                 'docs'        => ['monitoring-kickoff.jpg', 'monitoring-laporan.jpg'],

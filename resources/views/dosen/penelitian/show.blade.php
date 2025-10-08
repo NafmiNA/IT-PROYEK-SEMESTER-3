@@ -1,12 +1,5 @@
 <x-app-layout>
     @php
-        $statusMap = [
-            'Menunggu'  => ['bg' => 'bg-amber-100 text-amber-700 ring-1 ring-amber-200', 'label' => 'Menunggu Verifikasi'],
-            'Disetujui' => ['bg' => 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200', 'label' => 'Disetujui'],
-            'Ditolak'   => ['bg' => 'bg-rose-100 text-rose-700 ring-1 ring-rose-200', 'label' => 'Ditolak'],
-            'Draft'     => ['bg' => 'bg-slate-200 text-slate-700 ring-1 ring-slate-300', 'label' => 'Draft'],
-        ];
-        $statusBadge = $statusMap[$penelitian->status] ?? $statusMap['Draft'];
         $anggota = $penelitian->dosens->where('pivot.peran', 'Anggota');
     @endphp
 
@@ -22,10 +15,6 @@
                 </div>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-                <span class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold {{ $statusBadge['bg'] }}">
-                    <span class="h-2 w-2 rounded-full bg-current opacity-60"></span>
-                    {{ $statusBadge['label'] }}
-                </span>
                 <a href="{{ route('dosen.penelitian.edit', $penelitian) }}" class="inline-flex items-center gap-2 rounded-full border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-600 transition hover:bg-amber-500 hover:text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.862 4.487z" />

@@ -19,6 +19,8 @@ class Penelitian extends Model
         'dana',
         'status',
         'dosen_id',
+        'laporan_path',
+        'link_jurnal',
     ];
 
     protected $casts = [

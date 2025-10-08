@@ -44,16 +44,16 @@ class PenelitianController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'judul'         => 'required|string|max:255',
-            'tahun'         => 'required|integer',
-            'skema'         => 'nullable|string|max:255',
-            'sumber_dana'   => 'nullable|string|max:255',
-            'dana'          => 'nullable|numeric',
-            'ketua_id'      => 'required|exists:dosens,id',
-            'anggota_id'    => 'nullable|array',
-            'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
-            'dokumentasi'   => 'nullable|array',
-            'dokumentasi.*' => 'nullable|image|max:4096',
+            'judul'          => 'required|string|max:255',
+            'tahun'          => 'required|integer',
+            'skema'          => 'nullable|string|max:255',
+            'sumber_dana'    => 'nullable|string|max:255',
+            'dana'           => 'nullable|numeric',
+            'ketua_id'       => 'required|exists:dosens,id',
+            'anggota_id'     => 'nullable|array',
+            'anggota_id.*'   => 'different:ketua_id|exists:dosens,id',
+            'link_jurnal'    => 'nullable|url',
+            'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
         DB::transaction(function () use ($validated, $request) {
@@ -64,7 +64,7 @@ class PenelitianController extends Controller
                 'sumber_dana' => $validated['sumber_dana'] ?? null,
                 'dana'        => $validated['dana'] ?? null,
                 'dosen_id'    => $validated['ketua_id'],
-                'status'      => 'Menunggu',
+                'link_jurnal' => $validated['link_jurnal'] ?? null,
             ]);
 
             $sync = [];
@@ -79,21 +79,13 @@ class PenelitianController extends Controller
             }
             $penelitian->dosens()->sync($sync);
 
-            if ($request->hasFile('dokumentasi')) {
-                foreach ((array) $request->file('dokumentasi') as $file) {
-                    $folder   = "penelitian/{$penelitian->id}";
-                    $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+            if ($request->hasFile('laporan_jurnal')) {
+                $file = $request->file('laporan_jurnal');
+                $folder   = "penelitian/laporan/{$penelitian->id}";
+                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
-                    $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
-
-                    Dokumentasi::create([
-                        'penelitian_id' => $penelitian->id,
-                        'file_name'     => $file->getClientOriginalName(),
-                        'mime'          => $file->getMimeType(),
-                        'size'          => $file->getSize(),
-                        'gdrive_path'   => $path,
-                    ]);
-                }
+                $penelitian->update(['laporan_path' => $path]);
             }
         });
 
@@ -119,17 +111,16 @@ class PenelitianController extends Controller
     public function update(Request $request, Penelitian $penelitian)
     {
         $data = $request->validate([
-            'judul'         => 'required|string|max:255',
-            'tahun'         => 'required|integer|min:2000|max:2100',
-            'skema'         => 'nullable|string|max:100',
-            'sumber_dana'   => 'nullable|string|max:100',
-            'dana'          => 'nullable|numeric|min:0',
-            'ketua_id'      => 'required|exists:dosens,id',
-            'anggota_id'    => 'nullable|array',
-            'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
-            'dokumentasi'   => 'nullable|array',
-            'dokumentasi.*' => 'nullable|image|max:4096',
-            'status'        => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak',
+            'judul'          => 'required|string|max:255',
+            'tahun'          => 'required|integer|min:2000|max:2100',
+            'skema'          => 'nullable|string|max:100',
+            'sumber_dana'    => 'nullable|string|max:100',
+            'dana'           => 'nullable|numeric|min:0',
+            'ketua_id'       => 'required|exists:dosens,id',
+            'anggota_id'     => 'nullable|array',
+            'anggota_id.*'   => 'different:ketua_id|exists:dosens,id',
+            'link_jurnal'    => 'nullable|url',
+            'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
         DB::transaction(function () use ($data, $request, $penelitian) {
@@ -140,7 +131,7 @@ class PenelitianController extends Controller
                 'sumber_dana' => $data['sumber_dana'] ?? null,
                 'dana'        => $data['dana'] ?? null,
                 'dosen_id'    => $data['ketua_id'],
-                'status'      => $data['status'] ?? $penelitian->status,
+                'link_jurnal' => $data['link_jurnal'] ?? $penelitian->link_jurnal,
             ]);
 
             $sync = [];
@@ -155,21 +146,17 @@ class PenelitianController extends Controller
             }
             $penelitian->dosens()->sync($sync);
 
-            if ($request->hasFile('dokumentasi')) {
-                foreach ((array) $request->file('dokumentasi') as $file) {
-                    $folder   = "penelitian/{$penelitian->id}";
-                    $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
-
-                    $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
-
-                    Dokumentasi::create([
-                        'penelitian_id' => $penelitian->id,
-                        'file_name'     => $file->getClientOriginalName(),
-                        'mime'          => $file->getMimeType(),
-                        'size'          => $file->getSize(),
-                        'gdrive_path'   => $storedPath,
-                    ]);
+            if ($request->hasFile('laporan_jurnal')) {
+                if ($penelitian->laporan_path && Storage::disk('public')->exists($penelitian->laporan_path)) {
+                    Storage::disk('public')->delete($penelitian->laporan_path);
                 }
+
+                $file = $request->file('laporan_jurnal');
+                $folder   = "penelitian/laporan/{$penelitian->id}";
+                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
+
+                $penelitian->update(['laporan_path' => $storedPath]);
             }
         });
 

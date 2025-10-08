@@ -47,7 +47,6 @@
                         <tr>
                             <th class="px-6 py-3 text-left">Judul</th>
                             <th class="px-6 py-3 text-left">Tahun</th>
-                            <th class="px-6 py-3 text-left">Status</th>
                             <th class="px-6 py-3 text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -59,21 +58,6 @@
                                     <div class="text-xs text-gray-500">Diupdate {{ $p->updated_at?->diffForHumans() ?? $p->created_at?->diffForHumans() }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-sm font-medium text-gray-700">{{ $p->tahun }}</td>
-                                <td class="px-6 py-4">
-                                    @php
-                                        $statusMap = [
-                                            'Menunggu'  => 'bg-amber-100 text-amber-700 ring-1 ring-amber-200',
-                                            'Disetujui' => 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
-                                            'Ditolak'   => 'bg-rose-100 text-rose-700 ring-1 ring-rose-200',
-                                            'Draft'     => 'bg-slate-200 text-slate-700 ring-1 ring-slate-300',
-                                        ];
-                                        $badgeClass = $statusMap[$p->status] ?? 'bg-slate-200 text-slate-700 ring-1 ring-slate-300';
-                                    @endphp
-                                    <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold {{ $badgeClass }}">
-                                        <span class="h-2 w-2 rounded-full bg-current opacity-60"></span>
-                                        {{ $p->status }}
-                                    </span>
-                                </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="flex justify-end gap-2 text-xs font-semibold">
                                         <a href="{{ route('dosen.penelitian.show', $p) }}" class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/30 px-3 py-1 text-[#2050A0] transition hover:bg-[#2050A0] hover:text-white">
@@ -105,7 +89,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500">
+                                <td colspan="3" class="px-6 py-12 text-center text-sm text-gray-500">
                                     Belum ada data penelitian. Mulai dengan menambahkan penelitian pertama Anda.
                                 </td>
                             </tr>
