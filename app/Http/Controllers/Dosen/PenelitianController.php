@@ -29,14 +29,15 @@ class PenelitianController extends Controller
     public function create()
     {
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
+        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         [$skemaOptions, $sumberDanaOptions] = $this->penelitianOptions();
 
-        return view('dosen.penelitian.create', compact('dosens', 'skemaOptions', 'sumberDanaOptions'));
+        return view('dosen.penelitian.create', compact('dosens', 'mahasiswas', 'skemaOptions', 'sumberDanaOptions'));
     }
 
     public function show(Penelitian $penelitian)
     {
-        $penelitian->load(['ketua', 'dosens', 'dokumentasi']);
+        $penelitian->load(['ketua', 'dosens', 'dokumentasi', 'mahasiswas']);
 
         return view('dosen.penelitian.show', compact('penelitian'));
     }
@@ -52,6 +53,8 @@ class PenelitianController extends Controller
             'ketua_id'       => 'required|exists:dosens,id',
             'anggota_id'     => 'nullable|array',
             'anggota_id.*'   => 'different:ketua_id|exists:dosens,id',
+            'mahasiswa_id'   => 'nullable|array',
+            'mahasiswa_id.*' => 'exists:mahasiswa,id',
             'link_jurnal'    => 'nullable|url',
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
@@ -79,6 +82,15 @@ class PenelitianController extends Controller
             }
             $penelitian->dosens()->sync($sync);
 
+            // Sinkron mahasiswa pendukung
+            if (!empty($validated['mahasiswa_id'])) {
+                $mahasiswaSync = [];
+                foreach (array_unique($validated['mahasiswa_id']) as $mId) {
+                    $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
+                }
+                $penelitian->mahasiswas()->sync($mahasiswaSync);
+            }
+        
             if ($request->hasFile('laporan_jurnal')) {
                 $file = $request->file('laporan_jurnal');
                 $folder   = "penelitian/laporan/{$penelitian->id}";
@@ -98,14 +110,16 @@ class PenelitianController extends Controller
     {
         $penelitian->load(['dosens', 'ketua', 'dokumentasi']);
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
+        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         $anggotaTerpilih = $penelitian->dosens
             ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
             ->pluck('id')
             ->all();
+        $mahasiswaTerpilih = $penelitian->mahasiswas()->pluck('mahasiswa.id')->all();
 
         [$skemaOptions, $sumberDanaOptions] = $this->penelitianOptions();
 
-        return view('dosen.penelitian.edit', compact('penelitian', 'dosens', 'anggotaTerpilih', 'skemaOptions', 'sumberDanaOptions'));
+        return view('dosen.penelitian.edit', compact('penelitian', 'dosens', 'mahasiswas', 'anggotaTerpilih', 'mahasiswaTerpilih', 'skemaOptions', 'sumberDanaOptions'));
     }
 
     public function update(Request $request, Penelitian $penelitian)
@@ -119,6 +133,8 @@ class PenelitianController extends Controller
             'ketua_id'       => 'required|exists:dosens,id',
             'anggota_id'     => 'nullable|array',
             'anggota_id.*'   => 'different:ketua_id|exists:dosens,id',
+            'mahasiswa_id'   => 'nullable|array',
+            'mahasiswa_id.*' => 'exists:mahasiswa,id',
             'link_jurnal'    => 'nullable|url',
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
@@ -145,6 +161,15 @@ class PenelitianController extends Controller
                 }
             }
             $penelitian->dosens()->sync($sync);
+
+            // Sinkron mahasiswa pendukung
+            $mahasiswaSync = [];
+            if (!empty($data['mahasiswa_id'])) {
+                foreach (array_unique($data['mahasiswa_id']) as $mId) {
+                    $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
+                }
+            }
+            $penelitian->mahasiswas()->sync($mahasiswaSync);
 
             if ($request->hasFile('laporan_jurnal')) {
                 if ($penelitian->laporan_path && Storage::disk('public')->exists($penelitian->laporan_path)) {

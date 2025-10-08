@@ -91,6 +91,23 @@
                         Belum ada anggota terdaftar.
                     </p>
                 @endif
+
+                <div class="mt-4">
+                    <p class="text-xs uppercase tracking-wide text-gray-400">Mahasiswa Pendukung</p>
+                    @php($pendukung = $penelitian->mahasiswas ?? collect())
+                    @if($pendukung->count())
+                        <div class="mt-2 space-y-2">
+                            @foreach($pendukung as $m)
+                                <div class="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm shadow-sm">
+                                    <span class="font-semibold">{{ $m->nama }}</span>
+                                    <span class="text-gray-500">{{ $m->email }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-center text-sm text-gray-500">Tidak ada mahasiswa pendukung.</p>
+                    @endif
+                </div>
             </article>
         </section>
 

@@ -29,14 +29,15 @@ class PengabdianController extends Controller
     public function create()
     {
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
+        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
 
-        return view('dosen.pengabdian.create', compact('dosens', 'bidangOptions', 'skemaOptions', 'sumberDanaOptions'));
+        return view('dosen.pengabdian.create', compact('dosens', 'mahasiswas', 'bidangOptions', 'skemaOptions', 'sumberDanaOptions'));
     }
 
     public function show(Pengabdian $pengabdian)
     {
-        $pengabdian->load(['ketua', 'dosenTerlibat', 'dokumentasi']);
+        $pengabdian->load(['ketua', 'dosenTerlibat', 'dokumentasi', 'mahasiswas']);
 
         return view('dosen.pengabdian.show', compact('pengabdian'));
     }
@@ -53,6 +54,8 @@ class PengabdianController extends Controller
             'ketua_id'      => 'required|exists:dosens,id',
             'anggota_id'    => 'nullable|array',
             'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
+            'mahasiswa_id'  => 'nullable|array',
+            'mahasiswa_id.*'=> 'exists:mahasiswa,id',
             'dokumentasi'   => 'nullable|array',
             'dokumentasi.*' => 'nullable|image|max:4096',
         ]);
@@ -81,6 +84,15 @@ class PengabdianController extends Controller
             }
             $pengabdian->dosens()->sync($sync);
 
+            // Sinkron mahasiswa pendukung
+            if (!empty($data['mahasiswa_id'])) {
+                $mSync = [];
+                foreach (array_unique($data['mahasiswa_id']) as $mId) {
+                    $mSync[$mId] = ['peran' => 'Pendukung'];
+                }
+                $pengabdian->mahasiswas()->sync($mSync);
+            }
+
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {
                     $folder = "pengabdian/{$pengabdian->id}";
@@ -105,14 +117,16 @@ class PengabdianController extends Controller
     {
         $pengabdian->load(['dosens', 'ketua', 'dokumentasi']);
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
+        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         $anggotaTerpilih = $pengabdian->dosens
             ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
             ->pluck('id')
             ->all();
+        $mahasiswaTerpilih = $pengabdian->mahasiswas()->pluck('mahasiswa.id')->all();
 
         [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
 
-        return view('dosen.pengabdian.edit', compact('pengabdian', 'dosens', 'anggotaTerpilih', 'bidangOptions', 'skemaOptions', 'sumberDanaOptions'));
+        return view('dosen.pengabdian.edit', compact('pengabdian', 'dosens', 'mahasiswas', 'anggotaTerpilih', 'mahasiswaTerpilih', 'bidangOptions', 'skemaOptions', 'sumberDanaOptions'));
     }
 
     public function update(Request $request, Pengabdian $pengabdian)
@@ -127,6 +141,8 @@ class PengabdianController extends Controller
             'ketua_id'      => 'required|exists:dosens,id',
             'anggota_id'    => 'nullable|array',
             'anggota_id.*'  => 'different:ketua_id|exists:dosens,id',
+            'mahasiswa_id'  => 'nullable|array',
+            'mahasiswa_id.*'=> 'exists:mahasiswa,id',
             'dokumentasi'   => 'nullable|array',
             'dokumentasi.*' => 'nullable|image|max:4096',
             'status'        => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak',
@@ -155,6 +171,15 @@ class PengabdianController extends Controller
                 }
             }
             $pengabdian->dosens()->sync($sync);
+
+            // Sinkron mahasiswa pendukung
+            $mSync = [];
+            if (!empty($data['mahasiswa_id'])) {
+                foreach (array_unique($data['mahasiswa_id']) as $mId) {
+                    $mSync[$mId] = ['peran' => 'Pendukung'];
+                }
+            }
+            $pengabdian->mahasiswas()->sync($mSync);
 
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {

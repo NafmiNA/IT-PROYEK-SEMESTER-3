@@ -25,6 +25,21 @@ class DokumentasiController extends Controller
             ? Penelitian::findOrFail($data['context_id'])
             : Pengabdian::findOrFail($data['context_id']);
 
+        // Gate: hanya mahasiswa yang terdaftar di tim boleh upload
+        $userEmail = auth()->user()?->email;
+        $mhs = \App\Models\Mahasiswa::firstWhere('email', $userEmail);
+        if (!$mhs) {
+            return back()->withErrors(['dokumentasi' => 'Akun Anda tidak terdaftar sebagai mahasiswa.']);
+        }
+
+        $isAllowed = $data['context'] === 'penelitian'
+            ? $mhs->penelitians()->where('penelitian.id', $model->id)->exists()
+            : $mhs->pengabdians()->where('pengabdians.id', $model->id)->exists();
+
+        if (!$isAllowed) {
+            return back()->withErrors(['dokumentasi' => 'Anda tidak termasuk di tim, unggah ditolak.']);
+        }
+
         foreach ($request->file('dokumentasi', []) as $file) {
             $folder = $data['context'] . '/' . $model->id;
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();

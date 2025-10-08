@@ -105,6 +105,17 @@
                         @error('anggota_id') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
                         @error('anggota_id.*') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
                     </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700">Mahasiswa Pendukung</label>
+                        <select name="mahasiswa_id[]" multiple class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
+                            @foreach(($mahasiswas ?? []) as $m)
+                                <option value="{{ $m->id }}" @selected(collect(old('mahasiswa_id', []))->contains($m->id))>{{ $m->nama }} — {{ $m->email }}</option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Tekan Ctrl/Cmd untuk memilih lebih dari satu.</p>
+                        @error('mahasiswa_id') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
+                    </div>
                 </div>
             </section>
 
