@@ -41,7 +41,15 @@
         </div>
     </x-slot>
 
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+    <div class="max-w-7xl mx-auto px-6 py-4">
+        <a href="{{ route('dosen.pengabdian.index') }}"
+           class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/20 bg-white px-4 py-2 text-sm font-semibold text-[#2050A0] shadow-sm transition hover:bg-[#2050A0] hover:text-white">
+            <span class="text-lg">←</span>
+            <span class="hidden sm:inline">Kembali ke Kelola Pengabdian</span>
+        </a>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-6 pb-8 space-y-6">
         <section class="grid gap-6 md:grid-cols-2">
             <article class="space-y-4 rounded-3xl border-2 border-gray-200 bg-white p-6 ring-1 ring-gray-200/70 shadow-lg">
                 <h2 class="text-lg font-semibold text-[#2050A0]">Info Utama</h2>
@@ -103,7 +111,7 @@
 
                 <div class="mt-4">
                     <p class="text-xs uppercase tracking-wide text-gray-400">Mahasiswa Pendukung</p>
-                    @php($pendukung = $pengabdian->mahasiswas ?? collect())
+                    @php($pendukung = $pengabdian->relationLoaded('mahasiswas') ? $pengabdian->mahasiswas : collect())
                     @if($pendukung->count())
                         <div class="mt-2 space-y-2">
                             @foreach($pendukung as $m)

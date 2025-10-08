@@ -32,6 +32,18 @@
     @endif
 
     <main>
+        @if (session('success') || session('ok'))
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                <div class="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-sm">
+                    <span class="mt-0.5 text-lg">✅</span>
+                    <div>
+                        <p class="font-semibold">Berhasil</p>
+                        <p>{{ session('success') ?? session('ok') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         {{ $slot }}
     </main>
 </div>

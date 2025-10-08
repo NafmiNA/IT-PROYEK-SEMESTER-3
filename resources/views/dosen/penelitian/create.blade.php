@@ -100,12 +100,18 @@
 
                         <div>
                             <label class="block text-sm font-medium text-slate-700">Mahasiswa Pendukung</label>
-                            <select name="mahasiswa_id[]" multiple class="mt-2 w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
-                                @foreach(($mahasiswas ?? []) as $m)
-                                    <option value="{{ $m->id }}" @selected(collect(old('mahasiswa_id', []))->contains($m->id))>{{ $m->nama }} — {{ $m->email }}</option>
-                                @endforeach
-                            </select>
-                            <p class="mt-1 text-xs text-gray-500">Pilih satu atau lebih mahasiswa yang terlibat sebagai pendukung.</p>
+                            <div id="mahasiswa-wrapper" class="mt-2 space-y-3">
+                                <div class="flex gap-3">
+                                    <select name="mahasiswa_id[]" class="flex-1 rounded-lg border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm ring-1 ring-inset ring-transparent focus:border-indigo-500 focus:ring-indigo-500">
+                                        <option value="">Pilih mahasiswa (opsional)</option>
+                                        @foreach(($mahasiswas ?? []) as $m)
+                                            <option value="{{ $m->id }}">{{ $m->nama }} — {{ $m->email }}</option>
+                                        @endforeach
+                                    </select>
+                                    <button type="button" class="btn btn-outline-danger" onclick="this.closest('.flex').remove()">Hapus</button>
+                                </div>
+                            </div>
+                            <button type="button" id="tambah-mahasiswa" class="mt-3 btn btn-outline-secondary">+ Tambah Mahasiswa</button>
                         </div>
                     </div>
                 </section>
@@ -147,6 +153,12 @@
     <script>
         document.getElementById('tambah-anggota')?.addEventListener('click', () => {
             const wrapper = document.getElementById('anggota-wrapper');
+            const template = wrapper.firstElementChild.cloneNode(true);
+            template.querySelector('select').value = '';
+            wrapper.appendChild(template);
+        });
+        document.getElementById('tambah-mahasiswa')?.addEventListener('click', () => {
+            const wrapper = document.getElementById('mahasiswa-wrapper');
             const template = wrapper.firstElementChild.cloneNode(true);
             template.querySelector('select').value = '';
             wrapper.appendChild(template);

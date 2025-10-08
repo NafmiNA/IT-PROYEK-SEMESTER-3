@@ -9,6 +9,7 @@ use App\Models\Penelitian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 
 class PenelitianController extends Controller
 {
@@ -37,7 +38,11 @@ class PenelitianController extends Controller
 
     public function show(Penelitian $penelitian)
     {
-        $penelitian->load(['ketua', 'dosens', 'dokumentasi', 'mahasiswas']);
+        $relations = ['ketua', 'dosens', 'dokumentasi'];
+        if (Schema::hasTable('penelitian_mahasiswa')) {
+            $relations[] = 'mahasiswas';
+        }
+        $penelitian->load($relations);
 
         return view('dosen.penelitian.show', compact('penelitian'));
     }
@@ -60,15 +65,20 @@ class PenelitianController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $request) {
-            $penelitian = Penelitian::create([
+            $createData = [
                 'judul'       => $validated['judul'],
                 'tahun'       => $validated['tahun'],
                 'skema'       => $validated['skema'] ?? null,
                 'sumber_dana' => $validated['sumber_dana'] ?? null,
                 'dana'        => $validated['dana'] ?? null,
                 'dosen_id'    => $validated['ketua_id'],
-                'link_jurnal' => $validated['link_jurnal'] ?? null,
-            ]);
+            ];
+
+            if (Schema::hasColumn('penelitian', 'link_jurnal')) {
+                $createData['link_jurnal'] = $validated['link_jurnal'] ?? null;
+            }
+
+            $penelitian = Penelitian::create($createData);
 
             $sync = [];
             $sync[$validated['ketua_id']] = ['peran' => 'Ketua'];
@@ -82,11 +92,13 @@ class PenelitianController extends Controller
             }
             $penelitian->dosens()->sync($sync);
 
-            // Sinkron mahasiswa pendukung
-            if (!empty($validated['mahasiswa_id'])) {
+            // Sinkron mahasiswa pendukung (hanya jika tabel pivot tersedia)
+            if (Schema::hasTable('penelitian_mahasiswa')) {
                 $mahasiswaSync = [];
-                foreach (array_unique($validated['mahasiswa_id']) as $mId) {
-                    $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
+                if (!empty($validated['mahasiswa_id'])) {
+                    foreach (array_unique($validated['mahasiswa_id']) as $mId) {
+                        $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
+                    }
                 }
                 $penelitian->mahasiswas()->sync($mahasiswaSync);
             }
@@ -97,7 +109,9 @@ class PenelitianController extends Controller
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
-                $penelitian->update(['laporan_path' => $path]);
+                if (Schema::hasColumn('penelitian', 'laporan_path')) {
+                    $penelitian->update(['laporan_path' => $path]);
+                }
             }
         });
 
@@ -115,7 +129,9 @@ class PenelitianController extends Controller
             ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
             ->pluck('id')
             ->all();
-        $mahasiswaTerpilih = $penelitian->mahasiswas()->pluck('mahasiswa.id')->all();
+        $mahasiswaTerpilih = Schema::hasTable('penelitian_mahasiswa')
+            ? $penelitian->mahasiswas()->pluck('mahasiswa.id')->all()
+            : [];
 
         [$skemaOptions, $sumberDanaOptions] = $this->penelitianOptions();
 
@@ -140,15 +156,20 @@ class PenelitianController extends Controller
         ]);
 
         DB::transaction(function () use ($data, $request, $penelitian) {
-            $penelitian->update([
+            $updateData = [
                 'judul'       => $data['judul'],
                 'tahun'       => $data['tahun'],
                 'skema'       => $data['skema'] ?? null,
                 'sumber_dana' => $data['sumber_dana'] ?? null,
                 'dana'        => $data['dana'] ?? null,
                 'dosen_id'    => $data['ketua_id'],
-                'link_jurnal' => $data['link_jurnal'] ?? $penelitian->link_jurnal,
-            ]);
+            ];
+
+            if (Schema::hasColumn('penelitian', 'link_jurnal')) {
+                $updateData['link_jurnal'] = $data['link_jurnal'] ?? $penelitian->link_jurnal;
+            }
+
+            $penelitian->update($updateData);
 
             $sync = [];
             $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
@@ -162,18 +183,22 @@ class PenelitianController extends Controller
             }
             $penelitian->dosens()->sync($sync);
 
-            // Sinkron mahasiswa pendukung
-            $mahasiswaSync = [];
-            if (!empty($data['mahasiswa_id'])) {
-                foreach (array_unique($data['mahasiswa_id']) as $mId) {
-                    $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
+            // Sinkron mahasiswa pendukung (hanya jika tabel pivot tersedia)
+            if (Schema::hasTable('penelitian_mahasiswa')) {
+                $mahasiswaSync = [];
+                if (!empty($data['mahasiswa_id'])) {
+                    foreach (array_unique($data['mahasiswa_id']) as $mId) {
+                        $mahasiswaSync[$mId] = ['peran' => 'Pendukung'];
+                    }
                 }
+                $penelitian->mahasiswas()->sync($mahasiswaSync);
             }
-            $penelitian->mahasiswas()->sync($mahasiswaSync);
 
             if ($request->hasFile('laporan_jurnal')) {
-                if ($penelitian->laporan_path && Storage::disk('public')->exists($penelitian->laporan_path)) {
-                    Storage::disk('public')->delete($penelitian->laporan_path);
+                if (Schema::hasColumn('penelitian', 'laporan_path')) {
+                    if ($penelitian->laporan_path && Storage::disk('public')->exists($penelitian->laporan_path)) {
+                        Storage::disk('public')->delete($penelitian->laporan_path);
+                    }
                 }
 
                 $file = $request->file('laporan_jurnal');
@@ -181,7 +206,9 @@ class PenelitianController extends Controller
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
-                $penelitian->update(['laporan_path' => $storedPath]);
+                if (Schema::hasColumn('penelitian', 'laporan_path')) {
+                    $penelitian->update(['laporan_path' => $storedPath]);
+                }
             }
         });
 
