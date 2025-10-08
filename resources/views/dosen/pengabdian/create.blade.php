@@ -131,15 +131,7 @@
             </div>
         </section>
 
-            <section class="rounded-3xl border-2 border-gray-200 bg-white p-6 ring-1 ring-gray-200/70 shadow-lg space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-[#2050A0]">Dokumentasi</h3>
-                    <span class="text-xs font-medium text-gray-400">Unggah dokumentasi pendukung</span>
-                </div>
-                <input type="file" name="dokumentasi[]" multiple accept="image/*" class="block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 bg-slate-50 px-3 py-8 text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-600 file:px-4 file:py-2 file:text-white hover:file:bg-indigo-700">
-                <p class="text-xs text-gray-500">Boleh unggah beberapa gambar (jpg/jpeg/png). Maks 4MB per file.</p>
-                @error('dokumentasi.*') <p class="mt-1 text-sm text-rose-600">{{ $message }}</p> @enderror
-            </section>
+            
 
             <div class="flex justify-end gap-3 pt-4">
                 <a href="{{ route('dosen.pengabdian.index') }}"

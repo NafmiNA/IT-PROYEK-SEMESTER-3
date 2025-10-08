@@ -37,7 +37,11 @@ class PengabdianController extends Controller
 
     public function show(Pengabdian $pengabdian)
     {
-        $pengabdian->load(['ketua', 'dosenTerlibat', 'dokumentasi', 'mahasiswas']);
+        $relations = ['ketua', 'dosenTerlibat', 'dokumentasi'];
+        if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+            $relations[] = 'mahasiswas';
+        }
+        $pengabdian->load($relations);
 
         return view('dosen.pengabdian.show', compact('pengabdian'));
     }
@@ -84,11 +88,13 @@ class PengabdianController extends Controller
             }
             $pengabdian->dosens()->sync($sync);
 
-            // Sinkron mahasiswa pendukung
-            if (!empty($data['mahasiswa_id'])) {
+            // Sinkron mahasiswa pendukung (jika tabel pivot tersedia)
+            if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
                 $mSync = [];
-                foreach (array_unique($data['mahasiswa_id']) as $mId) {
-                    $mSync[$mId] = ['peran' => 'Pendukung'];
+                if (!empty($data['mahasiswa_id'])) {
+                    foreach (array_unique($data['mahasiswa_id']) as $mId) {
+                        $mSync[$mId] = ['peran' => 'Pendukung'];
+                    }
                 }
                 $pengabdian->mahasiswas()->sync($mSync);
             }
@@ -122,7 +128,9 @@ class PengabdianController extends Controller
             ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
             ->pluck('id')
             ->all();
-        $mahasiswaTerpilih = $pengabdian->mahasiswas()->pluck('mahasiswa.id')->all();
+        $mahasiswaTerpilih = \Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')
+            ? $pengabdian->mahasiswas()->pluck('mahasiswa.id')->all()
+            : [];
 
         [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
 
@@ -172,14 +180,16 @@ class PengabdianController extends Controller
             }
             $pengabdian->dosens()->sync($sync);
 
-            // Sinkron mahasiswa pendukung
-            $mSync = [];
-            if (!empty($data['mahasiswa_id'])) {
-                foreach (array_unique($data['mahasiswa_id']) as $mId) {
-                    $mSync[$mId] = ['peran' => 'Pendukung'];
+            // Sinkron mahasiswa pendukung (jika tabel pivot tersedia)
+            if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+                $mSync = [];
+                if (!empty($data['mahasiswa_id'])) {
+                    foreach (array_unique($data['mahasiswa_id']) as $mId) {
+                        $mSync[$mId] = ['peran' => 'Pendukung'];
+                    }
                 }
+                $pengabdian->mahasiswas()->sync($mSync);
             }
-            $pengabdian->mahasiswas()->sync($mSync);
 
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {
