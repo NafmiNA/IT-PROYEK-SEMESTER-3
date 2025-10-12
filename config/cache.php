@@ -15,7 +15,9 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    // Use CACHE_STORE if present (Laravel 12), else fallback to legacy CACHE_DRIVER;
+    // default to file to avoid DB connections for cache.
+    'default' => env('CACHE_STORE', env('CACHE_DRIVER', 'file')),
 
     /*
     |--------------------------------------------------------------------------
