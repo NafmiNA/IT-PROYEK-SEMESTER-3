@@ -2,15 +2,15 @@
 
 @section('content')
 <div class="container">
-    <h4 class="mb-3">Edit Data Penelitian</h4>
+    <h4 class="mb-3">Edit dokumentasi Penelitian</h4>
 
     <form action="{{ route('mahasiswa.update', $mahasiswa->id) }}" method="POST" class="card p-4 shadow-sm">
         @csrf
         @method('PUT')
 
-        <div class="mb-3">
-            <label class="form-label">Nama</label>
-            <input type="text" name="nama" class="form-control" value="{{ $mahasiswa->nama }}" required>
+          <div class="mb-3">
+            <label for="judul" class="form-label">Judul Penelitian</label>
+            <input type="text" name="judul" class="form-control" value="{{ $mahasiswa->judul }}" required>
         </div>
 
         <div class="mb-3">
@@ -19,28 +19,17 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select name="status" class="form-select" required>
-                <option value="Berjalan" {{ $mahasiswa->status == 'Berjalan' ? 'selected' : '' }}>Berjalan</option>
-                <option value="Selesai" {{ $mahasiswa->status == 'Selesai' ? 'selected' : '' }}>Selesai</option>
-            </select>
+            <label for="dokumen" class="form-label">Upload Dokumen Baru</label>
+            <input type="file" name="dokumen" class="form-control" accept=".pdf,.doc,.docx">
+            @if($mahasiswa->dokumen)
+                <p class="mt-2">Dokumen saat ini:
+                    <a href="{{ asset('storage/'.$mahasiswa->dokumen) }}" target="_blank">Lihat</a>
+                </p>
+            @endif
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Tahun</label>
-            <input type="text" name="tahun" class="form-control" value="{{ $mahasiswa->tahun }}" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Peran</label>
-            <select name="peran" class="form-select" required>
-                <option value="Anggota" {{ $mahasiswa->peran == 'Anggota' ? 'selected' : '' }}>Anggota</option>
-                <option value="Kontributor" {{ $mahasiswa->peran == 'Kontributor' ? 'selected' : '' }}>Kontributor</option>
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Update</button>
-        <a href="{{ route('mahasiswa.index') }}" class="btn btn-secondary">Kembali</a>
+        <button type="submit" class="btn btn-primary">Perbarui</button>
+        <a href="{{ route('mahasiswa.dashboard') }}" class="btn btn-secondary">Kembali</a>
     </form>
 </div>
 @endsection
