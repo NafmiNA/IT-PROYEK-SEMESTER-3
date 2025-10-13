@@ -20,24 +20,22 @@ class MahasiswaDashboardController extends Controller
         $user = Auth::user();
         $profilMahasiswa = Mahasiswa::firstWhere('email', $user?->email);
 
-        $penelitian = Penelitian::with('ketua')->latest()->get();
-        $pengabdian = Pengabdian::with('ketua')->latest()->get();
-        $dokumentasi = Dokumentasi::latest()->get();
-
-        $penelitianAllowed = [];
-        $pengabdianAllowed = [];
-
+        // Get only penelitian and pengabdian where student is participating
         if ($profilMahasiswa) {
-            $penelitianAllowed = $profilMahasiswa->penelitians()->pluck('penelitian.id')->all();
-            $pengabdianAllowed = $profilMahasiswa->pengabdians()->pluck('pengabdians.id')->all();
+            $penelitian = $profilMahasiswa->penelitians()->with('ketua')->latest()->get();
+            $pengabdian = $profilMahasiswa->pengabdians()->with('ketua')->latest()->get();
+        } else {
+            $penelitian = collect();
+            $pengabdian = collect();
         }
+
+        // Get dokumentasi (keeping the old behavior for now)
+        $dokumentasi = Dokumentasi::latest()->get();
 
         return view('mahasiswa.dashboard', [
             'profilMahasiswa' => $profilMahasiswa,
             'penelitianList'  => $penelitian,
             'pengabdianList'  => $pengabdian,
-            'penelitianAllowed' => $penelitianAllowed,
-            'pengabdianAllowed' => $pengabdianAllowed,
             'dokumentasi' => $dokumentasi,
         ]);
     }

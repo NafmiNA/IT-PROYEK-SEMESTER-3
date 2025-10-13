@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Mahasiswa</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    {{-- Tambahkan Tailwind/Vite agar view dashboard yang memakai Tailwind ter-render rapi --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>
+      /* Animations used in mahasiswa views */
+      @keyframes slideUp { from { opacity:0; transform: translateY(12px);} to { opacity:1; transform: translateY(0);} }
+      @keyframes fadeIn { from { opacity:0;} to { opacity:1;} }
+      .animate-slide-up { animation: slideUp .3s ease-out both; }
+      .animate-fade { animation: fadeIn .4s ease-out both; }
+    </style>
 </head>
 <body>
     <div class="d-flex">
