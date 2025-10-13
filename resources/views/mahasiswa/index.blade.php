@@ -37,9 +37,19 @@
         <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
     </form>
 </div>
-
-        </div>
-    </div>
-    @endforeach
-</div>
-@endsection
+<td>
+    @if($data->dokumen)
+        <a href="{{ asset('storage/'.$data->dokumen) }}" target="_blank" class="btn btn-sm btn-success">Lihat Dokumen</a>
+        <form action="{{ route('penelitian.upload', $data->id) }}" method="POST" enctype="multipart/form-data" class="d-inline">
+            @csrf
+            <input type="file" name="dokumen" class="form-control form-control-sm d-inline" style="width: 180px; display:inline-block;">
+            <button type="submit" class="btn btn-sm btn-warning">Ganti</button>
+        </form>
+    @else
+        <form action="{{ route('penelitian.upload', $data->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <input type="file" name="dokumen" class="form-control form-control-sm mb-2" required>
+            <button type="submit" class="btn btn-sm btn-primary">Unggah</button>
+        </form>
+    @endif
+</td>
