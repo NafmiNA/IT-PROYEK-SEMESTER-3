@@ -1,175 +1,344 @@
 {{-- resources/views/dosen/dashboard.blade.php --}}
+{{-- Redesigned with Laws of UX principles --}}
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard Dosen</title>
-  <!-- Tailwind CDN -->
+  <title>Dashboard Dosen - {{ $dosen->nama ?? 'Dosen' }}</title>
   <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+  <style>
+    /* Custom animations - Doherty Threshold <400ms */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+    .animate-slide-in { animation: slideIn 0.3s ease-out; }
+    .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(0,0,0,0.15); }
+    .focus-ring:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; border-radius: 0.5rem; }
+  </style>
 </head>
 
-<body class="min-h-screen bg-[#F5F7FA] text-gray-800">
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 text-gray-800 antialiased">
 
-  <!-- Topbar -->
-  <header class="bg-white shadow-sm border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-      <div class="flex items-center gap-3">
-        <img src="{{ asset('images/logo-full.png') }}" alt="Logo Politala" class="h-10 w-10 object-contain">
-        <h1 class="text-lg font-semibold text-[#2050A0]">Dashboard Dosen</h1>
+  {{-- Topbar - Jakob's Law (familiar position) --}}
+  <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-md">
+            P
+          </div>
+          <div>
+            <h1 class="text-base sm:text-lg font-semibold text-gray-900">Dashboard Dosen</h1>
+            <p class="text-xs text-gray-500 hidden sm:block">Sistem Informasi P3M</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="hidden sm:inline text-sm text-gray-500">{{ now()->isoFormat('dddd, D MMMM Y') }}</span>
+          <form method="POST" action="{{ route('logout') }}" class="inline">
+            @csrf
+            <button type="submit" class="text-sm text-gray-600 hover:text-gray-900 transition focus-ring rounded px-3 py-1.5">
+              Keluar
+            </button>
+          </form>
+        </div>
       </div>
-      <span class="text-sm text-gray-400">{{ now()->format('d M Y') }}</span>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
-    <!-- 1) BOX: Profil + Aksi -->
-    <section
-      class="bg-white rounded-2xl border-2 border-gray-200 ring-1 ring-gray-300/60 shadow-md p-6">
-      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <!-- Profil -->
+    {{-- 1) Hero Banner - Von Restorff Effect (distinctive), Fitts's Law (large CTAs) --}}
+    <section class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl shadow-xl p-6 sm:p-8 text-white mb-6 sm:mb-8 animate-fade-in">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        {{-- Profile - Law of Proximity (grouped info) --}}
         <div class="flex items-center gap-4">
-          <div class="h-12 w-12 rounded-full bg-emerald-600 text-white grid place-content-center font-bold">
+          <div class="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 
+                      flex items-center justify-center font-bold text-2xl shadow-lg">
             {{ strtoupper(substr($dosen->nama ?? 'A',0,1)) }}
           </div>
           <div>
-            <p class="text-sm text-gray-500">Selamat datang kembali,</p>
-            <h2 class="font-semibold text-lg">{{ $dosen->nama ?? 'Andi Dosen' }}</h2>
-            <p class="text-sm text-gray-500">{{ $dosen->email ?? 'andi@kampus.ac.id' }}</p>
+            <p class="text-sm text-blue-100">Selamat datang kembali,</p>
+            <h2 class="font-bold text-xl sm:text-2xl">{{ $dosen->nama ?? 'Andi Dosen' }}</h2>
+            <p class="text-sm text-blue-100">{{ $dosen->email ?? 'andi@kampus.ac.id' }}</p>
           </div>
         </div>
 
-        <!-- Tombol aksi -->
-        <div class="flex flex-wrap gap-2">
+        {{-- Primary CTAs - Fitts's Law (large targets, easy to click) --}}
+        <div class="flex flex-wrap gap-3">
           <a href="{{ route('dosen.penelitian.create') }}"
-             class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium
-                    bg-[#2050A0] text-white hover:bg-[#163B78] transition">
-            + Penelitian
+             class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
+                    bg-white text-blue-700 hover:bg-blue-50 transition-all duration-200
+                    shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Tambah Penelitian
           </a>
           <a href="{{ route('dosen.pengabdian.create') }}"
-             class="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium
-                    bg-emerald-600 text-white hover:bg-emerald-700 transition">
-            + Pengabdian
+             class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
+                    bg-emerald-500 text-white hover:bg-emerald-600 transition-all duration-200
+                    shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Tambah Pengabdian
           </a>
         </div>
       </div>
     </section>
 
-    <!-- 2) BOX: KPI -->
+    {{-- 2) KPI Cards - Miller's Law (4 items), Law of Similarity (consistent design) --}}
     @php
       $kpi = $kpi ?? ['penelitian'=>0,'pengabdian'=>0,'dokumentasi'=>0,'pending'=>0];
     @endphp
-    <section
-      class="bg-white rounded-2xl border-2 border-gray-200 ring-1 ring-gray-300/60 shadow-md p-6">
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        <!-- KPI card -->
-        <div class="bg-white rounded-xl border-2 border-gray-200 ring-1 ring-gray-300/50 shadow-sm py-5 text-center">
-          <h3 class="text-sm font-semibold text-[#2050A0] uppercase tracking-wide">Total Penelitian</h3>
-          <p class="text-3xl font-bold text-[#2050A0] mt-2">{{ $kpi['penelitian'] }}</p>
-          <span class="text-xs text-gray-500">semua waktu</span>
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      {{-- Penelitian Card --}}
+      <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-blue-600 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.1s">
+        <div class="flex items-center justify-between mb-3">
+          <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
         </div>
+        <p class="text-3xl sm:text-4xl font-bold text-gray-900">{{ $kpi['penelitian'] }}</p>
+        <p class="text-sm text-gray-600 mt-1">Total Penelitian</p>
+        <p class="text-xs text-gray-400 mt-1">Semua waktu</p>
+      </div>
 
-        <div class="bg-white rounded-xl border-2 border-gray-200 ring-1 ring-gray-300/50 shadow-sm py-5 text-center">
-          <h3 class="text-sm font-semibold text-[#2050A0] uppercase tracking-wide">Total Pengabdian</h3>
-          <p class="text-3xl font-bold text-[#2050A0] mt-2">{{ $kpi['pengabdian'] }}</p>
-          <span class="text-xs text-gray-500">semua waktu</span>
+      {{-- Pengabdian Card --}}
+      <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-emerald-600 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.2s">
+        <div class="flex items-center justify-between mb-3">
+          <div class="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
         </div>
+        <p class="text-3xl sm:text-4xl font-bold text-gray-900">{{ $kpi['pengabdian'] }}</p>
+        <p class="text-sm text-gray-600 mt-1">Total Pengabdian</p>
+        <p class="text-xs text-gray-400 mt-1">Semua waktu</p>
+      </div>
 
-        <div class="bg-white rounded-xl border-2 border-gray-200 ring-1 ring-gray-300/50 shadow-sm py-5 text-center">
-          <h3 class="text-sm font-semibold text-[#2050A0] uppercase tracking-wide">Total Dokumentasi</h3>
-          <p class="text-3xl font-bold text-[#2050A0] mt-2">{{ $kpi['dokumentasi'] }}</p>
-          <span class="text-xs text-gray-500">berkas</span>
+      {{-- Dokumentasi Card --}}
+      <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-purple-600 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.3s">
+        <div class="flex items-center justify-between mb-3">
+          <div class="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
         </div>
+        <p class="text-3xl sm:text-4xl font-bold text-gray-900">{{ $kpi['dokumentasi'] }}</p>
+        <p class="text-sm text-gray-600 mt-1">Total Dokumen</p>
+        <p class="text-xs text-gray-400 mt-1">File tersimpan</p>
+      </div>
 
-        <div class="bg-white rounded-xl border-2 border-gray-200 ring-1 ring-gray-300/50 shadow-sm py-5 text-center">
-          <h3 class="text-sm font-semibold text-[#2050A0] uppercase tracking-wide">Menunggu Verifikasi</h3>
-          <p class="text-3xl font-bold text-[#2050A0] mt-2">{{ $kpi['pending'] }}</p>
-          <span class="text-xs text-gray-500">item</span>
+      {{-- Pending Card - Von Restorff Effect (highlight when action needed) --}}
+      <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 {{ $kpi['pending'] > 0 ? 'border-amber-500' : 'border-gray-300' }} focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.4s">
+        <div class="flex items-center justify-between mb-3">
+          <div class="h-10 w-10 rounded-lg {{ $kpi['pending'] > 0 ? 'bg-amber-100' : 'bg-gray-100' }} flex items-center justify-center">
+            <svg class="w-6 h-6 {{ $kpi['pending'] > 0 ? 'text-amber-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          @if($kpi['pending'] > 0)
+            <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full animate-pulse">Perlu Aksi</span>
+          @endif
         </div>
+        <p class="text-3xl sm:text-4xl font-bold {{ $kpi['pending'] > 0 ? 'text-amber-600' : 'text-gray-900' }}">{{ $kpi['pending'] }}</p>
+        <p class="text-sm text-gray-600 mt-1">Menunggu Verifikasi</p>
+        <p class="text-xs text-gray-400 mt-1">Item tertunda</p>
       </div>
     </section>
 
-    <!-- 3) BOX: Grafik & Ringkasan -->
+    {{-- 3) Chart & Summary - Law of Common Region (clear boundaries), Goal-Gradient Effect (progress) --}}
     @php
       $yearSummary = $yearSummary ?? ['penelitian'=>0,'pengabdian'=>0,'approved'=>0,'rejected'=>0];
+      $currentYear = date('Y');
+      $totalYear = $yearSummary['penelitian'] + $yearSummary['pengabdian'];
     @endphp
-    <section
-      class="bg-white rounded-2xl border-2 border-gray-200 ring-1 ring-gray-300/60 shadow-md p-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Grafik -->
+    <section class="bg-white rounded-2xl shadow-md border border-gray-200 p-6 sm:p-8 mb-6 sm:mb-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {{-- Chart - Law of Prägnanz (simple, clear) --}}
         <div class="lg:col-span-2">
-          <div class="flex justify-between items-center mb-3">
-            <h3 class="font-semibold text-[#2050A0]">Tren 5 Tahun Terakhir</h3>
-            <span class="text-xs text-gray-400">per Tahun</span>
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Tren 5 Tahun Terakhir</h3>
+              <p class="text-sm text-gray-500">Pertumbuhan penelitian dan pengabdian</p>
+            </div>
+            <div class="flex gap-4 text-xs">
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-blue-600"></div>
+                <span class="text-gray-600">Penelitian</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="w-3 h-3 rounded-full bg-emerald-600"></div>
+                <span class="text-gray-600">Pengabdian</span>
+              </div>
+            </div>
           </div>
-          <div class="h-[260px] bg-white rounded-xl border border-gray-200 p-3">
+          <div class="h-[280px] bg-gray-50 rounded-xl p-4">
             <canvas id="trendChart" class="!h-full !w-full"></canvas>
           </div>
         </div>
 
-        <!-- Ringkasan Tahun -->
-        <div class="bg-white rounded-xl border-2 border-gray-200 ring-1 ring-gray-300/50 shadow-sm p-5">
-          <h3 class="font-semibold text-[#2050A0] mb-3">Tahun {{ date('Y') }}</h3>
-          <div class="space-y-3 text-sm">
-            <div class="flex justify-between"><span class="text-gray-500">Penelitian</span><span class="font-semibold">{{ $yearSummary['penelitian'] }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Pengabdian</span><span class="font-semibold">{{ $yearSummary['pengabdian'] }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Disetujui</span><span class="font-semibold text-emerald-600">{{ $yearSummary['approved'] }}</span></div>
-            <div class="flex justify-between"><span class="text-gray-500">Ditolak</span><span class="font-semibold text-rose-600">{{ $yearSummary['rejected'] }}</span></div>
+        {{-- Year Summary - Goal-Gradient Effect (progress bars) --}}
+        <div class="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl border border-gray-200 p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-900">Tahun {{ $currentYear }}</h3>
+            <div class="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="space-y-4">
+            {{-- Penelitian Progress --}}
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-600">Penelitian</span>
+                <span class="text-lg font-bold text-gray-900">{{ $yearSummary['penelitian'] }}</span>
+              </div>
+              <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-600 rounded-full transition-all duration-500" 
+                     style="width: {{ $totalYear > 0 ? ($yearSummary['penelitian'] / $totalYear * 100) : 0 }}%"></div>
+              </div>
+            </div>
+
+            {{-- Pengabdian Progress --}}
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-600">Pengabdian</span>
+                <span class="text-lg font-bold text-gray-900">{{ $yearSummary['pengabdian'] }}</span>
+              </div>
+              <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-emerald-600 rounded-full transition-all duration-500" 
+                     style="width: {{ $totalYear > 0 ? ($yearSummary['pengabdian'] / $totalYear * 100) : 0 }}%"></div>
+              </div>
+            </div>
+
+            {{-- Status Summary --}}
+            <div class="pt-4 border-t border-gray-200">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-600">Disetujui</span>
+                <span class="text-lg font-bold text-emerald-600">{{ $yearSummary['approved'] }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600">Ditolak</span>
+                <span class="text-lg font-bold text-rose-600">{{ $yearSummary['rejected'] }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- 4) BOX: Daftar Terbaru -->
-    <section
-      class="bg-white rounded-2xl border-2 border-gray-200 ring-1 ring-gray-300/60 shadow-md p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-      <!-- Penelitian -->
-      <div class="bg-white rounded-xl border border-gray-200 p-5">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-semibold text-[#2050A0]">Penelitian Terbaru</h3>
-          <a href="{{ route('dosen.penelitian.index') }}" class="text-xs text-gray-500 hover:text-[#2050A0]">Lihat semua</a>
+    {{-- 4) Recent Activity - Law of Proximity (grouped), Empty States with guidance --}}
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {{-- Penelitian Terbaru --}}
+      <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Penelitian Terbaru</h3>
+            <p class="text-xs text-gray-500 mt-1">Aktivitas terakhir</p>
+          </div>
+          <a href="{{ route('dosen.penelitian.index') }}" 
+             class="text-sm text-blue-600 hover:text-blue-700 font-medium transition focus-ring rounded px-3 py-1.5">
+            Lihat semua →
+          </a>
         </div>
-        <div class="divide-y divide-gray-200">
+        <div class="space-y-3">
           @forelse(($latestPenelitian ?? []) as $item)
-            <article class="py-3 flex justify-between text-sm">
-              <div>
-                <p class="font-medium">{{ $item->judul }}</p>
-                <p class="text-xs text-gray-500">Skema: {{ $item->skema ?? '-' }} • Tahun: {{ $item->tahun }}</p>
+            <article class="p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100 hover:border-blue-200">
+              <div class="flex justify-between items-start gap-3">
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-gray-900 truncate mb-2">{{ $item->judul }}</p>
+                  <div class="flex flex-wrap gap-2">
+                    <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                      {{ $item->skema ?? 'Umum' }}
+                    </span>
+                    <span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                      {{ $item->tahun }}
+                    </span>
+                  </div>
+                </div>
+                <span class="text-xs text-gray-400 whitespace-nowrap">{{ optional($item->created_at)->diffForHumans() }}</span>
               </div>
-              <span class="text-xs text-gray-400 whitespace-nowrap">{{ optional($item->created_at)->diffForHumans() }}</span>
             </article>
           @empty
-            <p class="text-gray-500 text-sm py-6 text-center">Tidak ada data</p>
+            {{-- Empty State with guidance - Provides clear next action --}}
+            <div class="text-center py-12">
+              <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Belum ada penelitian</p>
+              <a href="{{ route('dosen.penelitian.create') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                Buat penelitian pertama →
+              </a>
+            </div>
           @endforelse
         </div>
       </div>
 
-      <!-- Pengabdian -->
-      <div class="bg-white rounded-xl border border-gray-200 p-5">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-semibold text-[#2050A0]">Pengabdian Terbaru</h3>
-          <a href="{{ route('dosen.pengabdian.index') }}" class="text-xs text-gray-500 hover:text-[#2050A0]">Lihat semua</a>
+      {{-- Pengabdian Terbaru --}}
+      <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6">
+        <div class="flex justify-between items-center mb-5">
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Pengabdian Terbaru</h3>
+            <p class="text-xs text-gray-500 mt-1">Aktivitas terakhir</p>
+          </div>
+          <a href="{{ route('dosen.pengabdian.index') }}" 
+             class="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition focus-ring rounded px-3 py-1.5">
+            Lihat semua →
+          </a>
         </div>
-        <div class="divide-y divide-gray-200">
+        <div class="space-y-3">
           @forelse(($latestPengabdian ?? []) as $item)
-            <article class="py-3 flex justify-between text-sm">
-              <div>
-                <p class="font-medium">{{ $item->judul }}</p>
-                <p class="text-xs text-gray-500">Bidang: {{ $item->bidang ?? '-' }} • Tahun: {{ $item->tahun }}</p>
+            <article class="p-4 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100 hover:border-emerald-200">
+              <div class="flex justify-between items-start gap-3">
+                <div class="flex-1 min-w-0">
+                  <p class="font-medium text-gray-900 truncate mb-2">{{ $item->judul }}</p>
+                  <div class="flex flex-wrap gap-2">
+                    <span class="inline-flex items-center px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded">
+                      {{ $item->bidang ?? 'Umum' }}
+                    </span>
+                    <span class="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                      {{ $item->tahun }}
+                    </span>
+                  </div>
+                </div>
+                <span class="text-xs text-gray-400 whitespace-nowrap">{{ optional($item->created_at)->diffForHumans() }}</span>
               </div>
-              <span class="text-xs text-gray-400 whitespace-nowrap">{{ optional($item->created_at)->diffForHumans() }}</span>
             </article>
           @empty
-            <p class="text-gray-500 text-sm py-6 text-center">Tidak ada data</p>
+            {{-- Empty State with guidance --}}
+            <div class="text-center py-12">
+              <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm text-gray-600 mb-3">Belum ada pengabdian</p>
+              <a href="{{ route('dosen.pengabdian.create') }}" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
+                Buat pengabdian pertama →
+              </a>
+            </div>
           @endforelse
         </div>
       </div>
     </section>
 
+    {{-- Footer spacing --}}
+    <div class="h-12"></div>
+
   </main>
 
-  <!-- Chart.js -->
+  {{-- Chart.js --}}
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const trend = @json($trend ?? []);
@@ -184,27 +353,64 @@
             {
               label: 'Penelitian',
               data: trend.map(t => t.penelitian),
-              borderColor: '#2050A0',
-              backgroundColor: 'rgba(32,80,160,.14)',
-              tension: .35, fill: true, pointRadius: 3
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37,99,235,0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 4,
+              pointBackgroundColor: '#2563eb',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointHoverRadius: 6
             },
             {
               label: 'Pengabdian',
               data: trend.map(t => t.pengabdian),
               borderColor: '#059669',
-              backgroundColor: 'rgba(5,150,105,.12)',
-              tension: .35, fill: true, pointRadius: 3
+              backgroundColor: 'rgba(5,150,105,0.1)',
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true,
+              pointRadius: 4,
+              pointBackgroundColor: '#059669',
+              pointBorderColor: '#fff',
+              pointBorderWidth: 2,
+              pointHoverRadius: 6
             }
           ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          scales: {
-            x: { grid: { display: false } },
-            y: { beginAtZero: true, ticks: { precision: 0 } }
+          interaction: {
+            mode: 'index',
+            intersect: false
           },
-          plugins: { legend: { labels: { usePointStyle: true, boxWidth: 10 } } }
+          scales: {
+            x: { 
+              grid: { display: false },
+              ticks: { font: { size: 12 }, color: '#6b7280' }
+            },
+            y: { 
+              beginAtZero: true, 
+              ticks: { precision: 0, font: { size: 12 }, color: '#6b7280' },
+              grid: { color: '#f3f4f6' }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: '#1f2937',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: true
+            }
+          }
         }
       });
     }
