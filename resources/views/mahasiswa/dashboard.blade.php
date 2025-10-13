@@ -3,6 +3,15 @@
 @section('content')
 {{-- Modern UX-focused Dashboard for Mahasiswa (15 Laws Applied) --}}
 <div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-50">
+    <style>
+      .btn-mini{display:inline-flex;align-items:center;gap:.35rem;height:30px;padding:0 10px;border-radius:8px;font-weight:600;font-size:.75rem;white-space:nowrap}
+      .btn-detail{background:#2563eb;color:#fff}
+      .btn-detail:hover{background:#1d4ed8}
+      .btn-edit{background:#f97316;color:#fff}
+      .btn-edit:hover{background:#ea580c}
+      .btn-danger{background:#e11d48;color:#fff}
+      .btn-danger:hover{background:#be123c}
+    </style>
     <div class="mx-auto max-w-7xl px-4 py-8">
         
         {{-- Header with User Info (Serial Position Effect) --}}
@@ -195,6 +204,29 @@
                                             </button>
                                         </div>
                                     </form>
+
+                                    {{-- List Dokumentasi --}}
+                                    @if($item->dokumentasi->isNotEmpty())
+                                        <div class="mt-3">
+                                            <p class="text-sm font-semibold text-gray-700 mb-2">Dokumentasi Terunggah</p>
+                                            <ul class="space-y-2">
+                                                @foreach($item->dokumentasi as $doc)
+                                                    <li class="flex items-center justify-between gap-3 p-2 border rounded-lg">
+                                                        <span class="text-sm text-gray-800 truncate">{{ $doc->file_name ?? basename($doc->gdrive_path) }}</span>
+                                                        <div class="flex items-center gap-2">
+                                                            <a href="{{ asset('storage/'.$doc->gdrive_path) }}" target="_blank" class="btn-mini btn-detail">Detail</a>
+                                                            <a href="{{ route('mahasiswa.dokumentasi.edit', $doc->dokumentasi_id) }}" class="btn-mini btn-edit">Edit</a>
+                                                            <form action="{{ route('mahasiswa.dokumentasi.destroy', $doc->dokumentasi_id) }}" method="POST" onsubmit="return confirm('Hapus file ini?');">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn-mini btn-danger">Hapus</button>
+                                                            </form>
+                                                        </div>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>
@@ -292,6 +324,29 @@
                                             </button>
                                         </div>
                                     </form>
+
+                                    {{-- List Dokumentasi --}}
+                                    @if($item->dokumentasi->isNotEmpty())
+                                        <div class="mt-3">
+                                            <p class="text-sm font-semibold text-gray-700 mb-2">Dokumentasi Terunggah</p>
+                                            <ul class="space-y-2">
+                                                @foreach($item->dokumentasi as $doc)
+                                                    <li class="flex items-center justify-between gap-3 p-2 border rounded-lg">
+                                                        <span class="text-sm text-gray-800 truncate">{{ $doc->file_name ?? basename($doc->gdrive_path) }}</span>
+                                                        <div class="flex items-center gap-2">
+                                                            <a href="{{ asset('storage/'.$doc->gdrive_path) }}" target="_blank" class="btn-mini btn-detail">Detail</a>
+                                                            <a href="{{ route('mahasiswa.dokumentasi.edit', $doc->dokumentasi_id) }}" class="btn-mini btn-edit">Edit</a>
+                                                            <form action="{{ route('mahasiswa.dokumentasi.destroy', $doc->dokumentasi_id) }}" method="POST" onsubmit="return confirm('Hapus file ini?');">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="btn-mini btn-danger">Hapus</button>
+                                                            </form>
+                                                        </div>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                 </div>
                             @endforeach
                         </div>

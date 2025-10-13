@@ -22,15 +22,20 @@ class MahasiswaDashboardController extends Controller
 
         // Get only penelitian and pengabdian where student is participating
         if ($profilMahasiswa) {
-            $penelitian = $profilMahasiswa->penelitians()->with('ketua')->latest()->get();
-            $pengabdian = $profilMahasiswa->pengabdians()->with('ketua')->latest()->get();
+            $penelitian = $profilMahasiswa->penelitians()->with(['ketua','dokumentasi'])->latest()->get();
+            $pengabdian = $profilMahasiswa->pengabdians()->with(['ketua','dokumentasi'])->latest()->get();
         } else {
             $penelitian = collect();
             $pengabdian = collect();
         }
 
-        // Get dokumentasi (keeping the old behavior for now)
-        $dokumentasi = Dokumentasi::latest()->get();
+        // Dokumentasi milik mahasiswa ini saja
+        $penelitianIds = $penelitian->pluck('id');
+        $pengabdianIds = $pengabdian->pluck('id');
+        $dokumentasi = Dokumentasi::whereIn('penelitian_id', $penelitianIds)
+            ->orWhereIn('pengabdian_id', $pengabdianIds)
+            ->latest('dokumentasi_id')
+            ->get();
 
         return view('mahasiswa.dashboard', [
             'profilMahasiswa' => $profilMahasiswa,
