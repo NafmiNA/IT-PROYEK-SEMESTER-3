@@ -1,55 +1,42 @@
 @extends('layouts.mahasiswa')
 
 @section('content')
-<div class="container">
-    <h4>Halo, {{ Auth::user()->name ?? 'Nurlaila' }}</h4>
-    <p>Kamu Tergabung dalam Penelitian dan Pengabdian Dosen.</p>
+<div class="container py-4">
+    <h4 class="mb-3">📁 Dokumentasi Saya</h4>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold text-primary">Penelitian Dosen</h5>
-        <a href="{{ route('mahasiswa.create') }}" class="btn btn-success">+ Tambah Dokumen</a>
-    </div>
-
-    <div class="card-penelitian d-flex justify-content-between px-3 py-2 fw-bold">
-        <div class="w-50">Judul Penelitian</div>
-        <div class="w-25 text-center">Status</div>
-        <div class="w-10 text-center">Tahun</div>
-        <div class="w-25 text-center">Peran</div>
-    </div>
-
-    @foreach ($mahasiswa as $mhs)
-    <div class="card mt-3 shadow-sm p-3">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <strong>{{ $mhs->nama }}</strong><br>
-                <small>{{ $mhs->email }}</small>
-            </div>
-            <div class="text-center">{{ $mhs->status }}</div>
-            <div class="text-center">{{ $mhs->tahun }}</div>
-            <div class="text-center">{{ $mhs->peran }}</div>
-           <div class="d-flex gap-2">
-    <a href="{{ route('mahasiswa.edit', $mhs->id) }}" class="btn btn-outline-primary btn-sm">
-        <i class="bi bi-pencil"></i>
-    </a>
-    <form action="{{ route('mahasiswa.destroy', $mhs->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
-        @csrf
-        @method('DELETE')
-        <button class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></button>
-    </form>
-</div>
-<td>
-    @if($data->dokumen)
-        <a href="{{ asset('storage/'.$data->dokumen) }}" target="_blank" class="btn btn-sm btn-success">Lihat Dokumen</a>
-        <form action="{{ route('penelitian.upload', $data->id) }}" method="POST" enctype="multipart/form-data" class="d-inline">
-            @csrf
-            <input type="file" name="dokumen" class="form-control form-control-sm d-inline" style="width: 180px; display:inline-block;">
-            <button type="submit" class="btn btn-sm btn-warning">Ganti</button>
-        </form>
-    @else
-        <form action="{{ route('penelitian.upload', $data->id) }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <input type="file" name="dokumen" class="form-control form-control-sm mb-2" required>
-            <button type="submit" class="btn btn-sm btn-primary">Unggah</button>
-        </form>
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
     @endif
-</td>
+
+    <a href="{{ route('mahasiswa.dokumentasi.create') }}" class="btn btn-primary mb-3">+ Tambah Dokumentasi</a>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Judul</th>
+                <th>File</th>
+                <th>Diupload Pada</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($dokumentasi as $item)
+                <tr>
+                    <td>{{ $item->judul }}</td>
+                    <td><a href="{{ asset('storage/' . $item->file_path) }}" target="_blank">Lihat File</a></td>
+                    <td>{{ $item->created_at->format('d M Y') }}</td>
+                    <td>
+                        <form action="{{ route('mahasiswa.dokumentasi.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus dokumentasi ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="4" class="text-center text-muted">Belum ada dokumentasi.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+@endsection

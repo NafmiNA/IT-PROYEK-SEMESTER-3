@@ -10,9 +10,9 @@ use App\Http\Controllers\Dosen\{
     PengabdianController,
     DokumentasiController
 };
-use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\MahasiswaDashboardController;
 use App\Http\Controllers\Mahasiswa\DokumentasiController as MahasiswaDokumentasiController;
+
 /*
 |--------------------------------------------------------------------------
 | Redirect root ke dashboard dosen
@@ -61,24 +61,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->names('pengabdian')
             ->parameters(['pengabdian' => 'pengabdian']);
 
-        // Kelola Dokumentasi (dibatasi sesuai kebutuhan)
+        // Kelola Dokumentasi (hanya store & destroy)
         Route::resource('dokumentasi', DokumentasiController::class)
             ->only(['store', 'destroy']);
     });
 
     /*
     |--------------------------------------------------------------------------
-    | Area MAHASISWA (resource /mahasiswa)
+    | Area MAHASISWA (prefix: /mahasiswa , name: mahasiswa.*)
     |--------------------------------------------------------------------------
     */
-    Route::middleware('role:mahasiswa')->group(function () {
-        Route::get('/mahasiswa/dashboard', [MahasiswaDashboardController::class, 'index'])
-            ->name('mahasiswa.dashboard');
+   Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->group(function () {
+        // Dashboard Mahasiswa
+        Route::get('/dashboard', [MahasiswaDashboardController::class, 'index'])
+            ->name('dashboard');
 
-        Route::resource('mahasiswa', MahasiswaController::class)->only(['index']);
-
-        Route::post('/mahasiswa/dokumentasi', [MahasiswaDokumentasiController::class, 'store'])
-            ->name('mahasiswa.dokumentasi.store');
+        // CRUD Dokumentasi Mahasiswa
+        Route::get('/dokumentasi', [MahasiswaDokumentasiController::class, 'index'])
+            ->name('dokumentasi.index');
+        Route::get('/dokumentasi/create', [MahasiswaDokumentasiController::class, 'create'])
+            ->name('dokumentasi.create');
+        Route::post('/dokumentasi', [MahasiswaDokumentasiController::class, 'store'])
+            ->name('dokumentasi.store');
+        Route::get('/dokumentasi/{id}/edit', [MahasiswaDokumentasiController::class, 'edit'])
+            ->name('dokumentasi.edit');
+        Route::put('/dokumentasi/{id}', [MahasiswaDokumentasiController::class, 'update'])
+            ->name('dokumentasi.update');
+        Route::delete('/dokumentasi/{id}', [MahasiswaDokumentasiController::class, 'destroy'])
+            ->name('dokumentasi.destroy');
     });
 });
 
@@ -92,6 +102,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::resource('penelitian', PenelitianController::class);
-Route::post('penelitian/{penelitian}/upload', [PenelitianController::class, 'uploadDokumen'])->name('penelitian.upload');
+    // Upload dokumen penelitian (khusus dosen)
+    Route::post('penelitian/{penelitian}/upload', [PenelitianController::class, 'uploadDokumen'])
+        ->name('penelitian.upload');
 });

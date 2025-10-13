@@ -1,151 +1,53 @@
 @extends('layouts.mahasiswa')
 
 @section('content')
-<style>
-    body {
-        font-family: 'Poppins', sans-serif;
-        background-color: #f5f7fa;
-        color: #333;
-        margin: 0;
-        padding: 0;
-    }
+<div class="container">
+    {{-- Daftar Dokumentasi --}}
+    <div class="card shadow-sm">
+        <div class="card-body">
+            @if ($dokumentasi->isEmpty())
+                <p class="text-muted">Belum ada dokumentasi yang ditambahkan.</p>
+            @else
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Judul</th>
+                            <th>File</th>
+                            <th>Tanggal Upload</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($dokumentasi as $item)
+                            <tr>
+                                <td>{{ $item->judul }}</td>
+                                <td>
+                                    <a href="{{ asset('storage/' . $item->file) }}" target="_blank">
+                                        Lihat File
+                                    </a>
+                                </td>
+                                <td>{{ $item->created_at->format('d M Y') }}</td>
+                                <td>
+                                    {{-- Tombol Edit --}}
+                                    <a href="{{ route('mahasiswa.dokumentasi.edit', $item->id) }}" class="btn btn-warning btn-sm">Edit</a>
 
-    .content {
-        padding: 40px 50px;
-        flex: 1;
-    }
+                                    {{-- Tombol Hapus --}}
+                                    <form action="{{ route('mahasiswa.dokumentasi.destroy', $item->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin hapus?')">Hapus</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        </div>
+    </div>
+</div>
 
-    .topbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-    }
-
-    .topbar h4 {
-        font-weight: 600;
-        color: #2c3e50;
-        margin: 0;
-    }
-
-    .user-info {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background-color: white;
-        padding: 8px 16px;
-        border-radius: 30px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        transition: 0.3s;
-    }
-
-    .user-info:hover {
-        transform: scale(1.02);
-    }
-
-    .user-info img {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background-color: #dee2e6;
-    }
-
-    .user-info span {
-        font-weight: 500;
-        color: #333;
-    }
-
-    /* CARD */
-    .card {
-        border-radius: 14px;
-        border: none;
-        background-color: #fff;
-        transition: 0.3s ease-in-out;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
-    }
-
-    .card-body {
-        padding: 25px 30px;
-    }
-
-    .card h5 {
-        display: flex;
-        align-items: center;
-        font-weight: 600;
-        color: #0072ff;
-        margin-bottom: 6px;
-    }
-
-    .text-muted {
-        color: #6c757d !important;
-    }
-
-    /* TABLE */
-    .table {
-        margin-bottom: 0;
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .table thead {
-        background-color: #f1f3f5;
-    }
-
-    .table th {
-        font-weight: 600;
-        color: #333;
-        border: none;
-    }
-
-    .table td {
-        vertical-align: middle;
-        border-top: 1px solid #eee;
-    }
-
-    .badge {
-        font-size: 0.85rem;
-        padding: 6px 10px;
-        border-radius: 8px;
-    }
-
-    /* BUTTON */
-    .btn-success {
-        background-color: #28a745;
-        border: none;
-        border-radius: 8px;
-        padding: 8px 14px;
-        font-weight: 500;
-        transition: 0.3s;
-    }
-
-    .btn-success:hover {
-        background-color: #218838;
-        transform: scale(1.05);
-    }
-
-    .btn-outline-primary,
-    .btn-outline-danger {
-        border-radius: 8px;
-        transition: all 0.2s ease-in-out;
-    }
-
-    .btn-outline-primary:hover {
-        background-color: #007bff;
-        color: white;
-    }
-
-    .btn-outline-danger:hover {
-        background-color: #dc3545;
-        color: white;
-    }
-
-</style>
-
+{{-- Tampilan utama dashboard --}}
 <div class="content">
     <div class="topbar">
         <h4>Dashboard Mahasiswa - Penelitian & Pengabdian</h4>
@@ -173,7 +75,7 @@
                             <th>Ketua</th>
                             <th>Status</th>
                             <th>Tahun</th>
-                            <th class="text-end">Unggah Dokumen</th>
+                            <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -185,31 +87,31 @@
                                     'Ditolak' => 'bg-danger',
                                     'Draft' => 'bg-secondary',
                                 ][$item->status] ?? 'bg-secondary';
-                                $canUpload = in_array($item->id, ($penelitianAllowed ?? []));
                             @endphp
                             <tr>
-                                <td>
-                                    <strong>{{ $item->judul }}</strong>
-                                    <div class="text-muted small">{{ $item->skema ?? '—' }}</div>
-                                </td>
-                                <td>
-                                    <strong>{{ $item->ketua->nama ?? '—' }}</strong>
-                                    <div class="text-muted small">{{ $item->ketua->email ?? '—' }}</div>
-                                </td>
+                                <td><strong>{{ $item->judul }}</strong><div class="text-muted small">{{ $item->skema ?? '—' }}</div></td>
+                                <td><strong>{{ $item->ketua->nama ?? '—' }}</strong><div class="text-muted small">{{ $item->ketua->email ?? '—' }}</div></td>
                                 <td><span class="badge {{ $badge }}">{{ $item->status }}</span></td>
                                 <td>{{ $item->tahun }}</td>
                                 <td class="text-end">
-                                    @if($canUpload)
-                                        <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center gap-2">
-                                            @csrf
-                                            <input type="hidden" name="context" value="penelitian">
-                                            <input type="hidden" name="context_id" value="{{ $item->id }}">
-                                            <input type="file" name="dokumentasi[]" class="form-control form-control-sm" multiple required>
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">Unggah</button>
-                                        </form>
-                                    @else
-                                        <span class="badge bg-secondary">Bukan anggota tim</span>
-                                    @endif
+                                    {{-- Edit dokumentasi penelitian --}}
+                                    <a href="{{ route('mahasiswa.dokumentasi.edit', $item->id) }}" class="btn btn-outline-primary btn-sm">Edit</a>
+
+                                    {{-- Hapus dokumentasi penelitian --}}
+                                    <form action="{{ route('mahasiswa.dokumentasi.destroy', $item->id) }}" method="POST" style="display:inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Yakin hapus data ini?')">Hapus</button>
+                                    </form>
+
+                                    {{-- Upload dokumentasi baru --}}
+                                    <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-block mt-2">
+                                        @csrf
+                                        <input type="hidden" name="context" value="penelitian">
+                                        <input type="hidden" name="context_id" value="{{ $item->id }}">
+                                        <input type="file" name="dokumentasi[]" class="form-control form-control-sm mb-1" multiple required>
+                                        <button type="submit" class="btn btn-success btn-sm">Unggah</button>
+                                    </form>
                                 </td>
                             </tr>
                         @empty
@@ -235,7 +137,7 @@
                             <th>Ketua</th>
                             <th>Status</th>
                             <th>Tahun</th>
-                            <th class="text-end">Unggah Dokumen</th>
+                            <th class="text-end">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -247,31 +149,28 @@
                                     'Ditolak' => 'bg-danger',
                                     'Draft' => 'bg-secondary',
                                 ][$item->status] ?? 'bg-secondary';
-                                $canUpload = in_array($item->id, ($pengabdianAllowed ?? []));
                             @endphp
                             <tr>
-                                <td>
-                                    <strong>{{ $item->judul }}</strong>
-                                    <div class="text-muted small">{{ $item->bidang ?? '—' }}</div>
-                                </td>
-                                <td>
-                                    <strong>{{ $item->ketua->nama ?? '—' }}</strong>
-                                    <div class="text-muted small">{{ $item->ketua->email ?? '—' }}</div>
-                                </td>
+                                <td><strong>{{ $item->judul }}</strong><div class="text-muted small">{{ $item->bidang ?? '—' }}</div></td>
+                                <td><strong>{{ $item->ketua->nama ?? '—' }}</strong><div class="text-muted small">{{ $item->ketua->email ?? '—' }}</div></td>
                                 <td><span class="badge {{ $badge }}">{{ $item->status }}</span></td>
                                 <td>{{ $item->tahun }}</td>
                                 <td class="text-end">
-                                    @if($canUpload)
-                                        <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-flex align-items-center gap-2">
-                                            @csrf
-                                            <input type="hidden" name="context" value="pengabdian">
-                                            <input type="hidden" name="context_id" value="{{ $item->id }}">
-                                            <input type="file" name="dokumentasi[]" class="form-control form-control-sm" multiple required>
-                                            <button type="submit" class="btn btn-sm btn-outline-primary">Unggah</button>
-                                        </form>
-                                    @else
-                                        <span class="badge bg-secondary">Bukan anggota tim</span>
-                                    @endif
+                                    <a href="{{ route('mahasiswa.dokumentasi.edit', $item->id) }}" class="btn btn-outline-primary btn-sm">Edit</a>
+
+                                    <form action="{{ route('mahasiswa.dokumentasi.destroy', $item->id) }}" method="POST" style="display:inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Yakin hapus data ini?')">Hapus</button>
+                                    </form>
+
+                                    <form action="{{ route('mahasiswa.dokumentasi.store') }}" method="POST" enctype="multipart/form-data" class="d-inline-block mt-2">
+                                        @csrf
+                                        <input type="hidden" name="context" value="pengabdian">
+                                        <input type="hidden" name="context_id" value="{{ $item->id }}">
+                                        <input type="file" name="dokumentasi[]" class="form-control form-control-sm mb-1" multiple required>
+                                        <button type="submit" class="btn btn-success btn-sm">Unggah</button>
+                                    </form>
                                 </td>
                             </tr>
                         @empty
