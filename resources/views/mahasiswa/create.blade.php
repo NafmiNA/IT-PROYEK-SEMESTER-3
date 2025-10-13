@@ -4,13 +4,15 @@
 <div class="container">
     <h4 class="mb-3">Tambah Data Penelitian</h4>
 
-    <form action="{{ route('mahasiswa.store') }}" method="POST" class="card p-4 shadow-sm">
-        @csrf
-        <div class="mb-3">
-            <label class="form-label">Nama</label>
-            <input type="text" name="nama" class="form-control" required>
-        </div>
-
+    <form action="{{ route('mahasiswa.store') }}" method="POST" enctype="multipart/form-data" class="card p-4 shadow-sm">
+    @csrf
+    ...
+    <div class="mb-3">
+        <label class="form-label">Upload Dokumentasi (Opsional)</label>
+        <input type="file" name="file" class="form-control">
+    </div>
+    ...
+</form>
         <div class="mb-3">
             <label class="form-label">Email</label>
             <input type="email" name="email" class="form-control" required>

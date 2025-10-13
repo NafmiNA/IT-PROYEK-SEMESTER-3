@@ -2,66 +2,72 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Mahasiswa;
+use App\Models\Dokumentasi;
 use Illuminate\Http\Request;
 
 class MahasiswaController extends Controller
 {
-    // Menampilkan semua data
     public function index()
     {
-        $mahasiswa = Mahasiswa::all();
+        $mahasiswa = Dokumentasi::all();
         return view('mahasiswa.index', compact('mahasiswa'));
     }
 
-    // Menampilkan form tambah data
     public function create()
     {
         return view('mahasiswa.create');
     }
 
-    // Simpan data baru
     public function store(Request $request)
     {
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:mahasiswa',
-            'status' => 'required|string',
-            'tahun' => 'required|numeric',
-            'peran' => 'required|string',
+        $validated = $request->validate([
+            'nama' => 'required',
+            'email' => 'required|email',
+            'status' => 'required',
+            'tahun' => 'required',
+            'peran' => 'required',
+            'file' => 'nullable|file|mimes:pdf,docx,png,jpg|max:2048',
         ]);
 
-        Mahasiswa::create($request->all());
-        return redirect()->route('mahasiswa.index')->with('success', 'Data berhasil ditambahkan!');
+        if ($request->hasFile('file')) {
+            $validated['file'] = $request->file('file')->store('dokumentasi', 'public');
+        }
+
+        Dokumentasi::create($validated);
+        return redirect()->route('mahasiswa.index')->with('success', 'Dokumentasi berhasil ditambahkan.');
     }
 
-    // Menampilkan form edit
     public function edit($id)
     {
-        $mahasiswa = Mahasiswa::findOrFail($id);
-        return view('mahasiswa.edit', compact('mahasiswa'));
+        $mhs = Dokumentasi::findOrFail($id);
+        return view('mahasiswa.edit', compact('mhs'));
     }
 
-    // Proses update data
     public function update(Request $request, $id)
     {
-        $mahasiswa = Mahasiswa::findOrFail($id);
-        $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|unique:mahasiswa,email,' . $mahasiswa->id,
-            'status' => 'required|string',
-            'tahun' => 'required|numeric',
-            'peran' => 'required|string',
+        $mhs = Dokumentasi::findOrFail($id);
+
+        $validated = $request->validate([
+            'nama' => 'required',
+            'email' => 'required|email',
+            'status' => 'required',
+            'tahun' => 'required',
+            'peran' => 'required',
+            'file' => 'nullable|file|mimes:pdf,docx,png,jpg|max:2048',
         ]);
 
-        $mahasiswa->update($request->all());
-        return redirect()->route('mahasiswa.index')->with('success', 'Data berhasil diperbarui!');
+        if ($request->hasFile('file')) {
+            $validated['file'] = $request->file('file')->store('dokumentasi', 'public');
+        }
+
+        $mhs->update($validated);
+        return redirect()->route('mahasiswa.index')->with('success', 'Dokumentasi berhasil diperbarui.');
     }
 
-    // Hapus data
     public function destroy($id)
     {
-        Mahasiswa::findOrFail($id)->delete();
-        return redirect()->route('mahasiswa.index')->with('success', 'Data berhasil dihapus!');
+        $mhs = Dokumentasi::findOrFail($id);
+        $mhs->delete();
+        return redirect()->route('mahasiswa.index')->with('success', 'Dokumentasi berhasil dihapus.');
     }
 }
