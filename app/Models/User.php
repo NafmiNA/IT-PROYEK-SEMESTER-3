@@ -7,8 +7,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable;
 
@@ -66,4 +68,9 @@ class User extends Authenticatable
     // {
     //     return $this->hasMany(Penelitian::class);
     // }
+    public function canAccessPanel(Panel $panel): bool
+{
+    // Izinkan semua user yang terautentikasi untuk mengakses panel
+    return true;
+}
 }
