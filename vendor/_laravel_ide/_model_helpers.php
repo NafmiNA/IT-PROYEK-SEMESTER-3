@@ -5,8 +5,26 @@ namespace App\Models {
     /**
      * App\Models\Dokumentasi
      *
+     * @property \Illuminate\Support\Carbon|null $updated_at
+     * @property \Illuminate\Support\Carbon|null $created_at
+     * @property string|null $gdrive_path
+     * @property mixed $size
+     * @property string|null $mime
+     * @property string $file_name
+     * @property mixed $pengabdian_id
+     * @property mixed $penelitian_id
+     * @property mixed $id
      * @property-read \App\Models\Penelitian $penelitian
      * @property-read \App\Models\Pengabdian $pengabdian
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi whereId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi wherePenelitianId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi wherePengabdianId($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi whereFileName($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi whereMime($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi whereSize($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi whereGdrivePath($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi newModelQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi newQuery()
      * @method static \Illuminate\Database\Eloquent\Builder<Dokumentasi>|Dokumentasi query()

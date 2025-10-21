@@ -9,7 +9,7 @@ class Dokumentasi extends Model
 {
     use HasFactory;
 
-    protected $table = 'dokumentasi';
+    protected $table = 'dokumentasis';
     protected $primaryKey = 'dokumentasi_id';
 
     protected $fillable = [
