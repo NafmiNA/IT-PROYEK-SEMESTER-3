@@ -1,0 +1,13 @@
+[90m= [39m[34;4mApp\Models\Dosen[39;24m {#7399
+    [34mid[39m: [35m1[39m,
+    [34mnidn[39m: "[32m1234567890[39m",
+    [34mnama[39m: "[32mAndi Dosen[39m",
+    [34memail[39m: "[32mandi@kampus.ac.id[39m",
+    [34mno_hp[39m: [36mnull[39m,
+    [34mjabatan_fungsional[39m: [36mnull[39m,
+    [34mstatus_aktif[39m: [35m1[39m,
+    [34muser_id[39m: [35m2[39m,
+    [34mcreated_at[39m: "[32m2025-10-22 04:34:56[39m",
+    [34mupdated_at[39m: "[32m2025-10-22 12:31:36[39m",
+  }
+

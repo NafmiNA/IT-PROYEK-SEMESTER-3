@@ -91,6 +91,20 @@ class PengabdiansTable
                             'status' => $data['status'],
                         ]);
                         
+                        // Send WhatsApp notification to dosen
+                        try {
+                            $whatsapp = new \App\Services\WhatsAppService();
+                            $whatsappSent = $whatsapp->sendVerificationNotification(
+                                $record->dosen,
+                                $record,
+                                $data['status'],
+                                $data['catatan'] ?? null
+                            );
+                        } catch (\Exception $e) {
+                            \Log::error('WhatsApp notification failed: ' . $e->getMessage());
+                            $whatsappSent = false;
+                        }
+                        
                         // Notification dengan warna sesuai keputusan
                         $notification = \Filament\Notifications\Notification::make()
                             ->title('Verifikasi Berhasil');
@@ -103,6 +117,13 @@ class PengabdiansTable
                             $notification
                                 ->warning()
                                 ->body("Pengabdian '{$record->judul}' telah DITOLAK");
+                        }
+                        
+                        // Add WhatsApp status to notification
+                        if ($whatsappSent) {
+                            $notification->body($notification->getBody() . "\n✅ WhatsApp terkirim ke dosen");
+                        } else {
+                            $notification->body($notification->getBody() . "\n⚠️  WhatsApp gagal dikirim (cek log)");
                         }
                         
                         if (!empty($data['catatan'])) {

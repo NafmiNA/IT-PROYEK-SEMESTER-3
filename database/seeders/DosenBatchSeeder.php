@@ -37,14 +37,6 @@ class DosenBatchSeeder extends Seeder
             ['nama' => 'Zaenul Mutagin, M.M.S.I', 'publikasi' => 0, 'hibah' => 0, 'skor_sinta' => 0, 'buku' => 0],
         ];
 
-        // Mahasiswa (No 20)
-        $mahasiswaData = [
-            'nama' => 'Nindy Permatasari, S.Kom., M.Kom',
-            'nim' => '2024001',
-            'program_studi' => 'Teknik Informatika',
-            'angkatan' => 2024,
-        ];
-
         echo "Creating 19 Dosen accounts...\n";
         
         foreach ($dosenData as $index => $data) {
