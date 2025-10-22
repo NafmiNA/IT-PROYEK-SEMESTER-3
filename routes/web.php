@@ -64,6 +64,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Kelola Dokumentasi (hanya store & destroy)
         Route::resource('dokumentasi', DokumentasiController::class)
             ->only(['store', 'destroy']);
+        
+        // Kelola Prestasi
+        Route::get('/prestasi', [\App\Http\Controllers\Dosen\PrestasiDosenController::class, 'index'])->name('prestasi.index');
+        Route::post('/prestasi', [\App\Http\Controllers\Dosen\PrestasiDosenController::class, 'store'])->name('prestasi.store');
+        Route::get('/prestasi/{id}/edit', [\App\Http\Controllers\Dosen\PrestasiDosenController::class, 'edit'])->name('prestasi.edit');
+        Route::put('/prestasi/{id}', [\App\Http\Controllers\Dosen\PrestasiDosenController::class, 'update'])->name('prestasi.update');
     });
 
     /*

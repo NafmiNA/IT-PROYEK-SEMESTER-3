@@ -27,11 +27,19 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            // Disable Filament login page - using main Laravel login instead
+            // ->login()
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->resources([
+                \App\Filament\Resources\Dosens\DosenResource::class,
+                \App\Filament\Resources\Mahasiswas\MahasiswaResource::class,
+                \App\Filament\Resources\Penelitians\PenelitianResource::class,
+                \App\Filament\Resources\Pengabdians\PengabdianResource::class,
+                \App\Filament\Resources\PrestasiDosens\PrestasiDosenResource::class,
+                \App\Filament\Resources\Laporans\LaporanResource::class,
+            ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
@@ -54,6 +62,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                \App\Http\Middleware\EnsureUserIsAdmin::class,
             ]);
     }
 }

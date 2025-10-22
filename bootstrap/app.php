@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // alias custom middleware di sini
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         ]);
 
         // contoh lain (opsional):

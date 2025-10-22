@@ -22,6 +22,16 @@ class PenelitianResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'judul';
 
+    protected static ?string $navigationLabel = 'Penelitian';
+
+    protected static ?string $modelLabel = 'Penelitian';
+
+    protected static ?string $pluralModelLabel = 'Penelitian';
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?int $navigationSort = 3;
+
     public static function form(Schema $schema): Schema
     {
         return PenelitianForm::configure($schema);

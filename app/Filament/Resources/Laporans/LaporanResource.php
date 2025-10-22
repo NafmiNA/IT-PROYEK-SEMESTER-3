@@ -22,6 +22,12 @@ class LaporanResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'periode';
 
+    protected static ?string $navigationLabel = 'Laporan';
+
+    protected static ?string $modelLabel = 'Laporan';
+
+    protected static ?string $pluralModelLabel = 'Laporan';
+
     public static function form(Schema $schema): Schema
     {
         return LaporanForm::configure($schema);

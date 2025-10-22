@@ -109,6 +109,23 @@
                 @endif
             </a>
 
+            {{-- Prestasi --}}
+            <a href="{{ route('dosen.prestasi.index') }}" 
+               class="group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 {{ request()->routeIs('dosen.prestasi.*') ? 'bg-yellow-600 text-white shadow-lg' : 'text-gray-300 hover:bg-gray-700/50 hover:text-white' }}"
+               x-tooltip="'Kelola Prestasi'">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                </svg>
+                <span x-show="sidebarOpen" class="font-medium">Kelola Prestasi</span>
+                @if(request()->routeIs('dosen.prestasi.*'))
+                    <span x-show="sidebarOpen" class="ml-auto">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                    </span>
+                @endif
+            </a>
+
             {{-- Divider --}}
             <div class="my-3 border-t border-gray-700/50"></div>
             

@@ -12,6 +12,11 @@ class PenelitianPolicy
      */
     public function viewAny(User $user): bool
     {
+        // Admin bisa lihat semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         // Semua dosen bisa lihat list penelitian mereka sendiri
         return $user->role === 'dosen' && $user->dosen !== null;
     }
@@ -22,6 +27,11 @@ class PenelitianPolicy
      */
     public function view(User $user, Penelitian $penelitian): bool
     {
+        // Admin bisa view semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if (!$user->dosen) {
             return false;
         }
@@ -38,6 +48,11 @@ class PenelitianPolicy
      */
     public function create(User $user): bool
     {
+        // Admin bisa create
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'dosen' && $user->dosen !== null;
     }
 
@@ -47,6 +62,11 @@ class PenelitianPolicy
      */
     public function update(User $user, Penelitian $penelitian): bool
     {
+        // Admin bisa update semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if (!$user->dosen) {
             return false;
         }
@@ -61,6 +81,11 @@ class PenelitianPolicy
      */
     public function delete(User $user, Penelitian $penelitian): bool
     {
+        // Admin bisa delete semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if (!$user->dosen) {
             return false;
         }

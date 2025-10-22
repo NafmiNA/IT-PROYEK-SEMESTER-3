@@ -24,6 +24,12 @@ class DosenResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nama';
 
+    protected static ?string $navigationLabel = 'Dosen';
+
+    protected static ?string $modelLabel = 'Dosen';
+
+    protected static ?string $pluralModelLabel = 'Dosen';
+
     public static function form(Schema $schema): Schema
     {
         return DosenForm::configure($schema);

@@ -18,7 +18,7 @@ echo "   Vite PID: $VITE_PID"
 sleep 3
 
 echo ""
-echo "🚀 Starting Laravel server with MySQL..."
+echo "🚀 Starting Laravel server with MySQL (with intl extension)..."
 export DB_CONNECTION=mysql
 export DB_DATABASE=p3m_sistem
 export DB_HOST=127.0.0.1
@@ -26,7 +26,8 @@ export DB_PORT=3306
 export DB_USERNAME=root
 export DB_PASSWORD=
 
-php artisan serve > /tmp/laravel-serve.log 2>&1 &
+# Use wrapper script to ensure intl is loaded
+./php-wrapper.sh artisan serve > /tmp/laravel-serve.log 2>&1 &
 LARAVEL_PID=$!
 echo "   Laravel PID: $LARAVEL_PID"
 sleep 3

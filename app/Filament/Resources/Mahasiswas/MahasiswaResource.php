@@ -22,6 +22,12 @@ class MahasiswaResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nama';
 
+    protected static ?string $navigationLabel = 'Mahasiswa';
+
+    protected static ?string $modelLabel = 'Mahasiswa';
+
+    protected static ?string $pluralModelLabel = 'Mahasiswa';
+
     public static function form(Schema $schema): Schema
     {
         return MahasiswaForm::configure($schema);

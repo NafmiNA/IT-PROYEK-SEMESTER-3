@@ -31,16 +31,18 @@ class AuthenticatedSessionController extends Controller
 
         $user = $request->user();
 
+        // Redirect based on user role
+        if ($user?->role === 'admin') {
+            // Admin goes to Filament admin panel
+            return redirect()->intended('/admin');
+        }
+
         if ($user?->role === 'mahasiswa' && Route::has('mahasiswa.dashboard')) {
             return redirect()->intended(route('mahasiswa.dashboard', absolute: false));
         }
 
         if ($user && ($user->role === 'dosen' || $user->dosen()->exists())) {
             return redirect()->intended(route('dosen.dashboard', absolute: false));
-        }
-
-        if ($user?->role === 'admin' && Route::has('admin.dashboard')) {
-            return redirect()->intended(route('admin.dashboard', absolute: false));
         }
 
         return redirect()->intended(route('dashboard', absolute: false));

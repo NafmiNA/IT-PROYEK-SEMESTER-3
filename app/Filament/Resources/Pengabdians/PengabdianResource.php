@@ -22,6 +22,16 @@ class PengabdianResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'judul';
 
+    protected static ?string $navigationLabel = 'Pengabdian';
+
+    protected static ?string $modelLabel = 'Pengabdian';
+
+    protected static ?string $pluralModelLabel = 'Pengabdian';
+
+    protected static bool $shouldRegisterNavigation = true;
+
+    protected static ?int $navigationSort = 4;
+
     public static function form(Schema $schema): Schema
     {
         return PengabdianForm::configure($schema);

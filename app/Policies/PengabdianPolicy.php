@@ -12,6 +12,11 @@ class PengabdianPolicy
      */
     public function viewAny(User $user): bool
     {
+        // Admin bisa lihat semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'dosen' && $user->dosen !== null;
     }
 
@@ -21,6 +26,11 @@ class PengabdianPolicy
      */
     public function view(User $user, Pengabdian $pengabdian): bool
     {
+        // Admin bisa view semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if (!$user->dosen) {
             return false;
         }
@@ -35,6 +45,11 @@ class PengabdianPolicy
      */
     public function create(User $user): bool
     {
+        // Admin bisa create
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         return $user->role === 'dosen' && $user->dosen !== null;
     }
 
@@ -44,6 +59,11 @@ class PengabdianPolicy
      */
     public function update(User $user, Pengabdian $pengabdian): bool
     {
+        // Admin bisa update semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if (!$user->dosen) {
             return false;
         }
@@ -57,6 +77,11 @@ class PengabdianPolicy
      */
     public function delete(User $user, Pengabdian $pengabdian): bool
     {
+        // Admin bisa delete semua
+        if ($user->role === 'admin') {
+            return true;
+        }
+
         if (!$user->dosen) {
             return false;
         }
