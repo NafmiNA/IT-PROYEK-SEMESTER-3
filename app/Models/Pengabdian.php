@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 class Pengabdian extends Model
 {
@@ -26,6 +27,31 @@ class Pengabdian extends Model
         'tahun' => 'integer',
         'dana'  => 'decimal:2',
     ];
+
+    protected static ?string $resolvedTable = null;
+
+    public function getTable()
+    {
+        if (static::$resolvedTable) {
+            return static::$resolvedTable;
+        }
+
+        $defaultTable = parent::getTable();
+
+        if (Schema::hasTable($defaultTable)) {
+            static::$resolvedTable = $defaultTable;
+            return static::$resolvedTable;
+        }
+
+        if (Schema::hasTable('pengabdian')) {
+            static::$resolvedTable = 'pengabdian';
+            return static::$resolvedTable;
+        }
+
+        // fallback to default; subsequent queries will fail loudly if the table truly doesn't exist
+        static::$resolvedTable = $defaultTable;
+        return static::$resolvedTable;
+    }
 
     /**
      * Ketua utama (kolom dosen_id).

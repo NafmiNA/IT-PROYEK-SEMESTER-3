@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584
+class ComposerStaticInit9bff416cd113ce4a57a85cbe2731b5b5
 {
     public static $files = array (
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
@@ -741,6 +741,36 @@ class ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584
         'AnourValar\\EloquentSerialize\\Grammars\\QueryBuilderGrammar' => __DIR__ . '/..' . '/anourvalar/eloquent-serialize/src/Grammars/QueryBuilderGrammar.php',
         'AnourValar\\EloquentSerialize\\Package' => __DIR__ . '/..' . '/anourvalar/eloquent-serialize/src/Package.php',
         'AnourValar\\EloquentSerialize\\Service' => __DIR__ . '/..' . '/anourvalar/eloquent-serialize/src/Service.php',
+        'App\\Filament\\Resources\\Dosens\\DosenResource' => __DIR__ . '/../..' . '/app/Filament/Resources/Dosens/DosenResource.php',
+        'App\\Filament\\Resources\\Dosens\\Pages\\CreateDosen' => __DIR__ . '/../..' . '/app/Filament/Resources/Dosens/Pages/CreateDosen.php',
+        'App\\Filament\\Resources\\Dosens\\Pages\\EditDosen' => __DIR__ . '/../..' . '/app/Filament/Resources/Dosens/Pages/EditDosen.php',
+        'App\\Filament\\Resources\\Dosens\\Pages\\ListDosens' => __DIR__ . '/../..' . '/app/Filament/Resources/Dosens/Pages/ListDosens.php',
+        'App\\Filament\\Resources\\Dosens\\Schemas\\DosenForm' => __DIR__ . '/../..' . '/app/Filament/Resources/Dosens/Schemas/DosenForm.php',
+        'App\\Filament\\Resources\\Dosens\\Tables\\DosensTable' => __DIR__ . '/../..' . '/app/Filament/Resources/Dosens/Tables/DosensTable.php',
+        'App\\Filament\\Resources\\Laporans\\LaporanResource' => __DIR__ . '/../..' . '/app/Filament/Resources/Laporans/LaporanResource.php',
+        'App\\Filament\\Resources\\Laporans\\Pages\\CreateLaporan' => __DIR__ . '/../..' . '/app/Filament/Resources/Laporans/Pages/CreateLaporan.php',
+        'App\\Filament\\Resources\\Laporans\\Pages\\EditLaporan' => __DIR__ . '/../..' . '/app/Filament/Resources/Laporans/Pages/EditLaporan.php',
+        'App\\Filament\\Resources\\Laporans\\Pages\\ListLaporans' => __DIR__ . '/../..' . '/app/Filament/Resources/Laporans/Pages/ListLaporans.php',
+        'App\\Filament\\Resources\\Laporans\\Schemas\\LaporanForm' => __DIR__ . '/../..' . '/app/Filament/Resources/Laporans/Schemas/LaporanForm.php',
+        'App\\Filament\\Resources\\Laporans\\Tables\\LaporansTable' => __DIR__ . '/../..' . '/app/Filament/Resources/Laporans/Tables/LaporansTable.php',
+        'App\\Filament\\Resources\\Mahasiswas\\MahasiswaResource' => __DIR__ . '/../..' . '/app/Filament/Resources/Mahasiswas/MahasiswaResource.php',
+        'App\\Filament\\Resources\\Mahasiswas\\Pages\\CreateMahasiswa' => __DIR__ . '/../..' . '/app/Filament/Resources/Mahasiswas/Pages/CreateMahasiswa.php',
+        'App\\Filament\\Resources\\Mahasiswas\\Pages\\EditMahasiswa' => __DIR__ . '/../..' . '/app/Filament/Resources/Mahasiswas/Pages/EditMahasiswa.php',
+        'App\\Filament\\Resources\\Mahasiswas\\Pages\\ListMahasiswas' => __DIR__ . '/../..' . '/app/Filament/Resources/Mahasiswas/Pages/ListMahasiswas.php',
+        'App\\Filament\\Resources\\Mahasiswas\\Schemas\\MahasiswaForm' => __DIR__ . '/../..' . '/app/Filament/Resources/Mahasiswas/Schemas/MahasiswaForm.php',
+        'App\\Filament\\Resources\\Mahasiswas\\Tables\\MahasiswasTable' => __DIR__ . '/../..' . '/app/Filament/Resources/Mahasiswas/Tables/MahasiswasTable.php',
+        'App\\Filament\\Resources\\Penelitians\\Pages\\CreatePenelitian' => __DIR__ . '/../..' . '/app/Filament/Resources/Penelitians/Pages/CreatePenelitian.php',
+        'App\\Filament\\Resources\\Penelitians\\Pages\\EditPenelitian' => __DIR__ . '/../..' . '/app/Filament/Resources/Penelitians/Pages/EditPenelitian.php',
+        'App\\Filament\\Resources\\Penelitians\\Pages\\ListPenelitians' => __DIR__ . '/../..' . '/app/Filament/Resources/Penelitians/Pages/ListPenelitians.php',
+        'App\\Filament\\Resources\\Penelitians\\PenelitianResource' => __DIR__ . '/../..' . '/app/Filament/Resources/Penelitians/PenelitianResource.php',
+        'App\\Filament\\Resources\\Penelitians\\Schemas\\PenelitianForm' => __DIR__ . '/../..' . '/app/Filament/Resources/Penelitians/Schemas/PenelitianForm.php',
+        'App\\Filament\\Resources\\Penelitians\\Tables\\PenelitiansTable' => __DIR__ . '/../..' . '/app/Filament/Resources/Penelitians/Tables/PenelitiansTable.php',
+        'App\\Filament\\Resources\\Pengabdians\\Pages\\CreatePengabdian' => __DIR__ . '/../..' . '/app/Filament/Resources/Pengabdians/Pages/CreatePengabdian.php',
+        'App\\Filament\\Resources\\Pengabdians\\Pages\\EditPengabdian' => __DIR__ . '/../..' . '/app/Filament/Resources/Pengabdians/Pages/EditPengabdian.php',
+        'App\\Filament\\Resources\\Pengabdians\\Pages\\ListPengabdians' => __DIR__ . '/../..' . '/app/Filament/Resources/Pengabdians/Pages/ListPengabdians.php',
+        'App\\Filament\\Resources\\Pengabdians\\PengabdianResource' => __DIR__ . '/../..' . '/app/Filament/Resources/Pengabdians/PengabdianResource.php',
+        'App\\Filament\\Resources\\Pengabdians\\Schemas\\PengabdianForm' => __DIR__ . '/../..' . '/app/Filament/Resources/Pengabdians/Schemas/PengabdianForm.php',
+        'App\\Filament\\Resources\\Pengabdians\\Tables\\PengabdiansTable' => __DIR__ . '/../..' . '/app/Filament/Resources/Pengabdians/Tables/PengabdiansTable.php',
         'App\\Http\\Controllers\\Auth\\AuthenticatedSessionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/AuthenticatedSessionController.php',
         'App\\Http\\Controllers\\Auth\\ConfirmablePasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ConfirmablePasswordController.php',
         'App\\Http\\Controllers\\Auth\\EmailVerificationNotificationController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/EmailVerificationNotificationController.php',
@@ -766,12 +796,14 @@ class ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584
         'App\\Http\\Requests\\ProfileUpdateRequest' => __DIR__ . '/../..' . '/app/Http/Requests/ProfileUpdateRequest.php',
         'App\\Models\\Dokumentasi' => __DIR__ . '/../..' . '/app/Models/Dokumentasi.php',
         'App\\Models\\Dosen' => __DIR__ . '/../..' . '/app/Models/Dosen.php',
+        'App\\Models\\Laporan' => __DIR__ . '/../..' . '/app/Models/Laporan.php',
         'App\\Models\\Mahasiswa' => __DIR__ . '/../..' . '/app/Models/Mahasiswa.php',
         'App\\Models\\Penelitian' => __DIR__ . '/../..' . '/app/Models/Penelitian.php',
         'App\\Models\\Pengabdian' => __DIR__ . '/../..' . '/app/Models/Pengabdian.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Models\\Verifikasi' => __DIR__ . '/../..' . '/app/Models/Verifikasi.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
+        'App\\Providers\\Filament\\AdminPanelProvider' => __DIR__ . '/../..' . '/app/Providers/Filament/AdminPanelProvider.php',
         'App\\View\\Components\\AppLayout' => __DIR__ . '/../..' . '/app/View/Components/AppLayout.php',
         'App\\View\\Components\\GuestLayout' => __DIR__ . '/../..' . '/app/View/Components/GuestLayout.php',
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
@@ -8774,10 +8806,10 @@ class ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInitc514d8f7b9fc5970bdd94287905ef584::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit9bff416cd113ce4a57a85cbe2731b5b5::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit9bff416cd113ce4a57a85cbe2731b5b5::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit9bff416cd113ce4a57a85cbe2731b5b5::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit9bff416cd113ce4a57a85cbe2731b5b5::$classMap;
 
         }, null, ClassLoader::class);
     }

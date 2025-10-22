@@ -1,133 +1,519 @@
+{{-- resources/views/dosen/pengabdian/index.blade.php --}}
+{{-- Modern UX design matching penelitian index --}}
 <x-app-layout>
+    <style>
+        /* Performance-optimized animations <400ms (Doherty Threshold) */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        
+        .animate-slide-up { animation: slideUp 0.3s ease-out both; }
+        .animate-fade { animation: fadeIn 0.4s ease-out both; }
+        
+        /* Hover effects with proper timing */
+        .card-hover { 
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Accessible focus states */
+        .focus-visible:focus-visible { 
+            outline: 3px solid #3b82f6; 
+            outline-offset: 2px; 
+        }
+        
+        /* Subtle background pattern */
+        .bg-subtle {
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.04) 0%, transparent 50%);
+        }
+        
+        /* Stat number animation */
+        .stat-num {
+            transition: transform 0.3s ease;
+        }
+        .card-hover:hover .stat-num {
+            transform: scale(1.08);
+        }
 
-    <div class="max-w-7xl mx-auto px-6 py-8 space-y-6">
-        <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-            <div>
-                <p class="text-xs uppercase tracking-wider text-[#2050A0]/70">Manajemen Pengabdian</p>
-                <h2 class="text-2xl font-semibold text-[#2050A0]">Kelola Pengabdian</h2>
-                <p class="text-sm text-gray-500">Dokumentasikan seluruh aktivitas pengabdian masyarakat dengan rapi.</p>
-            </div>
-            <div class="flex items-center gap-2">
-                <a href="{{ route('dosen.dashboard') }}"
-                   class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/20 bg-white px-4 py-2 text-sm font-semibold text-[#2050A0] shadow-sm transition hover:bg-[#2050A0] hover:text-white">
-                    <span class="text-lg">←</span>
-                    <span class="hidden sm:inline">Kembali</span>
-                </a>
-                <a href="{{ route('dosen.pengabdian.create') }}"
-                   class="inline-flex items-center gap-2 rounded-full bg-[#2050A0] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#163B78]">
-                    <span class="grid h-6 w-6 place-content-center rounded-full bg-white/15 text-lg">+</span>
-                    Tambah Pengabdian
-                </a>
-            </div>
-        </div>
-        @if (session('success'))
-            <div class="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 shadow-sm">
-                <span class="mt-0.5 text-lg">✅</span>
-                <div>
-                    <p class="font-semibold">Berhasil</p>
-                    <p>{{ session('success') }}</p>
+        /* Consistent, tidy action buttons */
+        .action-group { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end; }
+        .action-btn {
+            display:inline-flex; align-items:center; justify-content:center; gap:0.375rem;
+            height:36px; padding:0 12px; border-radius:10px; font-weight:600; font-size:0.875rem; white-space:nowrap;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+        }
+        .action-btn svg { width:16px; height:16px; }
+        /* Fallback in case Tailwind orange not built */
+        .btn-edit { background-color:#f97316; color:#fff; }
+        .btn-edit:hover { background-color:#ea580c; }
+    </style>
+
+    {{-- Clean background with subtle pattern --}}
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 bg-subtle">
+        
+        {{-- Header with breadcrumb --}}
+        <header class="bg-white border-b border-gray-200 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    
+                    {{-- Left: Breadcrumb & Title --}}
+                    <div class="animate-fade">
+                        {{-- Breadcrumb --}}
+                        <nav class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                            <a href="{{ route('dosen.dashboard') }}" 
+                               class="flex items-center gap-1 hover:text-blue-600 transition-colors focus-visible">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                </svg>
+                                Dashboard
+                            </a>
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                            <span class="font-medium text-gray-900">Kelola Pengabdian</span>
+                        </nav>
+
+                        {{-- Title with back button --}}
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('dosen.dashboard') }}" 
+                               class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
+                               aria-label="Kembali ke Dashboard">
+                                <svg class="w-5 h-5 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                </svg>
+                            </a>
+                            
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Pengabdian</h1>
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">Live</span>
+                                </div>
+                                <p class="text-sm text-gray-600">Pantau dan kelola kegiatan pengabdian masyarakat Anda</p>
+                            </div>
+                        </div>
+                        
+                        {{-- Toolbar: Search + Add --}}
+                        <div class="mt-4 flex items-center gap-3 flex-wrap">
+                            <div class="relative">
+                                <input type="text"
+                                       id="searchInput"
+                                       placeholder="Cari pengabdian..."
+                                       class="w-64 sm:w-80 pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all focus-visible"
+                                       onkeyup="searchPengabdian(this.value)"
+                                       aria-label="Cari pengabdian">
+                                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                            <a href="{{ route('dosen.pengabdian.create') }}"
+                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Tambah Pengabdian
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
-        @endif
+        </header>
 
-        <section class="overflow-hidden rounded-3xl border-2 border-gray-200 bg-white ring-1 ring-gray-200/70 shadow-lg">
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            
+            {{-- Success Alert --}}
+            @if (session('success'))
+                <div class="mb-6 animate-slide-up">
+                    <div class="flex items-start gap-3 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-lg shadow-sm">
+                        <div class="flex-shrink-0 w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-emerald-900">Berhasil!</p>
+                            <p class="text-sm text-emerald-700">{{ session('success') }}</p>
+                        </div>
+                        <button onclick="this.closest('[class*=animate-slide-up]').remove()" 
+                                class="flex-shrink-0 text-emerald-500 hover:text-emerald-700 transition-colors focus-visible"
+                                aria-label="Tutup">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            @endif
+
+            {{-- Stats Cards --}}
             @php
                 $totalPengabdian = method_exists($pengabdian, 'total') ? $pengabdian->total() : $pengabdian->count();
+                $statusCounts = ['total' => $totalPengabdian, 'draft' => 0, 'pending' => 0, 'approved' => 0];
+                if (!method_exists($pengabdian, 'total')) {
+                    foreach ($pengabdian as $p) {
+                        if (isset($p->status)) {
+                            if ($p->status == 'Draft') $statusCounts['draft']++;
+                            elseif ($p->status == 'Menunggu') $statusCounts['pending']++;
+                            elseif ($p->status == 'Disetujui') $statusCounts['approved']++;
+                        }
+                    }
+                }
             @endphp
-            <header class="flex items-center justify-between border-b border-gray-100 bg-gradient-to-r from-[#2050A0]/10 to-[#2050A0]/5 px-6 py-4">
-                <div>
-                    <h3 class="text-lg font-semibold text-[#2050A0]">Daftar Pengabdian</h3>
-                    <p class="text-xs text-gray-500">Total {{ $totalPengabdian }} pengabdian tercatat</p>
-                </div>
-            </header>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-100 text-sm text-gray-700">
-                    <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                        <tr>
-                            <th class="px-6 py-3 text-left">Judul</th>
-                            <th class="px-6 py-3 text-left">Tahun</th>
-                            <th class="px-6 py-3 text-left">Skema</th>
-                            <th class="px-6 py-3 text-left">Sumber Dana</th>
-                            <th class="px-6 py-3 text-left">Dana</th>
-                            <th class="px-6 py-3 text-left">Status</th>
-                            <th class="px-6 py-3 text-right">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 bg-white">
-                        @forelse ($pengabdian as $item)
-                            <tr class="transition hover:bg-[#2050A0]/5">
-                                <td class="px-6 py-4">
-                                    <div class="font-semibold text-gray-900">{{ $item->judul }}</div>
-                                    <div class="text-xs text-gray-500">Diupdate {{ $item->updated_at?->diffForHumans() ?? $item->created_at?->diffForHumans() }}</div>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-medium text-gray-700">{{ $item->tahun }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $item->skema ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-600">{{ $item->sumber_dana ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm font-semibold text-gray-700">
-                                    {{ $item->dana ? 'Rp '.number_format($item->dana, 0, ',', '.') : '—' }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    @php
-                                        $statusMap = [
-                                            'Menunggu'  => 'bg-amber-100 text-amber-700 ring-1 ring-amber-200',
-                                            'Disetujui' => 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200',
-                                            'Ditolak'   => 'bg-rose-100 text-rose-700 ring-1 ring-rose-200',
-                                            'Draft'     => 'bg-slate-200 text-slate-700 ring-1 ring-slate-300',
-                                        ];
-                                        $badgeClass = $statusMap[$item->status] ?? 'bg-slate-200 text-slate-700 ring-1 ring-slate-300';
-                                    @endphp
-                                    <span class="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold {{ $badgeClass }}">
-                                        <span class="h-2 w-2 rounded-full bg-current opacity-60"></span>
-                                        {{ $item->status }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <div class="flex justify-end gap-2 text-xs font-semibold">
-                                        <a href="{{ route('dosen.pengabdian.show', $item) }}" class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/30 px-3 py-1 text-[#2050A0] transition hover:bg-[#2050A0] hover:text-white">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1 1 0 010-.644C3.423 7.51 7.36 4.5 12 4.5s8.577 3.01 9.964 7.178a1 1 0 010 .644C20.577 16.49 16.64 19.5 12 19.5s-8.577-3.01-9.964-7.178z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
+                {{-- Total Card --}}
+                <button onclick="filterStatus('all')" 
+                        class="text-left w-full bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md card-hover p-5 animate-slide-up focus-visible"
+                        style="animation-delay: 0.05s">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl sm:text-4xl font-bold text-white stat-num mb-1">{{ $statusCounts['total'] }}</p>
+                    <p class="text-sm text-blue-100 font-medium">Total Pengabdian</p>
+                </button>
+
+                {{-- Draft Card --}}
+                <button onclick="filterStatus('draft')" 
+                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
+                        style="animation-delay: 0.1s">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['draft'] }}</p>
+                    <p class="text-sm text-gray-600 font-medium">Draft</p>
+                </button>
+
+                {{-- Pending Card --}}
+                <button onclick="filterStatus('pending')" 
+                        class="text-left w-full {{ $statusCounts['pending'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['pending'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
+                        style="animation-delay: 0.15s">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-11 h-11 {{ $statusCounts['pending'] > 0 ? 'bg-white/20' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        @if($statusCounts['pending'] > 0)
+                            <span class="px-2 py-1 bg-white/30 text-white text-xs font-semibold rounded">⚡ Butuh Aksi</span>
+                        @endif
+                    </div>
+                    <p class="text-3xl sm:text-4xl font-bold {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-900' }} stat-num mb-1">{{ $statusCounts['pending'] }}</p>
+                    <p class="text-sm {{ $statusCounts['pending'] > 0 ? 'text-amber-50' : 'text-gray-600' }} font-medium">Menunggu Review</p>
+                </button>
+
+                {{-- Approved Card --}}
+                <button onclick="filterStatus('approved')" 
+                        class="text-left w-full bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md card-hover p-5 animate-slide-up focus-visible"
+                        style="animation-delay: 0.2s">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-3xl sm:text-4xl font-bold text-white stat-num mb-1">{{ $statusCounts['approved'] }}</p>
+                    <p class="text-sm text-emerald-50 font-medium">Disetujui ✓</p>
+                </button>
+            </div>
+
+            {{-- Main Content --}}
+            <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                
+                {{-- Header with Filters --}}
+                <div class="px-5 sm:px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-900">Daftar Pengabdian</h2>
+                            <p class="text-sm text-gray-600 mt-0.5">{{ $totalPengabdian }} pengabdian terdaftar</p>
+                        </div>
+                        
+                        {{-- Filter Buttons --}}
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="filterStatus('all')" 
+                                    class="filter-btn px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible">
+                                Semua
+                            </button>
+                            <button onclick="filterStatus('draft')" 
+                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
+                                Draft
+                            </button>
+                            <button onclick="filterStatus('pending')" 
+                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
+                                Menunggu
+                            </button>
+                            <button onclick="filterStatus('approved')" 
+                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
+                                Disetujui
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Pengabdian List --}}
+                <div class="p-5 sm:p-6">
+                    <div class="space-y-4" id="pengabdianList">
+                        @forelse ($pengabdian as $index => $p)
+                            @php
+                                $statusConfig = [
+                                    'Draft' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-700', 'icon' => 'text-gray-600'],
+                                    'Menunggu' => ['bg' => 'bg-amber-100', 'text' => 'text-amber-700', 'icon' => 'text-amber-600'],
+                                    'Disetujui' => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'icon' => 'text-emerald-600'],
+                                    'Ditolak' => ['bg' => 'bg-rose-100', 'text' => 'text-rose-700', 'icon' => 'text-rose-600'],
+                                ];
+                                $status = $p->status ?? 'Draft';
+                                $config = $statusConfig[$status] ?? $statusConfig['Draft'];
+                            @endphp
+
+                            {{-- Card --}}
+                            <div class="pengabdian-card border border-gray-200 rounded-lg p-4 sm:p-5 hover:border-blue-300 hover:shadow-md transition-all duration-200 animate-slide-up"
+                                 style="animation-delay: {{ min($index * 0.03, 0.5) }}s"
+                                 data-status="{{ strtolower($status) }}">
+                                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                    
+                                    {{-- Content --}}
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-start gap-3 mb-3">
+                                            {{-- Icon --}}
+                                            <div class="flex-shrink-0 w-11 h-11 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                                                {{ strtoupper(substr($p->judul, 0, 1)) }}
+                                            </div>
+                                            
+                                            {{-- Title & Meta --}}
+                                            <div class="flex-1 min-w-0">
+                                                <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-1.5 line-clamp-2">
+                                                    {{ $p->judul }}
+                                                </h3>
+                                                <div class="flex flex-wrap items-center gap-2.5 text-sm text-gray-600">
+                                                    <span class="inline-flex items-center gap-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                        </svg>
+                                                        {{ $p->tahun }}
+                                                    </span>
+                                                    @if($p->skema)
+                                                        <span class="inline-flex items-center gap-1">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                                            </svg>
+                                                            {{ $p->skema }}
+                                                        </span>
+                                                    @endif
+                                                    @if($p->dana)
+                                                        <span class="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                            </svg>
+                                                            Rp {{ number_format($p->dana, 0, ',', '.') }}
+                                                        </span>
+                                                    @endif
+                                                    <span class="text-xs text-gray-500">
+                                                        {{ $p->updated_at?->diffForHumans() ?? $p->created_at?->diffForHumans() }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Status Badge --}}
+                                        <div class="ml-14">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $config['bg'] }} {{ $config['text'] }} text-xs font-semibold rounded-full">
+                                                @if($status == 'Disetujui')
+                                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                                                    </svg>
+                                                @elseif($status == 'Menunggu')
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/>
+                                                    </svg>
+                                                @endif
+                                                {{ $status }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {{-- Action Buttons --}}
+                                    <div class="action-group flex-shrink-0">
+                                        <a href="{{ route('dosen.pengabdian.show', $p) }}" 
+                                           class="action-btn bg-blue-600 hover:bg-blue-700 text-white transition-colors focus-visible">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                             </svg>
                                             Detail
                                         </a>
-                                        <a href="{{ route('dosen.pengabdian.edit', $item) }}" class="inline-flex items-center gap-2 rounded-full bg-orange-500 px-3 py-1 text-white shadow-sm transition hover:bg-orange-600">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.862 4.487z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 7.125L16.875 4.5" />
+
+                                        <a href="{{ route('dosen.pengabdian.edit', $p) }}" 
+                                           class="action-btn btn-edit transition-colors focus-visible">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                             Edit
                                         </a>
-                                        <form action="{{ route('dosen.pengabdian.destroy', $item) }}" method="POST" onsubmit="return confirm('Hapus pengabdian ini?');">
+
+                                        <form action="{{ route('dosen.pengabdian.destroy', $p) }}" method="POST" 
+                                              onsubmit="return confirm('Yakin ingin menghapus pengabdian ini?');" class="inline-block">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-rose-300 px-3 py-1 text-rose-600 transition hover:bg-rose-500 hover:text-white">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 7.5l.867 12.14A2.25 2.25 0 009.11 21.75h5.78a2.25 2.25 0 002.243-2.11L18 7.5M9.75 10.5v6.75M14.25 10.5v6.75M5.25 7.5h13.5M9 4.5h6a1.5 1.5 0 011.5 1.5V7.5H7.5V6a1.5 1.5 0 011.5-1.5z" />
+                                            <button type="submit" 
+                                                    class="action-btn bg-red-600 hover:bg-red-700 text-white transition-colors focus-visible">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
                                                 Hapus
                                             </button>
                                         </form>
                                     </div>
-                                </td>
-                            </tr>
+                                </div>
+                            </div>
                         @empty
-                            <tr>
-                                <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-500">
-                                    Belum ada data pengabdian. Mulai dengan menambahkan pengabdian pertama Anda.
-                                </td>
-                            </tr>
+                            {{-- Empty State --}}
+                            <div class="text-center py-16 animate-fade">
+                                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-5">
+                                    <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Pengabdian</h3>
+                                <p class="text-gray-600 mb-6 max-w-sm mx-auto">
+                                    Mulai mendokumentasikan kegiatan pengabdian masyarakat Anda sekarang.
+                                </p>
+                                <a href="{{ route('dosen.pengabdian.create') }}"
+                                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all focus-visible">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    Buat Pengabdian Pertama
+                                </a>
+                            </div>
                         @endforelse
-                    </tbody>
-                </table>
+                    </div>
+                </div>
+
+                {{-- Pagination --}}
+                @if (method_exists($pengabdian, 'links') && $pengabdian->lastPage() > 1)
+                    <div class="px-5 sm:px-6 py-4 border-t border-gray-200 bg-gray-50">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <p class="text-sm text-gray-600">
+                                Menampilkan <span class="font-semibold">{{ $pengabdian->firstItem() ?? 0 }}</span> - 
+                                <span class="font-semibold">{{ $pengabdian->lastItem() ?? 0 }}</span> dari 
+                                <span class="font-semibold">{{ $pengabdian->total() }}</span> pengabdian
+                            </p>
+                            <div>
+                                {{ $pengabdian->links() }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
-            @if(method_exists($pengabdian,'links'))
-                <footer class="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-6 py-3 text-xs text-gray-500">
-                    <span>Menampilkan {{ $pengabdian->firstItem() ?? 0 }}—{{ $pengabdian->lastItem() ?? 0 }} dari {{ $pengabdian->total() ?? $pengabdian->count() }} entri</span>
-                    {{ $pengabdian->links() }}
-                </footer>
-            @endif
-        </section>
+            {{-- Footer Spacing --}}
+            <div class="h-8"></div>
+        </main>
     </div>
+
+    {{-- Optimized JavaScript --}}
+    <script>
+        // Filter by status with instant feedback
+        function filterStatus(status) {
+            const cards = document.querySelectorAll('.pengabdian-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            const searchInput = document.getElementById('searchInput');
+            
+            // Clear search
+            if (searchInput) searchInput.value = '';
+            
+            // Update button states
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+            });
+            
+            if (event && event.target.classList.contains('filter-btn')) {
+                event.target.classList.remove('bg-gray-100', 'text-gray-700');
+                event.target.classList.add('bg-blue-600', 'text-white');
+            }
+            
+            // Filter cards with animation
+            let visibleCount = 0;
+            cards.forEach(card => {
+                const cardStatus = card.dataset.status;
+                if (status === 'all' || cardStatus === status) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            showFeedback(visibleCount + ' pengabdian ditampilkan');
+        }
+        
+        // Search functionality
+        function searchPengabdian(query) {
+            const cards = document.querySelectorAll('.pengabdian-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            const searchTerm = query.toLowerCase().trim();
+            
+            // Reset filters
+            buttons.forEach((btn, i) => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-100', 'text-gray-700');
+                if (i === 0) {
+                    btn.classList.remove('bg-gray-100', 'text-gray-700');
+                    btn.classList.add('bg-blue-600', 'text-white');
+                }
+            });
+            
+            let visibleCount = 0;
+            cards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                if (searchTerm === '' || title.includes(searchTerm)) {
+                    card.style.display = '';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            if (searchTerm) showFeedback(visibleCount + ' hasil ditemukan');
+        }
+        
+        // Feedback toast
+        function showFeedback(message) {
+            const existing = document.getElementById('feedback-toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.id = 'feedback-toast';
+            toast.className = 'fixed bottom-6 right-6 px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-lg animate-slide-up z-50';
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+        
+        // Keyboard shortcut: Ctrl/Cmd + K for search
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput')?.focus();
+            }
+        });
+    </script>
 </x-app-layout>

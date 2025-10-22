@@ -23,7 +23,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Register policies
+        \Illuminate\Support\Facades\Gate::policy(
+            \App\Models\Penelitian::class,
+            \App\Policies\PenelitianPolicy::class
+        );
+
+        \Illuminate\Support\Facades\Gate::policy(
+            \App\Models\Pengabdian::class,
+            \App\Policies\PengabdianPolicy::class
+        );
     }
 
     

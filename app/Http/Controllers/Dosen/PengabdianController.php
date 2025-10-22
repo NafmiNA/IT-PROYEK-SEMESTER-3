@@ -29,6 +29,8 @@ class PengabdianController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Pengabdian::class);
+
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
         $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
@@ -38,17 +40,24 @@ class PengabdianController extends Controller
 
     public function show(Pengabdian $pengabdian)
     {
+        $this->authorize('view', $pengabdian);
+
         $relations = ['ketua', 'dosenTerlibat', 'dokumentasi'];
         if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
             $relations[] = 'mahasiswas';
         }
         $pengabdian->load($relations);
 
-        return view('dosen.pengabdian.show', compact('pengabdian'));
+        // Check if current user is ketua
+        $isKetua = auth()->user()->can('isKetua', $pengabdian);
+
+        return view('dosen.pengabdian.show', compact('pengabdian', 'isKetua'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', Pengabdian::class);
+
         $data = $request->validate([
             'judul'         => 'required|string|max:255',
             'tahun'         => 'required|integer',
@@ -124,6 +133,8 @@ class PengabdianController extends Controller
 
     public function edit(Pengabdian $pengabdian)
     {
+        $this->authorize('update', $pengabdian);
+
         $pengabdian->load(['dosens', 'ketua', 'dokumentasi']);
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
         $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
@@ -142,6 +153,8 @@ class PengabdianController extends Controller
 
     public function update(Request $request, Pengabdian $pengabdian)
     {
+        $this->authorize('update', $pengabdian);
+
         $data = $request->validate([
             'judul'         => 'required|string|max:255',
             'tahun'         => 'required|integer|min:2000|max:2100',
@@ -219,6 +232,8 @@ class PengabdianController extends Controller
 
     public function destroy(Pengabdian $pengabdian)
     {
+        $this->authorize('delete', $pengabdian);
+
         DB::transaction(function () use ($pengabdian) {
             foreach ($pengabdian->dokumentasi as $doc) {
                 if ($doc->gdrive_path && Storage::disk('public')->exists($doc->gdrive_path)) {

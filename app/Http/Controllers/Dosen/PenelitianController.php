@@ -30,6 +30,8 @@ class PenelitianController extends Controller
 
     public function create()
     {
+        $this->authorize('create', Penelitian::class);
+
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
         $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         [$skemaOptions, $sumberDanaOptions] = $this->penelitianOptions();
@@ -39,17 +41,24 @@ class PenelitianController extends Controller
 
     public function show(Penelitian $penelitian)
     {
+        $this->authorize('view', $penelitian);
+
         $relations = ['ketua', 'dosens', 'dokumentasi'];
         if (Schema::hasTable('penelitian_mahasiswa')) {
             $relations[] = 'mahasiswas';
         }
         $penelitian->load($relations);
 
-        return view('dosen.penelitian.show', compact('penelitian'));
+        // Check if current user is ketua
+        $isKetua = auth()->user()->can('isKetua', $penelitian);
+
+        return view('dosen.penelitian.show', compact('penelitian', 'isKetua'));
     }
 
     public function store(Request $request)
     {
+        $this->authorize('create', Penelitian::class);
+
         $validated = $request->validate([
             'judul'          => 'required|string|max:255',
             'tahun'          => 'required|integer',
@@ -125,6 +134,8 @@ class PenelitianController extends Controller
 
     public function edit(Penelitian $penelitian)
     {
+        $this->authorize('update', $penelitian);
+
         $penelitian->load(['dosens', 'ketua', 'dokumentasi']);
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
         $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
@@ -143,6 +154,8 @@ class PenelitianController extends Controller
 
     public function update(Request $request, Penelitian $penelitian)
     {
+        $this->authorize('update', $penelitian);
+
         $data = $request->validate([
             'judul'          => 'required|string|max:255',
             'tahun'          => 'required|integer|min:2000|max:2100',
@@ -222,6 +235,8 @@ class PenelitianController extends Controller
 
     public function destroy(Penelitian $penelitian)
     {
+        $this->authorize('delete', $penelitian);
+
         DB::transaction(function () use ($penelitian) {
             foreach ($penelitian->dokumentasi as $dok) {
                 if ($dok->gdrive_path && Storage::disk('public')->exists($dok->gdrive_path)) {

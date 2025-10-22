@@ -7,14 +7,29 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('pengabdian_mahasiswa', function (Blueprint $table) {
+        if (Schema::hasTable('pengabdian_mahasiswa')) {
+            return;
+        }
+
+        $pengabdianTable = Schema::hasTable('pengabdians')
+            ? 'pengabdians'
+            : (Schema::hasTable('pengabdian') ? 'pengabdian' : null);
+
+        Schema::create('pengabdian_mahasiswa', function (Blueprint $table) use ($pengabdianTable) {
             $table->id();
-            $table->foreignId('pengabdian_id')->constrained('pengabdians')->cascadeOnDelete();
+            $table->unsignedBigInteger('pengabdian_id');
             $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
             $table->string('peran')->default('Pendukung');
             $table->timestamps();
 
             $table->unique(['pengabdian_id', 'mahasiswa_id']);
+
+            if ($pengabdianTable) {
+                $table->foreign('pengabdian_id')
+                    ->references('id')
+                    ->on($pengabdianTable)
+                    ->cascadeOnDelete();
+            }
         });
     }
 
@@ -23,4 +38,3 @@ return new class extends Migration {
         Schema::dropIfExists('pengabdian_mahasiswa');
     }
 };
-
