@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Pengabdians\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs; // <-- 1. TAMBAHKAN 'USE' INI
 
 class PengabdianForm
 {
@@ -11,7 +12,7 @@ class PengabdianForm
     {
         return $schema
             ->components([
-                TextInput::make('dosen_id')
+                TextInput::make('dosen_id') // Nanti kita ganti jadi Select
                     ->required()
                     ->numeric(),
                 TextInput::make('judul')
@@ -24,10 +25,18 @@ class PengabdianForm
                     ->default(null),
                 TextInput::make('sumber_dana')
                     ->default(null),
+
+                // --- PERUBAHAN DI SINI ---
                 TextInput::make('dana')
                     ->numeric()
+                    ->prefix('Rp') // Opsional: Tambahkan prefix
+                    ->mask(RawJs::make('$money($input)')) // <-- 2. TAMBAHKAN MASKING
+                    ->stripCharacters(',') // <-- 3. HAPUS KOMA SAAT SIMPAN
+                    // ->stripCharacters('.') // <-- Atau titik jika perlu
                     ->default(null),
-                TextInput::make('status')
+                // --- SELESAI PERUBAHAN ---
+
+                TextInput::make('status') // Nanti kita ganti jadi Select
                     ->required()
                     ->default('Menunggu'),
             ]);

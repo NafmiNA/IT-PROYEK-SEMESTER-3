@@ -28,13 +28,13 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            // ->login() 
+            // ->login()
 
             ->brandName('Dashboard Admin P3M TI Politala')
 
             // --- GANTI WARNA DI SINI ---
             ->colors([
-                'primary' => Color::Blue, // Ganti Amber menjadi Emerald (atau warna lain)
+                'primary' => Color::Blue, // <-- WARNA DIGANTI JADI BIRU LANGIT
             ])
             // --- SELESAI GANTI WARNA ---
 
@@ -43,7 +43,7 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Resources\Mahasiswas\MahasiswaResource::class,
                 \App\Filament\Resources\Penelitians\PenelitianResource::class,
                 \App\Filament\Resources\Pengabdians\PengabdianResource::class,
-                \App\Filament\Resources\PrestasiDosens\PrestasiDosenResource::class, 
+                \App\Filament\Resources\PrestasiDosens\PrestasiDosenResource::class,
                 \App\Filament\Resources\Laporans\LaporanResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -53,7 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                // FilamentInfoWidget::class, 
+                // FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -68,7 +68,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                // \App\Http\Middleware\EnsureUserIsAdmin::class, 
+                // \App\Http\Middleware\EnsureUserIsAdmin::class,
             ]);
     }
 }
