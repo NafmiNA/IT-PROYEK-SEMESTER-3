@@ -34,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
 
             // --- GANTI WARNA DI SINI ---
             ->colors([
-                'primary' => Color::Sky, // Ganti Amber menjadi Emerald (atau warna lain)
+                'primary' => Color::Blue, // Ganti Amber menjadi Emerald (atau warna lain)
             ])
             // --- SELESAI GANTI WARNA ---
 
