@@ -53,8 +53,13 @@ class PengabdianResource extends Resource
     {
         return [
             'index' => ListPengabdians::route('/'),
-            'create' => CreatePengabdian::route('/create'),
+            // 'create' => CreatePengabdian::route('/create'), // Disabled: Admin tidak bisa create pengabdian
             'edit' => EditPengabdian::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canCreate(): bool
+    {
+        return false; // Disable create button
     }
 }

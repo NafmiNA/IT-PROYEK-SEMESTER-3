@@ -63,6 +63,17 @@ class PrestasiDosensTable
                 EditAction::make(),
             ])
             ->toolbarActions([
+                \Filament\Actions\Action::make('hitung')
+                    ->label('Hitung')
+                    ->icon('heroicon-o-calculator')
+                    ->color('success')
+                    ->action(function () {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Hitung Prestasi')
+                            ->success()
+                            ->body('Tombol hitung dummy - akan diimplementasikan nanti')
+                            ->send();
+                    }),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

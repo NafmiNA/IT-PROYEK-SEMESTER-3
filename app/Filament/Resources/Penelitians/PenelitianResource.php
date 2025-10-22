@@ -53,8 +53,13 @@ class PenelitianResource extends Resource
     {
         return [
             'index' => ListPenelitians::route('/'),
-            'create' => CreatePenelitian::route('/create'),
+            // 'create' => CreatePenelitian::route('/create'), // Disabled: Admin tidak bisa create penelitian
             'edit' => EditPenelitian::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canCreate(): bool
+    {
+        return false; // Disable create button
     }
 }

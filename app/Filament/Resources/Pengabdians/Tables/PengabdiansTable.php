@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Pengabdians\Tables;
 
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkActionGroup;
-use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Support\Colors\Color;
@@ -58,72 +58,58 @@ class PengabdiansTable
                 Action::make('verifikasi')
                     ->label('Verifikasi')
                     ->icon('heroicon-o-clipboard-document-check')
-                    ->color('info')
+                    ->color('warning')
                     ->visible(fn ($record) => $record->status === 'Menunggu')
                     ->modalHeading('Verifikasi Pengabdian')
                     ->modalDescription(fn ($record) => "Verifikasi pengabdian: {$record->judul}")
-                    ->modalSubmitActionLabel('Simpan')
+                    ->modalSubmitActionLabel('Simpan Verifikasi')
+                    ->modalWidth('lg')
                     ->form([
-                        \Filament\Forms\Components\Select::make('status')
-                            ->label('Status Verifikasi')
+                        \Filament\Forms\Components\Radio::make('status')
+                            ->label('Keputusan Verifikasi')
                             ->options([
-                                'Disetujui' => 'Disetujui',
-                                'Ditolak' => 'Ditolak',
+                                'Disetujui' => 'Setujui Pengabdian',
+                                'Ditolak' => 'Tolak Pengabdian',
                             ])
-                            ->required(),
+                            ->required()
+                            ->inline()
+                            ->descriptions([
+                                'Disetujui' => 'Pengabdian akan disetujui dan dapat dilanjutkan',
+                                'Ditolak' => 'Pengabdian akan ditolak dan tidak dapat dilanjutkan',
+                            ])
+                            ->columnSpanFull(),
                         \Filament\Forms\Components\Textarea::make('catatan')
-                            ->label('Catatan')
+                            ->label('Catatan Verifikasi')
                             ->rows(3)
-                            ->placeholder('Tambahkan catatan verifikasi (opsional)'),
+                            ->placeholder('Tambahkan catatan verifikasi (opsional)')
+                            ->helperText('Catatan ini akan membantu dosen memahami keputusan verifikasi')
+                            ->columnSpanFull(),
                     ])
                     ->action(function ($record, array $data) {
+                        // Update status
                         $record->update([
                             'status' => $data['status'],
                         ]);
                         
-                        \Filament\Notifications\Notification::make()
-                            ->title('Verifikasi Berhasil')
-                            ->success()
-                            ->body("Pengabdian telah {$data['status']}")
-                            ->send();
-                    }),
-                    
-                Action::make('setujui')
-                    ->label('Setujui')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(fn ($record) => $record->status === 'Menunggu')
-                    ->requiresConfirmation()
-                    ->modalHeading('Setujui Pengabdian')
-                    ->modalDescription(fn ($record) => "Apakah Anda yakin ingin menyetujui pengabdian: {$record->judul}?")
-                    ->modalSubmitActionLabel('Ya, Setujui')
-                    ->action(function ($record) {
-                        $record->update(['status' => 'Disetujui']);
+                        // Notification dengan warna sesuai keputusan
+                        $notification = \Filament\Notifications\Notification::make()
+                            ->title('Verifikasi Berhasil');
                         
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pengabdian Disetujui')
-                            ->success()
-                            ->body('Pengabdian berhasil disetujui')
-                            ->send();
-                    }),
-                    
-                Action::make('tolak')
-                    ->label('Tolak')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(fn ($record) => $record->status === 'Menunggu')
-                    ->requiresConfirmation()
-                    ->modalHeading('Tolak Pengabdian')
-                    ->modalDescription(fn ($record) => "Apakah Anda yakin ingin menolak pengabdian: {$record->judul}?")
-                    ->modalSubmitActionLabel('Ya, Tolak')
-                    ->action(function ($record) {
-                        $record->update(['status' => 'Ditolak']);
+                        if ($data['status'] === 'Disetujui') {
+                            $notification
+                                ->success()
+                                ->body("Pengabdian '{$record->judul}' telah DISETUJUI");
+                        } else {
+                            $notification
+                                ->warning()
+                                ->body("Pengabdian '{$record->judul}' telah DITOLAK");
+                        }
                         
-                        \Filament\Notifications\Notification::make()
-                            ->title('Pengabdian Ditolak')
-                            ->warning()
-                            ->body('Pengabdian telah ditolak')
-                            ->send();
+                        if (!empty($data['catatan'])) {
+                            $notification->body($notification->getBody() . "\nCatatan: {$data['catatan']}");
+                        }
+                        
+                        $notification->send();
                     }),
                     
                 Action::make('lihat')

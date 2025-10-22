@@ -49,8 +49,13 @@ class PrestasiDosenResource extends Resource
     {
         return [
             'index' => ListPrestasiDosens::route('/'),
-            'create' => CreatePrestasiDosen::route('/create'),
+            // 'create' => CreatePrestasiDosen::route('/create'), // Disabled: Admin tidak bisa create prestasi
             'edit' => EditPrestasiDosen::route('/{record}/edit'),
         ];
+    }
+    
+    public static function canCreate(): bool
+    {
+        return false; // Disable create button
     }
 }
