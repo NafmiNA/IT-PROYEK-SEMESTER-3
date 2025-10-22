@@ -9,15 +9,16 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
+use Filament\Support\Colors\Color; // <-- CUKUP SATU 'USE' STATEMENT INI
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+// use Filament\Widgets\FilamentInfoWidget; // Tetap di-comment jika tidak mau ditampilkan
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+// HAPUS 'use Filament\Support\Colors\Color;' yang duplikat dari sini
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -27,17 +28,22 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            // Disable Filament login page - using main Laravel login instead
-            // ->login()
+            // ->login() 
+
+            ->brandName('Dashboard Admin P3M TI Politala')
+
+            // --- GANTI WARNA DI SINI ---
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Sky, // Ganti Amber menjadi Emerald (atau warna lain)
             ])
+            // --- SELESAI GANTI WARNA ---
+
             ->resources([
                 \App\Filament\Resources\Dosens\DosenResource::class,
                 \App\Filament\Resources\Mahasiswas\MahasiswaResource::class,
                 \App\Filament\Resources\Penelitians\PenelitianResource::class,
                 \App\Filament\Resources\Pengabdians\PengabdianResource::class,
-                \App\Filament\Resources\PrestasiDosens\PrestasiDosenResource::class,
+                \App\Filament\Resources\PrestasiDosens\PrestasiDosenResource::class, 
                 \App\Filament\Resources\Laporans\LaporanResource::class,
             ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -47,7 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
+                // FilamentInfoWidget::class, 
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -62,7 +68,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-                \App\Http\Middleware\EnsureUserIsAdmin::class,
+                // \App\Http\Middleware\EnsureUserIsAdmin::class, 
             ]);
     }
 }
