@@ -2,25 +2,34 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Schema; // Pastikan ini ada
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
-        Schema::create('dokumentasis', function (Blueprint $table) {
-            $table->id();
-            $table->string('judul');
-            $table->string('kategori'); // Penelitian atau Pengabdian
-            $table->string('ketua');
-            $table->string('email');
-            $table->string('status')->default('Menunggu');
-            $table->year('tahun');
-            $table->string('dokumen')->nullable(); // file upload
-            $table->timestamps();
-        });
+        // Menambahkan pengecekan apakah tabel 'dokumentasis' sudah ada
+        if (!Schema::hasTable('dokumentasis')) {
+            Schema::create('dokumentasis', function (Blueprint $table) {
+                $table->id();
+                $table->string('judul');
+                $table->string('kategori'); // Penelitian atau Pengabdian
+                $table->string('ketua');
+                $table->string('email');
+                $table->string('status')->default('Menunggu');
+                $table->year('tahun');
+                $table->string('dokumen')->nullable(); // file upload
+                $table->timestamps();
+            });
+        }
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::dropIfExists('dokumentasis');

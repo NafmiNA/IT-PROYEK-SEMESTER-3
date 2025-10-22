@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Laporans\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 class LaporansTable
@@ -13,7 +14,23 @@ class LaporansTable
     {
         return $table
             ->columns([
-                //
+                TextColumn::make('periode')
+                    ->searchable(),
+                TextColumn::make('jenis')
+                    ->badge(),
+                TextColumn::make('file_path')
+                    ->searchable(),
+                TextColumn::make('tanggal_publish')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
