@@ -21,8 +21,8 @@ class DosenExporter extends Exporter
             ExportColumn::make('jabatan_fungsional')->label('Jabatan Fungsional'),
             ExportColumn::make('status_aktif')
                 ->label('Status Aktif')
-                // PERBAIKAN DI SINI: Kembali gunakan $state, tapi lebih aman
-                ->formatState(function ($state): string {
+                // PERBAIKAN DI SINI:
+                ->formatStateUsing(function ($state): string { // <--- Ini yang diubah
                     return ($state === true || $state === 1) ? 'Aktif' : 'Tidak Aktif';
                 }),
             // ExportColumn::make('user.name')->label('User Name'), // Aktifkan jika relasi 'user' sudah ada di Model Dosen
