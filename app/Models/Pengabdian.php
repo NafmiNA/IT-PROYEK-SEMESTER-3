@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Schema;
 
 // Pastikan Model Dosen di-import
-use App\Models\Dosen; 
+use App\Models\Dosen;
 // Pastikan Model Mahasiswa di-import (jika belum)
 use App\Models\Mahasiswa;
 // Pastikan Model Dokumentasi di-import (jika belum)
@@ -81,7 +81,7 @@ class Pengabdian extends Model
     public function dosens()
     {
         // Pastikan tabel pivot 'pengabdian_dosen' ada
-        return $this->belongsToMany(Dosen::class, 'pengabdian_dosen') 
+        return $this->belongsToMany(Dosen::class, 'pengabdian_dosen')
             ->withPivot('peran')
             ->withTimestamps();
     }
@@ -92,7 +92,7 @@ class Pengabdian extends Model
     public function dokumentasi()
     {
         // Pastikan Model Dokumentasi sudah benar
-        return $this->hasMany(Dokumentasi::class, 'pengabdian_id'); 
+        return $this->hasMany(Dokumentasi::class, 'pengabdian_id');
     }
 
     /**
