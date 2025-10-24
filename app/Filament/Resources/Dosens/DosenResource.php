@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder; // <-- TAMBAHAN: Import class Builder
 
 
 class DosenResource extends Resource
@@ -39,6 +40,20 @@ class DosenResource extends Resource
     {
         return DosensTable::configure($table);
     }
+
+    // --- TAMBAHAN UNTUK MEMPERCEPAT QUERY ---
+    /**
+     * Menerapkan Eager Loading untuk relasi 'user'.
+     * Ini memperbaiki N+1 Query Problem yang menyebabkan tabel lambat.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        // Asumsi nama relasi di App/Models/Dosen.php adalah 'user'
+        // Jika berbeda (misal: 'pengguna'), sesuaikan 'user' di bawah ini.
+        return parent::getEloquentQuery()
+            ->with(['user']);
+    }
+    // --- AKHIR TAMBAHAN ---
 
     public static function getRelations(): array
     {
