@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder; // <-- TAMBAHAN: Import class Builder
 
 class PengabdianResource extends Resource
 {
@@ -42,6 +43,18 @@ class PengabdianResource extends Resource
         return PengabdiansTable::configure($table);
     }
 
+    // --- TAMBAHAN UNTUK MEMPERCEPAT QUERY ---
+    /**
+     * Menerapkan Eager Loading untuk relasi 'dosen'.
+     * Ini memperbaiki N+1 Query Problem yang menyebabkan tabel lambat.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['dosen']); // Kita HANYA perlu load relasi 'dosen'
+    }
+    // --- AKHIR TAMBAHAN ---
+
     public static function getRelations(): array
     {
         return [
@@ -63,3 +76,4 @@ class PengabdianResource extends Resource
         return false; // Disable create button
     }
 }
+
