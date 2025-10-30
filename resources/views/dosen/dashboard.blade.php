@@ -9,7 +9,7 @@
     .animate-slide-in { animation: slideIn 0.3s ease-out; }
     .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(0,0,0,0.15); }
-    .focus-ring:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; border-radius: 0.5rem; }
+    .focus-ring:focus-visible { outline: 3px solid #6a1fccff; outline-offset: 2px; border-radius: 0.5rem; }
   </style>
 
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
