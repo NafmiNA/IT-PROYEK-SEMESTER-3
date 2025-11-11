@@ -25,27 +25,36 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Clear any existing session data first
+        $request->session()->flush();
+        
         $request->authenticate();
 
+        // Regenerate session to prevent session fixation
         $request->session()->regenerate();
 
         $user = $request->user();
 
-        // Redirect based on user role
+        // Redirect based on user role - CHECK IN SPECIFIC ORDER
         if ($user?->role === 'admin') {
             // Admin goes to Filament admin panel
-            return redirect()->intended('/admin');
+            return redirect('/admin');
         }
 
-        if ($user?->role === 'mahasiswa' && Route::has('mahasiswa.dashboard')) {
-            return redirect()->intended(route('mahasiswa.dashboard', absolute: false));
+        if ($user?->role === 'mahasiswa') {
+            // Mahasiswa goes to mahasiswa dashboard
+            return redirect()->route('mahasiswa.dashboard');
         }
 
-        if ($user && ($user->role === 'dosen' || $user->dosen()->exists())) {
-            return redirect()->intended(route('dosen.dashboard', absolute: false));
+        if ($user?->role === 'dosen') {
+            // Dosen goes to dosen dashboard
+            return redirect()->route('dosen.dashboard');
         }
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Fallback (should not happen with proper data)
+        Auth::logout();
+        $request->session()->invalidate();
+        return redirect('/login')->withErrors(['email' => 'Role tidak valid. Hubungi administrator.']);
     }
 
     /**
@@ -53,24 +62,19 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        // Clear all auth guards
+        // Logout from all guards
         Auth::guard('web')->logout();
         
-        // Invalidate the session
+        // Invalidate and flush the session completely
         $request->session()->invalidate();
-        
-        // Regenerate CSRF token
         $request->session()->regenerateToken();
-        
-        // Flush all session data
-        $request->session()->flush();
-        
-        // Clear authentication data
-        $request->session()->forget('auth');
-        
-        // Regenerate session ID
-        $request->session()->regenerate();
 
-        return redirect('/login');
+        // Return to login with no-cache headers
+        return redirect('/login')
+            ->withHeaders([
+                'Cache-Control' => 'no-cache, no-store, must-revalidate',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+            ]);
     }
 }

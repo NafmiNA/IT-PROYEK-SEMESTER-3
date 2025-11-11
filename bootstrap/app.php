@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'prevent.back' => \App\Http\Middleware\PreventBackHistory::class,
         ]);
 
         // contoh lain (opsional):

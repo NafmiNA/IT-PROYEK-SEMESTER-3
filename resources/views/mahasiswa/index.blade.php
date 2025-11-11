@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container py-4">
-    <h4 class="mb-3">📁 Dokumentasi Saya</h4>
+    <h4 class="mb-3">Dokumentasi Saya</h4>
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>

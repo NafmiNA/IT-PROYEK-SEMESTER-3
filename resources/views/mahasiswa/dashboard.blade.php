@@ -20,7 +20,7 @@
                 <div>
                     <p class="text-xs uppercase tracking-wider text-blue-600/70 font-semibold mb-1">Dashboard Mahasiswa</p>
                     <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                        Selamat Datang, {{ $profilMahasiswa->nama ?? Auth::user()->name ?? 'Mahasiswa' }}! 👋
+                        Selamat Datang, {{ $profilMahasiswa->nama ?? Auth::user()->name ?? 'Mahasiswa' }}!
                     </h1>
                     <p class="text-gray-600">
                         <span class="inline-flex items-center gap-2">

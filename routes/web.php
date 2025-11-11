@@ -34,7 +34,7 @@ require __DIR__ . '/auth.php';
 | Setelah login arahkan ke dashboard dosen
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
     // Dashboard umum → redirect ke dashboard dosen
     Route::get('/dashboard', fn () => redirect()->route('dosen.dashboard'))
