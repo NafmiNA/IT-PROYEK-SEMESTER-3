@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth; // <-- SAYA TAMBAHKAN INI
 
 // Controllers
 use App\Http\Controllers\ProfileController;
@@ -16,7 +17,6 @@ use App\Http\Controllers\Mahasiswa\DokumentasiController as MahasiswaDokumentasi
 // -----------------------------------------------------------------
 // Controller-controller BARU untuk Admin
 // -----------------------------------------------------------------
-// (Pastikan semua Controller ini sudah ada di folder app/Http/Controllers/Admin/)
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\PenelitianController as AdminPenelitianController;
@@ -33,7 +33,9 @@ Route::get('/', function () {
     // NANTI ANDA PERLU UBAH INI:
     // Buat controller baru untuk mengarahkan ke dashboard
     // yang sesuai (Admin, Dosen, atau Mahasiswa) setelah login.
-    return redirect()->route('dosen.dashboard');
+    
+    // Untuk sekarang, kita arahkan ke halaman login
+    return redirect()->route('login');
 });
 
 /*
@@ -50,10 +52,24 @@ require __DIR__ . '/auth.php';
 */
 Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
-    // Dashboard umum → redirect ke dashboard dosen
-    // NANTI INI JUGA PERLU DIPERBAIKI
-    Route::get('/dashboard', fn () => redirect()->route('dosen.dashboard'))
-        ->name('dashboard');
+    // ========================================================================
+    // MODIFIKASI: Rute '/dashboard' (setelah login) sekarang "PINTAR"
+    // ========================================================================
+    Route::get('/dashboard', function () {
+        $role = Auth::user()->role; // Ambil role user yang login
+
+        if ($role == 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($role == 'dosen') {
+            return redirect()->route('dosen.dashboard');
+        } elseif ($role == 'mahasiswa') {
+            return redirect()->route('mahasiswa.dashboard');
+        } else {
+            // Jika role tidak dikenal, logout saja
+            Auth::logout();
+            return redirect()->route('login')->with('error', 'Role tidak dikenal.');
+        }
+    })->name('dashboard'); // <-- INI ADALAH RUTE 'dashboard' YANG SEBENARNYA
 
     /*
     |--------------------------------------------------------------------------
@@ -123,10 +139,6 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
         // Kelola Akun Pengguna (Use Case Admin)
         Route::resource('users', UserController::class);
-
-        // -------------------------------------------------------------------
-        // INI YANG BARU DITAMBAHKAN (UNTUK MEMPERBAIKI ERROR)
-        // -------------------------------------------------------------------
 
         // Rute untuk Kelola Penelitian (Admin)
         Route::resource('penelitian', AdminPenelitianController::class)

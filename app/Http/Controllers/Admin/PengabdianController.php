@@ -11,19 +11,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Schema\Blueprint;
+// Pastikan model Mahasiswa ada di 'use'
+use App\Models\Mahasiswa;
 
 class PengabdianController extends Controller
 {
     public function index(Request $request)
     {
         // MODIFIKASI: Filter dosen dihapus untuk Admin
-        // $dosen = $request->user()->dosen; // <-- Dihapus
-
         $pengabdian = Pengabdian::with(['ketua'])
-            // MODIFIKASI: Filter whereHas dihapus agar Admin melihat semua
-            // ->whereHas('dosens', function ($query) use ($dosen) {
-            //     $query->where('dosen_id', $dosen->id);
-            // })
+            // Filter whereHas dihapus
             ->latest()
             ->paginate(10);
 
@@ -80,7 +77,6 @@ class PengabdianController extends Controller
             'dokumentasi.*' => 'nullable|image|max:4096',
         ]);
 
-        // (Logika DDL dan DB::transaction di bawah ini sudah benar dan tidak perlu diubah)
         $this->ensurePengabdianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request) {
@@ -179,7 +175,6 @@ class PengabdianController extends Controller
             'status'       => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak',
         ]);
 
-        // (Logika DDL dan DB::transaction di bawah ini sudah benar dan tidak perlu diubah)
         $this->ensurePengabdianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request, $pengabdian) {
@@ -219,4 +214,88 @@ class PengabdianController extends Controller
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {
                     $folder = "pengabdian/{$pengabdian->id}";
-                    $name   = uniqid('', true) . '_' .
+                    $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
+                    $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
+
+                    Dokumentasi::create([
+                        'pengabdian_id' => $pengabdian->id,
+                        'file_name'     => $file->getClientOriginalName(),
+                        'mime'          => $file->getMimeType(),
+                        'size'          => $file->getSize(),
+                        'gdrive_path'   => $path,
+                    ]);
+                }
+            }
+        });
+
+        // MODIFIKASI: Redirect ke rute admin
+        return redirect()->route('admin.pengabdian.show', $pengabdian)->with('ok', 'Perubahan disimpan.');
+    }
+
+    public function destroy(Pengabdian $pengabdian)
+    {
+        $this->authorize('delete', $pengabdian);
+
+        DB::transaction(function () use ($pengabdian) {
+            foreach ($pengabdian->dokumentasi as $doc) {
+                if ($doc->gdrive_path && Storage::disk('public')->exists($doc->gdrive_path)) {
+                    Storage::disk('public')->delete($doc->gdrive_path);
+                }
+                $doc->delete();
+            }
+
+            $pengabdian->dosens()->detach();
+            $pengabdian->delete();
+        });
+
+        // MODIFIKASI: Redirect ke rute admin
+        return redirect()->route('admin.pengabdian.index')->with('success', 'Pengabdian berhasil dihapus.');
+    }
+
+    private function pengabdianOptions(): array
+    {
+        $bidangOptions = [
+            'Pendidikan',
+            'Kesehatan',
+            'Ekonomi Kreatif',
+            'Teknologi & Informasi',
+            'Lingkungan',
+            'Sosial Kemasyarakatan',
+            'Lainnya',
+        ];
+
+        $skemaOptions = [
+            'Program Kemitraan Masyarakat (PKM)',
+            'Kemitraan Masyarakat',
+            'Pengabdian Berbasis Riset',
+            'Pengabdian Mandiri',
+            'KKN Tematik',
+        ];
+
+        $sumberDanaOptions = [
+            'DRPM',
+            'Kemendikbud',
+            'Internal Kampus',
+            'Hibah Pemerintah Daerah',
+            'Corporate Social Responsibility (CSR)',
+            'Mandiri',
+            'Lainnya',
+        ];
+
+        return [$bidangOptions, $skemaOptions, $sumberDanaOptions];
+    }
+
+    private function ensurePengabdianMahasiswaPivot(): void
+    {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+            \Illuminate\Support\Facades\Schema::create('pengabdian_mahasiswa', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('pengabdian_id')->constrained('pengabdians')->cascadeOnDelete();
+                $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
+                $table->string('peran')->default('Pendukung');
+                $table->timestamps();
+                $table->unique(['pengabdian_id','mahasiswa_id']);
+            });
+        }
+    }
+}
