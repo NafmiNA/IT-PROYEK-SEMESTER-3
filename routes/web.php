@@ -13,12 +13,26 @@ use App\Http\Controllers\Dosen\{
 use App\Http\Controllers\MahasiswaDashboardController;
 use App\Http\Controllers\Mahasiswa\DokumentasiController as MahasiswaDokumentasiController;
 
+// -----------------------------------------------------------------
+// Controller-controller BARU untuk Admin
+// -----------------------------------------------------------------
+// (Pastikan semua Controller ini sudah ada di folder app/Http/Controllers/Admin/)
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\PenelitianController as AdminPenelitianController;
+use App\Http\Controllers\Admin\PengabdianController as AdminPengabdianController;
+// -----------------------------------------------------------------
+
+
 /*
 |--------------------------------------------------------------------------
 | Redirect root ke dashboard dosen
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
+    // NANTI ANDA PERLU UBAH INI:
+    // Buat controller baru untuk mengarahkan ke dashboard
+    // yang sesuai (Admin, Dosen, atau Mahasiswa) setelah login.
     return redirect()->route('dosen.dashboard');
 });
 
@@ -37,6 +51,7 @@ require __DIR__ . '/auth.php';
 Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
     // Dashboard umum → redirect ke dashboard dosen
+    // NANTI INI JUGA PERLU DIPERBAIKI
     Route::get('/dashboard', fn () => redirect()->route('dosen.dashboard'))
         ->name('dashboard');
 
@@ -96,6 +111,35 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
         Route::delete('/dokumentasi/{id}', [MahasiswaDokumentasiController::class, 'destroy'])
             ->name('dokumentasi.destroy');
     });
+
+    // ========================================================================
+    // Area ADMIN (BARU) (prefix: /admin , name: admin.*)
+    // ========================================================================
+    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+        
+        // Dashboard Admin (Halaman Utama Admin)
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
+             ->name('dashboard');
+
+        // Kelola Akun Pengguna (Use Case Admin)
+        Route::resource('users', UserController::class);
+
+        // -------------------------------------------------------------------
+        // INI YANG BARU DITAMBAHKAN (UNTUK MEMPERBAIKI ERROR)
+        // -------------------------------------------------------------------
+
+        // Rute untuk Kelola Penelitian (Admin)
+        Route::resource('penelitian', AdminPenelitianController::class)
+             ->names('penelitian') // ->name('admin.penelitian.index'), dll.
+             ->parameters(['penelitian' => 'penelitian']);
+        
+        // Rute untuk Kelola Pengabdian (Admin)
+        Route::resource('pengabdian', AdminPengabdianController::class)
+             ->names('pengabdian') // ->name('admin.pengabdian.index'), dll.
+             ->parameters(['pengabdian' => 'pengabdian']);
+
+    });
+
 });
 
 /*
