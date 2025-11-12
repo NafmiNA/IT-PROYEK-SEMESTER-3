@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Dokumentasi;
 use App\Models\Dosen;
 use App\Models\Penelitian;
+use App\Services\GoogleDriveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -14,6 +15,12 @@ use Illuminate\Database\Schema\Blueprint;
 
 class PenelitianController extends Controller
 {
+    protected $googleDrive;
+
+    public function __construct(GoogleDriveService $googleDrive)
+    {
+        $this->googleDrive = $googleDrive;
+    }
     public function index(Request $request)
     {
         $dosen = $request->user()->dosen;
@@ -117,9 +124,18 @@ class PenelitianController extends Controller
         
             if ($request->hasFile('laporan_jurnal')) {
                 $file = $request->file('laporan_jurnal');
-                $folder   = "penelitian/laporan/{$penelitian->id}";
-                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
-                $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
+                $folder = "Penelitian/laporan/{$penelitian->id}";
+                
+                try {
+                    // Upload to Google Drive
+                    $uploadResult = $this->googleDrive->upload($file, $folder);
+                    $path = $uploadResult['path'];
+                } catch (\Exception $e) {
+                    \Log::error('Upload laporan to Google Drive failed: ' . $e->getMessage());
+                    // Fallback to local storage
+                    $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                    $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
+                }
 
                 if (Schema::hasColumn('penelitian', 'laporan_path')) {
                     $penelitian->update(['laporan_path' => $path]);
@@ -213,16 +229,32 @@ class PenelitianController extends Controller
             }
 
             if ($request->hasFile('laporan_jurnal')) {
-                if (Schema::hasColumn('penelitian', 'laporan_path')) {
-                    if ($penelitian->laporan_path && Storage::disk('public')->exists($penelitian->laporan_path)) {
-                        Storage::disk('public')->delete($penelitian->laporan_path);
+                // Delete old file first
+                if (Schema::hasColumn('penelitian', 'laporan_path') && $penelitian->laporan_path) {
+                    try {
+                        $this->googleDrive->delete($penelitian->laporan_path);
+                    } catch (\Exception $e) {
+                        \Log::error('Delete old laporan from Google Drive failed: ' . $e->getMessage());
+                        // Fallback: try local storage
+                        if (Storage::disk('public')->exists($penelitian->laporan_path)) {
+                            Storage::disk('public')->delete($penelitian->laporan_path);
+                        }
                     }
                 }
 
                 $file = $request->file('laporan_jurnal');
-                $folder   = "penelitian/laporan/{$penelitian->id}";
-                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
-                $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
+                $folder = "Penelitian/laporan/{$penelitian->id}";
+                
+                try {
+                    // Upload to Google Drive
+                    $uploadResult = $this->googleDrive->upload($file, $folder);
+                    $storedPath = $uploadResult['path'];
+                } catch (\Exception $e) {
+                    \Log::error('Upload laporan to Google Drive failed: ' . $e->getMessage());
+                    // Fallback to local storage
+                    $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                    $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
+                }
 
                 if (Schema::hasColumn('penelitian', 'laporan_path')) {
                     $penelitian->update(['laporan_path' => $storedPath]);

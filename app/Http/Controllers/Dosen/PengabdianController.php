@@ -6,13 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Dokumentasi;
 use App\Models\Dosen;
 use App\Models\Pengabdian;
+use App\Services\GoogleDriveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Log;
 
 class PengabdianController extends Controller
 {
+    protected $googleDrive;
+
+    public function __construct(GoogleDriveService $googleDrive)
+    {
+        $this->googleDrive = $googleDrive;
+    }
     public function index(Request $request)
     {
         $dosen = $request->user()->dosen;
@@ -58,6 +66,8 @@ class PengabdianController extends Controller
     {
         $this->authorize('create', Pengabdian::class);
 
+        Log::info('Pengabdian store started', ['data' => $request->except('dokumentasi')]);
+
         $data = $request->validate([
             'judul'         => 'required|string|max:255',
             'tahun'         => 'required|integer',
@@ -71,64 +81,92 @@ class PengabdianController extends Controller
             'mahasiswa_id'  => 'nullable|array',
             'mahasiswa_id.*'=> 'nullable|exists:mahasiswa,id',
             'dokumentasi'   => 'nullable|array',
-            'dokumentasi.*' => 'nullable|image|max:4096',
+            'dokumentasi.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
         ]);
+
+        Log::info('Pengabdian validation passed');
 
         // Ensure pivot exists before wrapping in transaction
         $this->ensurePengabdianMahasiswaPivot();
 
-        DB::transaction(function () use ($data, $request) {
-            $pengabdian = Pengabdian::create([
-                'judul'       => $data['judul'],
-                'tahun'       => $data['tahun'],
-                'bidang'      => $data['bidang'] ?? null,
-                'skema'       => $data['skema'] ?? null,
-                'sumber_dana' => $data['sumber_dana'] ?? null,
-                'dana'        => $data['dana'] ?? null,
-                'status'      => 'Menunggu',
-                'dosen_id'    => $data['ketua_id'],
-            ]);
+        try {
+            DB::transaction(function () use ($data, $request) {
+                Log::info('Creating pengabdian record');
+                
+                $pengabdian = Pengabdian::create([
+                    'judul'       => $data['judul'],
+                    'tahun'       => $data['tahun'],
+                    'bidang'      => $data['bidang'] ?? null,
+                    'skema'       => $data['skema'] ?? null,
+                    'sumber_dana' => $data['sumber_dana'] ?? null,
+                    'dana'        => $data['dana'] ?? null,
+                    'status'      => 'Menunggu',
+                    'dosen_id'    => $data['ketua_id'],
+                ]);
 
-            $sync = [];
-            $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
-            if (!empty($data['anggota_id'])) {
-                foreach (array_unique($data['anggota_id']) as $id) {
-                    if ((int) $id === (int) $data['ketua_id']) {
-                        continue;
+                Log::info('Pengabdian created', ['id' => $pengabdian->id]);
+
+                $sync = [];
+                $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
+                if (!empty($data['anggota_id'])) {
+                    foreach (array_unique($data['anggota_id']) as $id) {
+                        if ((int) $id === (int) $data['ketua_id']) {
+                            continue;
+                        }
+                        $sync[$id] = ['peran' => 'Anggota'];
                     }
-                    $sync[$id] = ['peran' => 'Anggota'];
                 }
-            }
-            $pengabdian->dosens()->sync($sync);
+                $pengabdian->dosens()->sync($sync);
+                Log::info('Dosens synced');
 
-            // Sinkron mahasiswa pendukung (jika tabel pivot tersedia)
-            if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
-                $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
-                $mSync = [];
-                foreach ($ids as $mId) {
-                    $mSync[$mId] = ['peran' => 'Pendukung'];
+                // Sinkron mahasiswa pendukung (jika tabel pivot tersedia)
+                if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+                    $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
+                    $mSync = [];
+                    foreach ($ids as $mId) {
+                        $mSync[$mId] = ['peran' => 'Pendukung'];
+                    }
+                    $pengabdian->mahasiswas()->sync($mSync);
+                    Log::info('Mahasiswas synced');
                 }
-                $pengabdian->mahasiswas()->sync($mSync);
-            }
 
-            if ($request->hasFile('dokumentasi')) {
-                foreach ((array) $request->file('dokumentasi') as $file) {
-                    $folder = "pengabdian/{$pengabdian->id}";
-                    $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
-                    $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
-
-                    Dokumentasi::create([
-                        'pengabdian_id' => $pengabdian->id,
-                        'file_name'     => $file->getClientOriginalName(),
-                        'mime'          => $file->getMimeType(),
-                        'size'          => $file->getSize(),
-                        'gdrive_path'   => $path,
-                    ]);
+                if ($request->hasFile('dokumentasi')) {
+                    Log::info('Processing dokumentasi files', ['count' => count($request->file('dokumentasi'))]);
+                    
+                    foreach ((array) $request->file('dokumentasi') as $file) {
+                        try {
+                            $folder = "Pengabdian/{$pengabdian->id}";
+                            
+                            // Upload to Google Drive
+                            $uploadResult = $this->googleDrive->upload($file, $folder);
+                            
+                            Dokumentasi::create([
+                                'pengabdian_id' => $pengabdian->id,
+                                'file_name'     => $file->getClientOriginalName(),
+                                'mime'          => $file->getMimeType(),
+                                'size'          => $file->getSize(),
+                                'gdrive_path'   => $uploadResult['path'],
+                                'gdrive_url'    => $uploadResult['url'] ?? null,
+                            ]);
+                            
+                            Log::info('Dokumentasi uploaded', ['file' => $file->getClientOriginalName()]);
+                        } catch (\Exception $e) {
+                            Log::error('Failed to upload dokumentasi: ' . $e->getMessage());
+                            // Continue with other files even if one fails
+                        }
+                    }
                 }
-            }
-        });
+                
+                Log::info('Pengabdian store completed successfully');
+            });
 
-        return redirect()->route('dosen.pengabdian.index')->with('success', 'Pengabdian berhasil ditambahkan.');
+            return redirect()->route('dosen.pengabdian.index')->with('success', 'Pengabdian berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            Log::error('Pengabdian store failed: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            
+            return back()->withInput()->withErrors(['error' => 'Gagal menyimpan pengabdian: ' . $e->getMessage()]);
+        }
     }
 
     public function edit(Pengabdian $pengabdian)
@@ -212,17 +250,24 @@ class PengabdianController extends Controller
 
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {
-                    $folder = "pengabdian/{$pengabdian->id}";
-                    $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
-                    $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
-
-                    Dokumentasi::create([
-                        'pengabdian_id' => $pengabdian->id,
-                        'file_name'     => $file->getClientOriginalName(),
-                        'mime'          => $file->getMimeType(),
-                        'size'          => $file->getSize(),
-                        'gdrive_path'   => $path,
-                    ]);
+                    try {
+                        $folder = "Pengabdian/{$pengabdian->id}";
+                        
+                        // Upload to Google Drive
+                        $uploadResult = $this->googleDrive->upload($file, $folder);
+                        
+                        Dokumentasi::create([
+                            'pengabdian_id' => $pengabdian->id,
+                            'file_name'     => $file->getClientOriginalName(),
+                            'mime'          => $file->getMimeType(),
+                            'size'          => $file->getSize(),
+                            'gdrive_path'   => $uploadResult['path'],
+                            'gdrive_url'    => $uploadResult['url'] ?? null,
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to upload dokumentasi in update: ' . $e->getMessage());
+                        // Continue with other files
+                    }
                 }
             }
         });

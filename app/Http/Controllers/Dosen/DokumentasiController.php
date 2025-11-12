@@ -6,20 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\Dokumentasi;
 use App\Models\Penelitian;
 use App\Models\Pengabdian;
+use App\Services\GoogleDriveService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class DokumentasiController extends Controller
 {
+    protected $googleDrive;
+
+    public function __construct(GoogleDriveService $googleDrive)
+    {
+        $this->googleDrive = $googleDrive;
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
             'context'    => 'required|in:penelitian,pengabdian',
             'context_id' => 'required|integer',
             'files'      => 'nullable|array|min:1',
-            'files.*'    => 'nullable|image|max:4096',
-            'file'       => 'nullable|image|max:4096',
+            'files.*'    => 'nullable|file|max:10240', // 10MB max
+            'file'       => 'nullable|file|max:10240',
         ]);
 
         $files = [];
@@ -41,17 +49,34 @@ class DokumentasiController extends Controller
 
         $saved = [];
         foreach ($files as $file) {
-            $folder = $data['context'] . '/' . $model->id;
-            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
-            $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
+            try {
+                // Upload to Google Drive
+                $folder = ucfirst($data['context']) . '/' . $model->id;
+                $uploadResult = $this->googleDrive->upload($file, $folder);
 
-            $saved[] = Dokumentasi::create([
-                $data['context'] === 'penelitian' ? 'penelitian_id' : 'pengabdian_id' => $model->id,
-                'file_name'   => $file->getClientOriginalName(),
-                'mime'        => $file->getMimeType(),
-                'size'        => $file->getSize(),
-                'gdrive_path' => $path,
-            ]);
+                $saved[] = Dokumentasi::create([
+                    $data['context'] === 'penelitian' ? 'penelitian_id' : 'pengabdian_id' => $model->id,
+                    'file_name'   => $uploadResult['original_name'],
+                    'mime'        => $uploadResult['mime_type'],
+                    'size'        => $uploadResult['size'],
+                    'gdrive_path' => $uploadResult['path'],
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Upload to Google Drive failed: ' . $e->getMessage());
+                
+                // Fallback to local storage
+                $folder = ucfirst($data['context']) . '/' . $model->id;
+                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
+
+                $saved[] = Dokumentasi::create([
+                    $data['context'] === 'penelitian' ? 'penelitian_id' : 'pengabdian_id' => $model->id,
+                    'file_name'   => $file->getClientOriginalName(),
+                    'mime'        => $file->getMimeType(),
+                    'size'        => $file->getSize(),
+                    'gdrive_path' => $path,
+                ]);
+            }
         }
 
         return response()->json([
@@ -61,15 +86,23 @@ class DokumentasiController extends Controller
                 'file_name' => $doc->file_name,
                 'mime'      => $doc->mime,
                 'size'      => $doc->size,
-                'url'       => Storage::disk('public')->url($doc->gdrive_path),
+                'url'       => $this->getFileUrl($doc->gdrive_path),
             ]),
         ], 201);
     }
 
     public function destroy(Dokumentasi $dokumentasi): JsonResponse
     {
-        if ($dokumentasi->gdrive_path && Storage::disk('public')->exists($dokumentasi->gdrive_path)) {
-            Storage::disk('public')->delete($dokumentasi->gdrive_path);
+        // Try to delete from Google Drive first
+        try {
+            $this->googleDrive->delete($dokumentasi->gdrive_path);
+        } catch (\Exception $e) {
+            \Log::error('Delete from Google Drive failed: ' . $e->getMessage());
+            
+            // Fallback: try to delete from local storage
+            if ($dokumentasi->gdrive_path && Storage::disk('public')->exists($dokumentasi->gdrive_path)) {
+                Storage::disk('public')->delete($dokumentasi->gdrive_path);
+            }
         }
 
         $dokumentasi->delete();
@@ -77,5 +110,23 @@ class DokumentasiController extends Controller
         return response()->json([
             'message' => 'Dokumentasi dihapus.',
         ]);
+    }
+
+    /**
+     * Get file URL (Google Drive or local storage)
+     */
+    protected function getFileUrl(string $path): string
+    {
+        try {
+            $url = $this->googleDrive->getUrl($path);
+            if ($url) {
+                return $url;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Get Google Drive URL failed: ' . $e->getMessage());
+        }
+        
+        // Fallback to local storage URL
+        return Storage::disk('public')->url($path);
     }
 }
