@@ -30,58 +30,13 @@ class GoogleDriveService
                 $client->refreshToken(config('filesystems.disks.google.refreshToken'));
                 
                 $this->service = new Drive($client);
+                $this->folderId = config('filesystems.disks.google.folder');
                 
-                // Get or create main folder "Integrasi Sistem PBL Drive"
-                $this->folderId = $this->getOrCreateMainFolder();
-                
-                \Log::info('Google Drive initialized successfully with folder ID: ' . $this->folderId);
+                \Log::info('Google Drive initialized successfully');
             } catch (\Exception $e) {
                 $this->useGoogleDrive = false;
                 \Log::error('Google Drive initialization failed: ' . $e->getMessage());
             }
-        }
-    }
-    
-    /**
-     * Get or create main folder "Integrasi Sistem PBL Drive"
-     */
-    protected function getOrCreateMainFolder(): string
-    {
-        $folderName = 'Integrasi Sistem PBL Drive';
-        
-        // Check if folder already exists
-        $query = "name='" . addslashes($folderName) . "' and mimeType='application/vnd.google-apps.folder' and trashed=false";
-        
-        try {
-            $results = $this->service->files->listFiles([
-                'q' => $query,
-                'fields' => 'files(id, name)',
-                'pageSize' => 1,
-            ]);
-            
-            if (count($results->getFiles()) > 0) {
-                // Folder exists
-                $folderId = $results->getFiles()[0]->id;
-                \Log::info('Found existing main folder: ' . $folderName . ' (ID: ' . $folderId . ')');
-                return $folderId;
-            }
-            
-            // Create main folder
-            $folderMetadata = new DriveFile([
-                'name' => $folderName,
-                'mimeType' => 'application/vnd.google-apps.folder',
-            ]);
-            
-            $folder = $this->service->files->create($folderMetadata, [
-                'fields' => 'id',
-            ]);
-            
-            \Log::info('Created main folder: ' . $folderName . ' (ID: ' . $folder->id . ')');
-            return $folder->id;
-        } catch (\Exception $e) {
-            \Log::error('Failed to get/create main folder: ' . $e->getMessage());
-            // Return empty string if failed
-            return '';
         }
     }
 

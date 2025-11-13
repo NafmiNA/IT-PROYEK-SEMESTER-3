@@ -104,12 +104,19 @@
                         {{-- Skema --}}
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-2">Skema</label>
-                            <select name="skema" class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 hover:border-gray-400">
+                            <select name="skema" id="skema-select" class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 hover:border-gray-400" onchange="toggleCustomInput('skema')">
                                 <option value="">Pilih skema</option>
                                 @foreach(($skemaOptions ?? []) as $option)
                                     <option value="{{ $option }}" @selected(old('skema') === $option)>{{ $option }}</option>
                                 @endforeach
+                                <option value="Lainnya" @selected(old('skema') === 'Lainnya')>Lainnya</option>
                             </select>
+                            <input type="text" 
+                                   name="skema_custom" 
+                                   id="skema-custom" 
+                                   value="{{ old('skema_custom') }}" 
+                                   placeholder="Masukkan skema lainnya"
+                                   class="mt-2 w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 hover:border-gray-400 hidden">
                             @error('skema') 
                                 <p class="mt-2 text-sm text-red-600 flex items-center gap-1.5">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -123,12 +130,19 @@
                         {{-- Sumber Dana --}}
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-2">Sumber Dana</label>
-                            <select name="sumber_dana" class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 hover:border-gray-400">
+                            <select name="sumber_dana" id="sumber-dana-select" class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 hover:border-gray-400" onchange="toggleCustomInput('sumber_dana')">
                                 <option value="">Pilih sumber dana</option>
                                 @foreach(($sumberDanaOptions ?? []) as $option)
                                     <option value="{{ $option }}" @selected(old('sumber_dana') === $option)>{{ $option }}</option>
                                 @endforeach
+                                <option value="Lainnya" @selected(old('sumber_dana') === 'Lainnya')>Lainnya</option>
                             </select>
+                            <input type="text" 
+                                   name="sumber_dana_custom" 
+                                   id="sumber-dana-custom" 
+                                   value="{{ old('sumber_dana_custom') }}" 
+                                   placeholder="Masukkan sumber dana lainnya"
+                                   class="mt-2 w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 hover:border-gray-400 hidden">
                             @error('sumber_dana') 
                                 <p class="mt-2 text-sm text-red-600 flex items-center gap-1.5">
                                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -360,6 +374,29 @@
 
     {{-- JavaScript for Dynamic Forms (Doherty Threshold) --}}
     <script>
+        // Toggle custom input for "Lainnya" option
+        function toggleCustomInput(fieldName) {
+            const select = document.getElementById(fieldName + '-select');
+            const customInput = document.getElementById(fieldName.replace('_', '-') + '-custom');
+            
+            if (select && customInput) {
+                if (select.value === 'Lainnya') {
+                    customInput.classList.remove('hidden');
+                    customInput.focus();
+                } else {
+                    customInput.classList.add('hidden');
+                    customInput.value = '';
+                }
+            }
+        }
+
+        // Initialize custom inputs on page load (for old() values)
+        document.addEventListener('DOMContentLoaded', () => {
+            ['skema', 'sumber_dana'].forEach(field => {
+                toggleCustomInput(field);
+            });
+        });
+
         // Add team member
         document.getElementById('tambah-anggota')?.addEventListener('click', () => {
             const wrapper = document.getElementById('anggota-wrapper');
@@ -376,8 +413,22 @@
             wrapper.appendChild(template);
         });
 
-        // Form validation feedback
+        // Handle form submission - use custom value if "Lainnya" selected
         document.querySelector('form')?.addEventListener('submit', (e) => {
+            // Handle custom inputs
+            ['skema', 'sumber_dana'].forEach(field => {
+                const select = document.getElementById(field + '-select');
+                const customInput = document.getElementById(field.replace('_', '-') + '-custom');
+                
+                if (select && customInput && select.value === 'Lainnya' && customInput.value.trim()) {
+                    // Set select value to custom input value
+                    const option = document.createElement('option');
+                    option.value = customInput.value.trim();
+                    option.selected = true;
+                    select.appendChild(option);
+                }
+            });
+
             const submitBtn = e.target.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
             submitBtn.innerHTML = `

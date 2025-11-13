@@ -19,6 +19,8 @@ class Dokumentasi extends Model
         'mime',
         'size',
         'gdrive_path',
+        'google_id',
+        'google_url',
     ];
 
     /**
