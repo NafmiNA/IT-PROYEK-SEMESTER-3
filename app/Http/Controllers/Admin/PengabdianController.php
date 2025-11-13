@@ -7,20 +7,25 @@ use App\Http\Controllers\Controller;
 use App\Models\Dokumentasi;
 use App\Models\Dosen;
 use App\Models\Pengabdian;
+use App\Models\Mahasiswa; // <-- Ditambahkan untuk kejelasan
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Schema\Blueprint;
-// Pastikan model Mahasiswa ada di 'use'
-use App\Models\Mahasiswa;
+use Illuminate\Support\Facades\Schema; // <-- Ditambahkan untuk kejelasan
 
 class PengabdianController extends Controller
 {
     public function index(Request $request)
     {
         // MODIFIKASI: Filter dosen dihapus untuk Admin
+        // $dosen = $request->user()->dosen; // <-- Dihapus
+
         $pengabdian = Pengabdian::with(['ketua'])
-            // Filter whereHas dihapus
+            // MODIFIKASI: Filter whereHas dihapus
+            // ->whereHas('dosens', function ($query) use ($dosen) {
+            //     $query->where('dosen_id', $dosen->id);
+            // })
             ->latest()
             ->paginate(10);
 
@@ -33,7 +38,7 @@ class PengabdianController extends Controller
         $this->authorize('create', Pengabdian::class);
 
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
+        $mahasiswas = Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
 
         // MODIFIKASI: Mengarah ke view admin
@@ -45,7 +50,7 @@ class PengabdianController extends Controller
         $this->authorize('view', $pengabdian);
 
         $relations = ['ketua', 'dosenTerlibat', 'dokumentasi'];
-        if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+        if (Schema::hasTable('pengabdian_mahasiswa')) {
             $relations[] = 'mahasiswas';
         }
         $pengabdian->load($relations);
@@ -77,6 +82,7 @@ class PengabdianController extends Controller
             'dokumentasi.*' => 'nullable|image|max:4096',
         ]);
 
+        // (Logika DDL dan DB::transaction di bawah ini sudah benar)
         $this->ensurePengabdianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request) {
@@ -103,7 +109,7 @@ class PengabdianController extends Controller
             }
             $pengabdian->dosens()->sync($sync);
 
-            if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+            if (Schema::hasTable('pengabdian_mahasiswa')) {
                 $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
                 $mSync = [];
                 foreach ($ids as $mId) {
@@ -139,12 +145,12 @@ class PengabdianController extends Controller
 
         $pengabdian->load(['dosens', 'ketua', 'dokumentasi']);
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
+        $mahasiswas = Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         $anggotaTerpilih = $pengabdian->dosens
             ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
             ->pluck('id')
             ->all();
-        $mahasiswaTerpilih = \Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')
+        $mahasiswaTerpilih = Schema::hasTable('pengabdian_mahasiswa')
             ? $pengabdian->mahasiswas()->pluck('mahasiswa.id')->all()
             : [];
 
@@ -201,7 +207,7 @@ class PengabdianController extends Controller
             }
             $pengabdian->dosens()->sync($sync);
 
-            if (\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
+            if (Schema::hasTable('pengabdian_mahasiswa')) {
                 $mSync = [];
                 if (!empty($data['mahasiswa_id'])) {
                     foreach (array_unique($data['mahasiswa_id']) as $mId) {
@@ -252,6 +258,7 @@ class PengabdianController extends Controller
         return redirect()->route('admin.pengabdian.index')->with('success', 'Pengabdian berhasil dihapus.');
     }
 
+    // (Helper function di bawah ini sudah benar)
     private function pengabdianOptions(): array
     {
         $bidangOptions = [
@@ -287,8 +294,8 @@ class PengabdianController extends Controller
 
     private function ensurePengabdianMahasiswaPivot(): void
     {
-        if (!\Illuminate\Support\Facades\Schema::hasTable('pengabdian_mahasiswa')) {
-            \Illuminate\Support\Facades\Schema::create('pengabdian_mahasiswa', function (Blueprint $table) {
+        if (!Schema::hasTable('pengabdian_mahasiswa')) {
+            Schema::create('pengabdian_mahasiswa', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('pengabdian_id')->constrained('pengabdians')->cascadeOnDelete();
                 $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();

@@ -1,149 +1,46 @@
 <?php
 
-namespace App\Http\Controllers\Dosen;
+// MODIFIKASI: Namespace diubah ke Admin
+namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dosen;
 use App\Models\PrestasiDosen;
-use App\Models\Penelitian;
-use App\Models\Pengabdian;
+// (Model Penelitian & Pengabdian tidak diperlukan di controller ini)
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PrestasiDosenController extends Controller
 {
+    /**
+     * Menampilkan daftar SEMUA prestasi dari SEMUA dosen (Global Admin View).
+     */
     public function index()
     {
-        $user = Auth::user();
-        $dosen = Dosen::where('user_id', $user->id)->first();
+        // Ambil data admin yang login (untuk variabel $dosen di view)
+        $dosen = Auth::user(); 
         
-        if (!$dosen) {
-            return redirect()->back()->with('error', 'Data dosen tidak ditemukan');
-        }
-
-        // Get prestasi per tahun
-        $prestasi = PrestasiDosen::where('dosen_id', $dosen->id)
+        // MODIFIKASI: Ambil SEMUA data prestasi, diurutkan, dan dipaginasi
+        // Kita gunakan 'with('dosen')' untuk mengambil info dosen pemilik prestasi
+        $prestasi = PrestasiDosen::with('dosen') 
             ->orderBy('tahun', 'desc')
-            ->get();
+            ->paginate(15); // Menampilkan 15 data per halaman
 
-        // Calculate current year stats
+        // Variabel dummy ini dibutuhkan oleh view kloningan Anda
         $currentYear = date('Y');
-        $currentPrestasi = $this->calculatePrestasi($dosen->id, $currentYear);
-
-        return view('dosen.prestasi.index', compact('prestasi', 'currentPrestasi', 'currentYear', 'dosen'));
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate([
-            'tahun' => 'required|integer|min:2000|max:2100',
-            'skor_sinta' => 'required|integer|min:0',
-            'buku' => 'required|integer|min:0',
-        ]);
-
-        $user = Auth::user();
-        $dosen = Dosen::where('user_id', $user->id)->first();
-
-        if (!$dosen) {
-            return redirect()->back()->with('error', 'Data dosen tidak ditemukan');
-        }
-
-        // Calculate publikasi & hibah automatically
-        $calculated = $this->calculatePrestasi($dosen->id, $request->tahun);
-
-        // Create or update prestasi
-        PrestasiDosen::updateOrCreate(
-            [
-                'dosen_id' => $dosen->id,
-                'tahun' => $request->tahun,
-            ],
-            [
-                'publikasi' => $calculated['publikasi'],
-                'hibah' => $calculated['hibah'],
-                'skor_sinta' => $request->skor_sinta,
-                'buku' => $request->buku,
-            ]
-        );
-
-        return redirect()->route('dosen.prestasi.index')
-            ->with('success', 'Prestasi berhasil disimpan!');
-    }
-
-    public function edit($id)
-    {
-        $user = Auth::user();
-        $dosen = Dosen::where('user_id', $user->id)->first();
-
-        $prestasi = PrestasiDosen::where('id', $id)
-            ->where('dosen_id', $dosen->id)
-            ->firstOrFail();
-
-        // Recalculate publikasi & hibah for current year
-        $calculated = $this->calculatePrestasi($dosen->id, $prestasi->tahun);
-
-        return view('dosen.prestasi.edit', compact('prestasi', 'calculated'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'skor_sinta' => 'required|integer|min:0',
-            'buku' => 'required|integer|min:0',
-        ]);
-
-        $user = Auth::user();
-        $dosen = Dosen::where('user_id', $user->id)->first();
-
-        $prestasi = PrestasiDosen::where('id', $id)
-            ->where('dosen_id', $dosen->id)
-            ->firstOrFail();
-
-        // Recalculate publikasi & hibah
-        $calculated = $this->calculatePrestasi($dosen->id, $prestasi->tahun);
-
-        $prestasi->update([
-            'publikasi' => $calculated['publikasi'],
-            'hibah' => $calculated['hibah'],
-            'skor_sinta' => $request->skor_sinta,
-            'buku' => $request->buku,
-        ]);
-
-        return redirect()->route('dosen.prestasi.index')
-            ->with('success', 'Prestasi berhasil diupdate!');
-    }
-
-    /**
-     * Calculate publikasi & hibah from penelitian & pengabdian
-     */
-    private function calculatePrestasi($dosenId, $tahun)
-    {
-        // PUBLIKASI = Penelitian (SEMUA, tidak ada verifikasi) + Pengabdian (yang DISETUJUI)
-        $jumlahPenelitian = Penelitian::where('dosen_id', $dosenId)
-            ->where('tahun', $tahun)
-            ->count();
-        
-        $jumlahPengabdianDisetujui = Pengabdian::where('dosen_id', $dosenId)
-            ->where('tahun', $tahun)
-            ->where('status', 'Disetujui')
-            ->count();
-        
-        $totalPublikasi = $jumlahPenelitian + $jumlahPengabdianDisetujui;
-
-        // HIBAH = Dana Penelitian (SEMUA) + Dana Pengabdian (yang DISETUJUI)
-        $hibahPenelitian = Penelitian::where('dosen_id', $dosenId)
-            ->where('tahun', $tahun)
-            ->sum('dana');
-
-        $hibahPengabdian = Pengabdian::where('dosen_id', $dosenId)
-            ->where('tahun', $tahun)
-            ->where('status', 'Disetujui')
-            ->sum('dana');
-
-        $totalHibah = $hibahPenelitian + $hibahPengabdian;
-
-        return [
-            'publikasi' => $totalPublikasi,
-            'hibah' => $totalHibah,
+        $currentPrestasi = [
+            'publikasi' => 0,
+            'hibah' => 0,
+            'skor_sinta' => 0,
+            'buku' => 0,
         ];
+
+        // MODIFIKASI: Mengarah ke view 'admin.prestasi.index'
+        return view('admin.prestasi.index', compact('prestasi', 'currentPrestasi', 'currentYear', 'dosen'));
     }
+
+    // MODIFIKASI: Fungsi store, edit, update, dan calculatePrestasi dihapus.
+    // Sesuai Use Case, Admin tidak mengelola data ini, hanya melihat (Global).
+    // (Jika Admin perlu mengelola, kita harus mengkloning logikanya seperti
+    // Penelitian/Pengabdian, namun saat ini kita ikuti Use Case)
 }
