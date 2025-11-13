@@ -106,7 +106,7 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
     | Area MAHASISWA (prefix: /mahasiswa , name: mahasiswa.*)
     |--------------------------------------------------------------------------
     */
-   Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->group(function () {
+    Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->group(function () {
         // ... (Rute Mahasiswa Anda) ...
         // Dashboard Mahasiswa
         Route::get('/dashboard', [MahasiswaDashboardController::class, 'index'])
@@ -137,23 +137,35 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
         // Dashboard Admin (Halaman Utama Admin)
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-             ->name('dashboard');
+            ->name('dashboard');
 
         // Kelola Akun Pengguna (Use Case Admin)
         Route::resource('users', UserController::class);
 
         // Rute untuk Kelola Penelitian (Admin)
         Route::resource('penelitian', AdminPenelitianController::class)
-             ->names('penelitian')
-             ->parameters(['penelitian' => 'penelitian']);
+            ->names('penelitian')
+            ->parameters(['penelitian' => 'penelitian']);
         
+        // ========================================================================
+        // RUTE BARU: Untuk Setujui / Verifikasi / Tolak Penelitian
+        // ========================================================================
+        Route::patch('/penelitian/{penelitian}/update-status', [AdminPenelitianController::class, 'updateStatus'])
+            ->name('penelitian.updateStatus');
+
         // Rute untuk Kelola Pengabdian (Admin)
         Route::resource('pengabdian', AdminPengabdianController::class)
-             ->names('pengabdian')
-             ->parameters(['pengabdian' => 'pengabdian']);
+            ->names('pengabdian')
+            ->parameters(['pengabdian' => 'pengabdian']);
+        
+        // ========================================================================
+        // RUTE BARU: Untuk Setujui / Verifikasi / Tolak Pengabdian
+        // ========================================================================
+        Route::patch('/pengabdian/{pengabdian}/update-status', [AdminPengabdianController::class, 'updateStatus'])
+            ->name('pengabdian.updateStatus');
         
         Route::get('/pengabdian/export/excel', [AdminPengabdianController::class, 'export'])
-             ->name('pengabdian.export');
+            ->name('pengabdian.export');
 
         // ========================================================================
         // TAMBAHAN BARU: Rute untuk Prestasi Admin

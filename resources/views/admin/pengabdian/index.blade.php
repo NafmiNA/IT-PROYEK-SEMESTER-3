@@ -66,7 +66,7 @@
                         <nav class="flex items-center gap-2 text-sm text-gray-600 mb-3">
                             {{-- MODIFIKASI: Rute diubah ke admin.dashboard --}}
                             <a href="{{ route('admin.dashboard') }}" 
-                               class="flex items-center gap-1 hover:text-blue-600 transition-colors focus-visible">
+                                class="flex items-center gap-1 hover:text-blue-600 transition-colors focus-visible">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
@@ -82,8 +82,8 @@
                         <div class="flex items-center gap-3">
                             {{-- MODIFIKASI: Rute diubah ke admin.dashboard --}}
                             <a href="{{ route('admin.dashboard') }}" 
-                               class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
-                               aria-label="Kembali ke Dashboard">
+                                class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
+                                aria-label="Kembali ke Dashboard">
                                  <svg class="w-5 h-5 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                                  </svg>
@@ -113,7 +113,7 @@
                             </div>
                             {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.create --}}
                             <a href="{{ route('admin.pengabdian.create') }}"
-                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
+                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -366,6 +366,41 @@
                                             Edit
                                         </a>
 
+                                        {{-- ======================================================================== --}}
+                                        {{-- KODE BARU DITAMBAHKAN: Tombol Aksi Verifikasi --}}
+                                        {{-- ======================================================================== --}}
+                                        @if ($p->status == 'Menunggu')
+                                            
+                                            {{-- FORM UNTUK SETUJUI --}}
+                                            <form action="{{ route('admin.pengabdian.updateStatus', $p->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status" value="Disetujui">
+                                                <button type="submit" 
+                                                        class="action-btn bg-green-600 hover:bg-green-700 text-white transition-colors focus-visible">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    Setujui
+                                                </button>
+                                            </form>
+
+                                            {{-- FORM UNTUK TOLAK --}}
+                                            <form action="{{ route('admin.pengabdian.updateStatus', $p->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status" value="Ditolak">
+                                                <button type="submit" 
+                                                        class="action-btn bg-gray-600 hover:bg-gray-700 text-white transition-colors focus-visible">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                    Tolak
+                                                </button>
+                                            </form>
+                                        @endif
+                                        {{-- ======================================================================== --}}
+
                                         {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.destroy --}}
                                         <form action="{{ route('admin.pengabdian.destroy', $p) }}" method="POST" 
                                               onsubmit="return confirm('Yakin ingin menghapus pengabdian ini?');" class="inline-block">
@@ -447,79 +482,56 @@
             });
             
             if (event && event.target.classList.contains('filter-btn')) {
-                event.target.classList.remove('bg-gray-100', 'text-gray-700');
                 event.target.classList.add('bg-blue-600', 'text-white');
+                event.target.classList.remove('bg-gray-100', 'text-gray-700');
+            } else {
+                // Highlight 'Semua' if called from stat card
+                buttons[0].classList.add('bg-blue-600', 'text-white');
+                buttons[0].classList.remove('bg-gray-100', 'text-gray-700');
             }
-            
-            // Filter cards with animation
-            let visibleCount = 0;
+
+            // Show/hide cards
+            let count = 0;
             cards.forEach(card => {
-                const cardStatus = card.dataset.status;
-                if (status === 'all' || cardStatus === status) {
-                    card.style.display = '';
-                    visibleCount++;
+                const cardStatus = card.getAttribute('data-status');
+                const isMatch = (status === 'all' || 
+                                 (status === 'pending' && cardStatus === 'menunggu') ||
+                                 (status === 'approved' && cardStatus === 'disetujui') ||
+                                 cardStatus === status);
+                
+                if (isMatch) {
+                    card.style.display = 'block';
+                    count++;
                 } else {
                     card.style.display = 'none';
                 }
             });
-            
-            showFeedback(visibleCount + ' pengabdian ditampilkan');
         }
-        
-        // Search functionality
+
+        // Live search
         function searchPengabdian(query) {
             const cards = document.querySelectorAll('.pengabdian-card');
+            const lowerQuery = query.toLowerCase();
             const buttons = document.querySelectorAll('.filter-btn');
-            const searchTerm = query.toLowerCase().trim();
-            
+
             // Reset filters
-            buttons.forEach((btn, i) => {
+            buttons.forEach(btn => {
                 btn.classList.remove('bg-blue-600', 'text-white');
                 btn.classList.add('bg-gray-100', 'text-gray-700');
-                if (i === 0) {
-                    btn.classList.remove('bg-gray-100', 'text-gray-700');
-                    btn.classList.add('bg-blue-600', 'text-white');
-                }
             });
-            
-            let visibleCount = 0;
+            buttons[0].classList.add('bg-blue-600', 'text-white');
+            buttons[0].classList.remove('bg-gray-100', 'text-gray-700');
+
             cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                if (searchTerm === '' || title.includes(searchTerm)) {
-                    card.style.display = '';
-                    visibleCount++;
+                const title = card.querySelector('h3') ? card.querySelector('h3').textContent.toLowerCase() : '';
+                const year = card.querySelector('span[class*="gap-1"]') ? card.querySelector('span[class*="gap-1"]').textContent.toLowerCase() : '';
+                
+                if (title.includes(lowerQuery) || year.includes(lowerQuery)) {
+                    card.style.display = 'block';
                 } else {
                     card.style.display = 'none';
                 }
             });
-            
-            if (searchTerm) showFeedback(visibleCount + ' hasil ditemukan');
         }
-        
-        // Feedback toast
-        function showFeedback(message) {
-            const existing = document.getElementById('feedback-toast');
-            if (existing) existing.remove();
-            
-            const toast = document.createElement('div');
-            toast.id = 'feedback-toast';
-            toast.className = 'fixed bottom-6 right-6 px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-lg animate-slide-up z-50';
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        }
-        
-        // Keyboard shortcut: Ctrl/Cmd + K for search
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                document.getElementById('searchInput')?.focus();
-            }
-        });
     </script>
 </x-app-layout>

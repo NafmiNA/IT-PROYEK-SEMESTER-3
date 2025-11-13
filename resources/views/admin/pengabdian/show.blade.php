@@ -1,162 +1,340 @@
-<x-app-layout backUrl="{{ route('admin.pengabdian.index') }}">
-    @php
-        $statusMap = [
-            'Menunggu'  => ['bg' => 'bg-amber-100 text-amber-700 ring-1 ring-amber-200', 'label' => 'Menunggu Verifikasi'],
-            'Disetujui' => ['bg' => 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200', 'label' => 'Disetujui'],
-            'Ditolak'   => ['bg' => 'bg-rose-100 text-rose-700 ring-1 ring-rose-200', 'label' => 'Ditolak'],
-            'Draft'     => ['bg' => 'bg-slate-200 text-slate-700 ring-1 ring-slate-300', 'label' => 'Draft'],
+<?php
+
+// MODIFIKASI: Namespace diubah ke Admin
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Dokumentasi;
+use App\Models\Dosen;
+use App\Models\Pengabdian;
+use App\Models\Mahasiswa; // <-- Ditambahkan untuk kejelasan
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema; // <-- Ditambahkan untuk kejelasan
+
+// -----------------------------------------------------------------
+// TAMBAHAN BARU: 'use' untuk fitur Export Excel
+// -----------------------------------------------------------------
+use App\Exports\PengabdianExport;
+use Maatwebsite\Excel\Facades\Excel;
+// -----------------------------------------------------------------
+
+
+class PengabdianController extends Controller
+{
+    public function index(Request $request)
+    {
+        // MODIFIKASI: Filter dosen dihapus untuk Admin
+        $pengabdian = Pengabdian::with(['ketua'])
+            // Filter whereHas dihapus
+            ->latest()
+            ->paginate(10);
+
+        // MODIFIKASI: Mengarah ke view admin
+        return view('admin.pengabdian.index', compact('pengabdian'));
+    }
+
+    public function create()
+    {
+        $this->authorize('create', Pengabdian::class);
+
+        $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
+        $mahasiswas = Mahasiswa::orderBy('nama')->get(['id','nama','email']);
+        [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
+
+        // MODIFIKASI: Mengarah ke view admin
+        return view('admin.pengabdian.create', compact('dosens', 'mahasiswas', 'bidangOptions', 'skemaOptions', 'sumberDanaOptions'));
+    }
+
+    public function show(Pengabdian $pengabdian)
+    {
+        $this->authorize('view', $pengabdian);
+
+        $relations = ['ketua', 'dosenTerlibat', 'dokumentasi'];
+        if (Schema::hasTable('pengabdian_mahasiswa')) {
+            $relations[] = 'mahasiswas';
+        }
+        $pengabdian->load($relations);
+
+        // MODIFIKASI: Admin selalu dianggap sebagai "Ketua" untuk hak akses penuh
+        $isKetua = true;
+
+        // MODIFIKASI: Mengarah ke view admin
+        return view('admin.pengabdian.show', compact('pengabdian', 'isKetua'));
+    }
+
+    public function store(Request $request)
+    {
+        $this->authorize('create', Pengabdian::class);
+
+        $data = $request->validate([
+            'judul'        => 'required|string|max:255',
+            'tahun'        => 'required|integer',
+            'bidang'       => 'nullable|string|max:100',
+            'skema'        => 'nullable|string|max:100',
+            'sumber_dana'  => 'nullable|string|max:100',
+            'dana'         => 'nullable|numeric|min:0',
+            'ketua_id'     => 'required|exists:dosens,id',
+            'anggota_id'   => 'nullable|array',
+            'anggota_id.*' => 'different:ketua_id|exists:dosens,id',
+            'mahasiswa_id' => 'nullable|array',
+            'mahasiswa_id.*'=> 'nullable|exists:mahasiswa,id',
+            'dokumentasi'  => 'nullable|array',
+            'dokumentasi.*' => 'nullable|image|max:4096',
+        ]);
+
+        $this->ensurePengabdianMahasiswaPivot();
+
+        DB::transaction(function () use ($data, $request) {
+            $pengabdian = Pengabdian::create([
+                'judul'       => $data['judul'],
+                'tahun'       => $data['tahun'],
+                'bidang'      => $data['bidang'] ?? null,
+                'skema'       => $data['skema'] ?? null,
+                'sumber_dana' => $data['sumber_dana'] ?? null,
+                'dana'        => $data['dana'] ?? null,
+                'status'      => 'Menunggu',
+                'dosen_id'    => $data['ketua_id'],
+            ]);
+
+            $sync = [];
+            $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
+            if (!empty($data['anggota_id'])) {
+                foreach (array_unique($data['anggota_id']) as $id) {
+                    if ((int) $id === (int) $data['ketua_id']) {
+                        continue;
+                    }
+                    $sync[$id] = ['peran' => 'Anggota'];
+                }
+            }
+            $pengabdian->dosens()->sync($sync);
+
+            if (Schema::hasTable('pengabdian_mahasiswa')) {
+                $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
+                $mSync = [];
+                foreach ($ids as $mId) {
+                    $mSync[$mId] = ['peran' => 'Pendukung'];
+                }
+                $pengabdian->mahasiswas()->sync($mSync);
+            }
+
+            if ($request->hasFile('dokumentasi')) {
+                foreach ((array) $request->file('dokumentasi') as $file) {
+                    $folder = "pengabdian/{$pengabdian->id}";
+                    $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
+                    $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
+
+                    Dokumentasi::create([
+                        'pengabdian_id' => $pengabdian->id,
+                        'file_name'     => $file->getClientOriginalName(),
+                        'mime'          => $file->getMimeType(),
+                        'size'          => $file->getSize(),
+                        'gdrive_path'   => $path,
+                    ]);
+                }
+            }
+        });
+
+        // MODIFIKASI: Redirect ke rute admin
+        return redirect()->route('admin.pengabdian.index')->with('success', 'Pengabdian berhasil ditambahkan.');
+    }
+
+    public function edit(Pengabdian $pengabdian)
+    {
+        $this->authorize('update', $pengabdian);
+
+        $pengabdian->load(['dosens', 'ketua', 'dokumentasi']);
+        $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
+        $mahasiswas = Mahasiswa::orderBy('nama')->get(['id','nama','email']);
+        $anggotaTerpilih = $pengabdian->dosens
+            ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
+            ->pluck('id')
+            ->all();
+        $mahasiswaTerpilih = Schema::hasTable('pengabdian_mahasiswa')
+            ? $pengabdian->mahasiswas()->pluck('mahasiswa.id')->all()
+            : [];
+
+        [$bidangOptions, $skemaOptions, $sumberDanaOptions] = $this->pengabdianOptions();
+
+        // MODIFIKASI: Mengarah ke view admin
+        return view('admin.pengabdian.edit', compact('pengabdian', 'dosens', 'mahasiswas', 'anggotaTerpilih', 'mahasiswaTerpilih', 'bidangOptions', 'skemaOptions', 'sumberDanaOptions'));
+    }
+
+    public function update(Request $request, Pengabdian $pengabdian)
+    {
+        $this->authorize('update', $pengabdian);
+
+        $data = $request->validate([
+            'judul'        => 'required|string|max:255',
+            'tahun'        => 'required|integer|min:2000|max:2100',
+            'bidang'       => 'nullable|string|max:100',
+            'skema'        => 'nullable|string|max:100',
+            'sumber_dana'  => 'nullable|string|max:100',
+            'dana'         => 'nullable|numeric|min:0',
+            'ketua_id'     => 'required|exists:dosens,id',
+            'anggota_id'   => 'nullable|array',
+            'anggota_id.*' => 'different:ketua_id|exists:dosens,id',
+            'mahasiswa_id' => 'nullable|array',
+            'mahasiswa_id.*'=> 'exists:mahasiswa,id',
+            'dokumentasi'  => 'nullable|array',
+            'dokumentasi.*' => 'nullable|image|max:4096',
+            'status'       => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak',
+        ]);
+
+        $this->ensurePengabdianMahasiswaPivot();
+
+        DB::transaction(function () use ($data, $request, $pengabdian) {
+            $pengabdian->update([
+                'judul'       => $data['judul'],
+                'tahun'       => $data['tahun'],
+                'bidang'      => $data['bidang'] ?? null,
+                'skema'       => $data['skema'] ?? null,
+                'sumber_dana' => $data['sumber_dana'] ?? null,
+                'dana'        => $data['dana'] ?? null,
+                'dosen_id'    => $data['ketua_id'],
+                'status'      => $data['status'] ?? $pengabdian->status,
+            ]);
+
+            $sync = [];
+            $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
+            if (!empty($data['anggota_id'])) {
+                foreach (array_unique($data['anggota_id']) as $id) {
+                    if ((int) $id === (int) $data['ketua_id']) {
+                        continue;
+                    }
+                    $sync[$id] = ['peran' => 'Anggota'];
+                }
+            }
+            $pengabdian->dosens()->sync($sync);
+
+            if (Schema::hasTable('pengabdian_mahasiswa')) {
+                $mSync = [];
+                if (!empty($data['mahasiswa_id'])) {
+                    foreach (array_unique($data['mahasiswa_id']) as $mId) {
+                        $mSync[$mId] = ['peran' => 'Pendukung'];
+                    }
+                }
+                $pengabdian->mahasiswas()->sync($mSync);
+            }
+
+            if ($request->hasFile('dokumentasi')) {
+                foreach ((array) $request->file('dokumentasi') as $file) {
+                    $folder = "pengabdian/{$pengabdian->id}";
+                    $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
+                    $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
+
+                    Dokumentasi::create([
+                        'pengabdian_id' => $pengabdian->id,
+                        'file_name'     => $file->getClientOriginalName(),
+                        'mime'          => $file->getMimeType(),
+                        'size'          => $file->getSize(),
+                        'gdrive_path'   => $path,
+                    ]);
+                }
+            }
+        });
+
+        // MODIFIKASI: Redirect ke rute admin
+        return redirect()->route('admin.pengabdian.show', $pengabdian)->with('ok', 'Perubahan disimpan.');
+    }
+
+    public function destroy(Pengabdian $pengabdian)
+    {
+        $this->authorize('delete', $pengabdian);
+
+        DB::transaction(function () use ($pengabdian) {
+            foreach ($pengabdian->dokumentasi as $doc) {
+                if ($doc->gdrive_path && Storage::disk('public')->exists($doc->gdrive_path)) {
+                    Storage::disk('public')->delete($doc->gdrive_path);
+                }
+                $doc->delete();
+            }
+
+            $pengabdian->dosens()->detach();
+            $pengabdian->delete();
+        });
+
+        // MODIFIKASI: Redirect ke rute admin
+        return redirect()->route('admin.pengabdian.index')->with('success', 'Pengabdian berhasil dihapus.');
+    }
+
+    // ========================================================================
+    // TAMBAHAN BARU: Fungsi untuk Export Excel
+    // ========================================================================
+    public function export() 
+    {
+        // Panggil Export Class (pastikan file app/Exports/PengabdianExport.php ada)
+        // Pastikan Anda sudah meng-install maatwebsite/excel versi 3.1 atau 5.1
+        return Excel::download(new PengabdianExport, 'daftar-pengabdian.xlsx');
+    }
+
+    // ========================================================================
+    // TAMBAHAN BARU: Fungsi untuk tombol Verifikasi
+    // ========================================================================
+    public function updateStatus(Request $request, Pengabdian $pengabdian)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Disetujui,Ditolak',
+        ]);
+
+        $pengabdian->update([
+            'status' => $validated['status']
+        ]);
+
+        return redirect()
+            ->route('admin.pengabdian.index')
+            ->with('success', 'Status pengabdian berhasil diperbarui!');
+    }
+    // ========================================================================
+
+
+    // (Helper function di bawah ini sudah benar)
+    private function pengabdianOptions(): array
+    {
+        $bidangOptions = [
+            'Pendidikan',
+            'Kesehatan',
+            'Ekonomi Kreatif',
+            'Teknologi & Informasi',
+            'Lingkungan',
+            'Sosial Kemasyarakatan',
+            'Lainnya',
         ];
-        $statusBadge = $statusMap[$pengabdian->status] ?? $statusMap['Draft'];
-        $anggota = $pengabdian->dosenTerlibat;
-    @endphp
 
-    <x-slot name="header">
-        <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div class="space-y-1">
-                <p class="text-xs uppercase tracking-wider text-[#2050A0]/70">Detil Pengabdian</p>
-                <h1 class="text-2xl font-semibold text-[#2050A0]">{{ $pengabdian->judul }}</h1>
-                <div class="flex items-center gap-2 text-sm text-gray-500">
-                    <span>{{ $pengabdian->created_at?->format('d M Y') ?? '-' }}</span>
-                    <span class="text-gray-300">•</span>
-                    <span>Ketua: {{ $pengabdian->ketua->nama ?? 'Tidak diketahui' }}</span>
-                </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-3">
-                <span class="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold {{ $statusBadge['bg'] }}">
-                    <span class="h-2 w-2 rounded-full bg-current opacity-60"></span>
-                    {{ $statusBadge['label'] }}
-                </span>
-                {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.edit --}}
-                <a href="{{ route('admin.pengabdian.edit', $pengabdian) }}" class="inline-flex items-center gap-2 rounded-full bg-orange-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.862 4.487z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 7.125L16.875 4.5" />
-                    </svg>
-                    Edit Data
-                </a>
-                {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.index --}}
-                <a href="{{ route('admin.pengabdian.index') }}" class="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:bg-gray-100">
-                    <span class="text-lg">←</span>
-                    <span class="hidden sm:inline">Kembali</span>
-                </a>
-            </div>
-        </div>
-    </x-slot>
+        $skemaOptions = [
+            'Program Kemitraan Masyarakat (PKM)',
+            'Kemitraan Masyarakat',
+            'Pengabdian Berbasis Riset',
+            'Pengabdian Mandiri',
+            'KKN Tematik',
+        ];
 
-    <div class="max-w-7xl mx-auto px-6 py-4">
-        {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.index --}}
-        <a href="{{ route('admin.pengabdian.index') }}"
-           class="inline-flex items-center gap-2 rounded-full border border-[#2050A0]/20 bg-white px-4 py-2 text-sm font-semibold text-[#2050A0] shadow-sm transition hover:bg-[#2050A0] hover:text-white">
-            <span class="text-lg">←</span>
-            <span class="hidden sm:inline">Kembali ke Kelola Pengabdian</span>
-        </a>
-    </div>
+        $sumberDanaOptions = [
+            'DRPM',
+            'Kemendikbud',
+            'Internal Kampus',
+            'Hibah Pemerintah Daerah',
+            'Corporate Social Responsibility (CSR)',
+            'Mandiri',
+            'Lainnya',
+        ];
 
-    <div class="max-w-7xl mx-auto px-6 pb-8 space-y-6">
-        <section class="grid gap-6 md:grid-cols-2">
-            <article class="space-y-4 rounded-3xl border-2 border-gray-200 bg-white p-6 ring-1 ring-gray-200/70 shadow-lg">
-                <h2 class="text-lg font-semibold text-[#2050A0]">Info Utama</h2>
-                <dl class="grid gap-3 text-sm text-gray-600">
-                    <div class="flex justify-between border-b border-dashed border-gray-100 pb-2">
-                        <dt class="font-medium text-gray-500">Tahun</dt>
-                        <dd class="font-semibold text-gray-800">{{ $pengabdian->tahun }}</dd>
-                    </div>
-                    <div class="flex justify-between border-b border-dashed border-gray-100 pb-2">
-                        <dt class="font-medium text-gray-500">Bidang</dt>
-                        <dd class="font-semibold text-gray-800">{{ $pengabdian->bidang ?? '—' }}</dd>
-                    </div>
-                    <div class="flex justify-between border-b border-dashed border-gray-100 pb-2">
-                        <dt class="font-medium text-gray-500">Skema</dt>
-                        <dd class="font-semibold text-gray-800">{{ $pengabdian->skema ?? '—' }}</dd>
-                    </div>
-                    <div class="flex justify-between border-b border-dashed border-gray-100 pb-2">
-                        <dt class="font-medium text-gray-500">Sumber Dana</dt>
-                        <dd class="font-semibold text-gray-800">{{ $pengabdian->sumber_dana ?? '—' }}</dd>
-                    </div>
-                    <div class="flex justify-between">
-                        <dt class="font-medium text-gray-500">Total Dana</dt>
-                        <dd class="font-semibold text-gray-800">{{ $pengabdian->dana ? 'Rp '.number_format($pengabdian->dana, 0, ',', '.') : '—' }}</dd>
-                    </div>
-                </dl>
-            </article>
+        return [$bidangOptions, $skemaOptions, $sumberDanaOptions];
+    }
 
-            <article class="space-y-4 rounded-3xl border-2 border-gray-200 bg-white p-6 ring-1 ring-gray-200/70 shadow-lg">
-                <div class="flex items-center justify-between">
-                    <h2 class="text-lg font-semibold text-[#2050A0]">Tim Pengabdian</h2>
-                    <span class="rounded-full bg-[#2050A0]/10 px-3 py-1 text-xs font-semibold text-[#2050A0]">{{ $anggota->count() }} Anggota</span>
-                </div>
-
-                <div class="rounded-2xl border border-gray-100 bg-gray-50 px-4 py-3">
-                    <p class="text-xs uppercase tracking-wide text-gray-400">Ketua</p>
-                    <div class="mt-1 flex items-center justify-between text-sm text-gray-700">
-                        <span class="font-semibold">{{ $pengabdian->ketua->nama ?? '—' }}</span>
-                        <span class="text-gray-500">{{ $pengabdian->ketua->email ?? '-' }}</span>
-                    </div>
-                </div>
-
-                @if ($anggota->isNotEmpty())
-                    <div class="space-y-3">
-                        @foreach ($anggota as $anggotaPengabdian)
-                            <div class="rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
-                                <p class="text-xs uppercase tracking-wide text-gray-400">Anggota</p>
-                                <div class="mt-1 flex items-center justify-between text-sm text-gray-700">
-                                    <span class="font-semibold">{{ $anggotaPengabdian->nama }}</span>
-                                    <span class="text-gray-500">{{ $anggotaPengabdian->email }}</span>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-4 py-6 text-center text-sm text-gray-500">
-                        Tidak ada anggota terdaftar.
-                    </p>
-                @endif
-
-                <div class="mt-4">
-                    <p class="text-xs uppercase tracking-wide text-gray-400">Mahasiswa Pendukung</p>
-                    @php($pendukung = $pengabdian->relationLoaded('mahasiswas') ? $pengabdian->mahasiswas : collect())
-                    @if($pendukung->count())
-                        <div class="mt-2 space-y-2">
-                            @foreach($pendukung as $m)
-                                <div class="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm shadow-sm">
-                                    <span class="font-semibold">{{ $m->nama }}</span>
-                                    <span class="text-gray-500">{{ $m->email }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <p class="rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-3 text-center text-sm text-gray-500">Tidak ada mahasiswa pendukung.</p>
-                    @endif
-                </div>
-            </article>
-        </section>
-
-        <section class="rounded-3xl border-2 border-gray-200 bg-white p-6 ring-1 ring-gray-200/70 shadow-lg">
-            <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-[#2050A0]">Dokumentasi</h2>
-                <span class="text-xs font-medium text-gray-400">{{ $pengabdian->dokumentasi->count() }} berkas</span>
-            </div>
-
-            @if ($pengabdian->dokumentasi->count())
-                <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach ($pengabdian->dokumentasi as $doc)
-                        <div class="group overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-                            <div class="relative aspect-video overflow-hidden bg-gray-100">
-                                <img src="{{ asset('storage/'.$doc->gdrive_path) }}" alt="{{ $doc->file_name }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
-                            </div>
-                            <div class="px-4 py-3 text-sm">
-                                <p class="font-semibold text-gray-800 truncate" title="{{ $doc->file_name }}">{{ $doc->file_name }}</p>
-                                <p class="text-xs text-gray-500">{{ number_format(($doc->size ?? 0) / 1024, 0) }} KB • {{ $doc->mime ?? 'image/jpeg' }}</p>
-            
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @else
-                <div class="mt-6 rounded-2xl border border-dashed border-gray-200 bg-gray-50 px-6 py-12 text-center text-sm text-gray-500">
-                    Belum ada dokumentasi diunggah.
-                </div>
-            @endif
-        </section>
-    </div>
-</x-app-layout>
+    private function ensurePengabdianMahasiswaPivot(): void
+    {
+        if (!Schema::hasTable('pengabdian_mahasiswa')) {
+            Schema::create('pengabdian_mahasiswa', function (Blueprint $table) {
+                $table->id();
+                $table->foreignId('pengabdian_id')->constrained('pengabdians')->cascadeOnDelete();
+                $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
+                $table->string('peran')->default('Pendukung');
+                $table->timestamps();
+                $table->unique(['pengabdian_id','mahasiswa_id']);
+            });
+        }
+    }
+}

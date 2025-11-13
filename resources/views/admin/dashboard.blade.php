@@ -23,13 +23,14 @@
             <div class="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white/30 
                         flex items-center justify-center font-bold text-2xl shadow-lg">
               {{-- 
-                Variabel $dosen ini dikirim dari AdminDashboardController, 
+                MODIFIKASI: Variabel $dosen ini dikirim dari AdminDashboardController, 
                 isinya adalah data User Admin yang sedang login 
               --}}
               {{ strtoupper(substr($dosen->name ?? 'A',0,1)) }}
             </div>
             <div>
               <p class="text-sm text-blue-100">Selamat datang kembali, (Admin)</p>
+              {{-- MODIFIKASI: Menggunakan 'name' dari model User --}}
               <h2 class="font-bold text-xl sm:text-2xl">{{ $dosen->name ?? 'Admin P3M' }}</h2>
               <p class="text-sm text-blue-100">{{ $dosen->email ?? 'admin@kampus.ac.id' }}</p>
             </div>
@@ -37,7 +38,7 @@
 
           {{-- Primary CTAs --}}
           <div class="flex flex-wrap gap-3">
-            {{-- MODIFIKASI: Rute diubah ke 'admin.' --}}
+            {{-- MODIFIKASI: Rute diubah ke 'admin.penelitian.create' --}}
             <a href="{{ route('admin.penelitian.create') }}"
                class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
                       bg-white text-blue-700 hover:bg-blue-50 transition-all duration-200
@@ -47,7 +48,7 @@
               </svg>
               Tambah Penelitian
             </a>
-            {{-- MODIFIKASI: Rute diubah ke 'admin.' --}}
+            {{-- MODIFIKASI: Rute diubah ke 'admin.pengabdian.create' --}}
             <a href="{{ route('admin.pengabdian.create') }}"
                class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
                       bg-emerald-500 text-white hover:bg-emerald-600 transition-all duration-200
@@ -63,7 +64,7 @@
 
       {{-- 
         ==============================================================
-        == FITUR KHUSUS ADMIN (KELOLA AKUN) -- BARU DITAMBAHKAN ==
+        == TAMBAHAN BARU: FITUR KHUSUS ADMIN (KELOLA AKUN) ==
         ==============================================================
       --}}
       <section class="bg-rose-100 border-2 border-rose-300 rounded-2xl shadow-lg p-6 sm:p-8 mb-6 sm:mb-8 animate-fade-in">
@@ -91,7 +92,7 @@
                             bg-rose-700 text-white hover:bg-rose-800 transition-all duration-200
                             shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                       </svg>
                       Buka Halaman Kelola Akun
                   </a>
@@ -146,7 +147,7 @@
           </div>
           <p class="text-3xl sm:text-4xl font-bold text-gray-900">{{ $kpi['dokumentasi'] }}</p>
           <p class="text-sm text-gray-600 mt-1">Total Dokumen</p>
-          <p class="text-xs text-gray-400 mt-1">File tersimpan</p>
+          <p class="text-xs text-gray-400 mt-1">Semua File</p>
         </div>
 
         {{-- Pending Card --}}
@@ -258,7 +259,7 @@
               <h3 class="text-lg font-semibold text-gray-900">Penelitian Terbaru (Global)</h3>
               <p class="text-xs text-gray-500 mt-1">Aktivitas terakhir semua dosen</p>
             </div>
-            {{-- MODIFIKASI: Rute diubah ke 'admin.' --}}
+            {{-- MODIFIKASI: Rute diubah ke 'admin.penelitian.index' --}}
             <a href="{{ route('admin.penelitian.index') }}" 
                class="text-sm text-blue-600 hover:text-blue-700 font-medium transition focus-ring rounded px-3 py-1.5">
               Lihat semua →
@@ -283,6 +284,7 @@
                 </div>
               </article>
             @empty
+              {{-- Empty State --}}
               <div class="text-center py-12">
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,7 +292,7 @@
                   </svg>
                 </div>
                 <p class="text-sm text-gray-600 mb-3">Belum ada penelitian</p>
-                {{-- MODIFIKASI: Rute diubah ke 'admin.' --}}
+                {{-- MODIFIKASI: Rute diubah ke 'admin.penelitian.create' --}}
                 <a href="{{ route('admin.penelitian.create') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
                   Buat penelitian pertama →
                 </a>
@@ -306,7 +308,7 @@
               <h3 class="text-lg font-semibold text-gray-900">Pengabdian Terbaru (Global)</h3>
               <p class="text-xs text-gray-500 mt-1">Aktivitas terakhir semua dosen</p>
             </div>
-            {{-- MODIFIKASI: Rute diubah ke 'admin.' --}}
+            {{-- MODIFIKASI: Rute diubah ke 'admin.pengabdian.index' --}}
             <a href="{{ route('admin.pengabdian.index') }}" 
                class="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition focus-ring rounded px-3 py-1.5">
               Lihat semua →
@@ -331,7 +333,7 @@
                 </div>
               </article>
             @empty
-              {{-- Empty State with guidance --}}
+              {{-- Empty State --}}
               <div class="text-center py-12">
                 <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
                   <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -339,7 +341,7 @@
                   </svg>
                 </div>
                 <p class="text-sm text-gray-600 mb-3">Belum ada pengabdian</p>
-                {{-- MODIFIKASI: Rute diubah ke 'admin.' --}}
+                {{-- MODIFIKASI: Rute diubah ke 'admin.pengabdian.create' --}}
                 <a href="{{ route('admin.pengabdian.create') }}" class="text-sm text-emerald-600 hover:text-emerald-700 font-medium">
                   Buat pengabdian pertama →
                 </a>

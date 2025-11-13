@@ -14,18 +14,21 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema; // <-- Ditambahkan untuk kejelasan
 
+// -----------------------------------------------------------------
+// TAMBAHAN BARU: 'use' untuk fitur Export Excel
+// -----------------------------------------------------------------
+use App\Exports\PengabdianExport;
+use Maatwebsite\Excel\Facades\Excel;
+// -----------------------------------------------------------------
+
+
 class PengabdianController extends Controller
 {
     public function index(Request $request)
     {
         // MODIFIKASI: Filter dosen dihapus untuk Admin
-        // $dosen = $request->user()->dosen; // <-- Dihapus
-
         $pengabdian = Pengabdian::with(['ketua'])
-            // MODIFIKASI: Filter whereHas dihapus
-            // ->whereHas('dosens', function ($query) use ($dosen) {
-            //     $query->where('dosen_id', $dosen->id);
-            // })
+            // Filter whereHas dihapus
             ->latest()
             ->paginate(10);
 
@@ -82,7 +85,6 @@ class PengabdianController extends Controller
             'dokumentasi.*' => 'nullable|image|max:4096',
         ]);
 
-        // (Logika DDL dan DB::transaction di bawah ini sudah benar)
         $this->ensurePengabdianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request) {
@@ -257,6 +259,36 @@ class PengabdianController extends Controller
         // MODIFIKASI: Redirect ke rute admin
         return redirect()->route('admin.pengabdian.index')->with('success', 'Pengabdian berhasil dihapus.');
     }
+
+    // ========================================================================
+    // TAMBAHAN BARU: Fungsi untuk Export Excel
+    // ========================================================================
+    public function export() 
+    {
+        // Panggil Export Class (pastikan file app/Exports/PengabdianExport.php ada)
+        // Pastikan Anda sudah meng-install maatwebsite/excel versi 3.1 atau 5.1
+        return Excel::download(new PengabdianExport, 'daftar-pengabdian.xlsx');
+    }
+
+    // ========================================================================
+    // TAMBAHAN BARU: Fungsi untuk tombol Verifikasi
+    // ========================================================================
+    public function updateStatus(Request $request, Pengabdian $pengabdian)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Disetujui,Ditolak',
+        ]);
+
+        $pengabdian->update([
+            'status' => $validated['status']
+        ]);
+
+        return redirect()
+            ->route('admin.pengabdian.index')
+            ->with('success', 'Status pengabdian berhasil diperbarui!');
+    }
+    // ========================================================================
+
 
     // (Helper function di bawah ini sudah benar)
     private function pengabdianOptions(): array

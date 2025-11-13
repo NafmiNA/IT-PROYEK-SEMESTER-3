@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Dokumentasi;
 use App\Models\Dosen;
 use App\Models\Penelitian;
+use App\Models\Mahasiswa; // <-- Diperbaiki
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +38,7 @@ class PenelitianController extends Controller
         $this->authorize('create', Penelitian::class);
 
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
+        $mahasiswas = Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         [$skemaOptions, $sumberDanaOptions] = $this->penelitianOptions();
 
         // MODIFIKASI: Mengarah ke view admin
@@ -144,7 +145,7 @@ class PenelitianController extends Controller
 
         $penelitian->load(['dosens', 'ketua', 'dokumentasi']);
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
+        $mahasiswas = Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         $anggotaTerpilih = $penelitian->dosens
             ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
             ->pluck('id')
@@ -178,7 +179,7 @@ class PenelitianController extends Controller
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
-        // (Logika DDL dan DB::transaction di bawah ini sudah benar dan tidak perlu diubah)
+        // (Logika DDL dan DB::transaction di bawah ini sudah benar)
         $this->ensurePenelitianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request, $penelitian) {
