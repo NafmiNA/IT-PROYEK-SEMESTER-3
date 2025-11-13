@@ -92,6 +92,7 @@ class PenelitianController extends Controller
                 'sumber_dana' => $validated['sumber_dana'] ?? null,
                 'dana'        => $validated['dana'] ?? null,
                 'dosen_id'    => $validated['ketua_id'],
+                'status'      => 'Menunggu', // <-- Menambahkan status default
             ];
 
             if (Schema::hasColumn('penelitian', 'link_jurnal')) {
@@ -177,6 +178,7 @@ class PenelitianController extends Controller
             'mahasiswa_id.*' => 'nullable|exists:mahasiswa,id',
             'link_jurnal'    => 'nullable|url',
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'status'         => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak', // Menambahkan validasi status
         ]);
 
         // (Logika DDL dan DB::transaction di bawah ini sudah benar)
@@ -190,6 +192,7 @@ class PenelitianController extends Controller
                 'sumber_dana' => $data['sumber_dana'] ?? null,
                 'dana'        => $data['dana'] ?? null,
                 'dosen_id'    => $data['ketua_id'],
+                'status'      => $data['status'] ?? $penelitian->status, // Memperbarui status
             ];
 
             if (Schema::hasColumn('penelitian', 'link_jurnal')) {
@@ -262,6 +265,26 @@ class PenelitianController extends Controller
             ->route('admin.penelitian.index')
             ->with('success', 'Penelitian berhasil dihapus.');
     }
+
+    // ========================================================================
+    // FUNGSI BARU DITAMBAHKAN: Untuk tombol Verifikasi
+    // ========================================================================
+    public function updateStatus(Request $request, Penelitian $penelitian)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Disetujui,Ditolak',
+        ]);
+
+        $penelitian->update([
+            'status' => $validated['status']
+        ]);
+
+        return redirect()
+            ->route('admin.penelitian.index')
+            ->with('success', 'Status penelitian berhasil diperbarui!');
+    }
+    // ========================================================================
+
 
     // (Helper function di bawah ini sudah benar dan tidak perlu diubah)
     private function penelitianOptions(): array
