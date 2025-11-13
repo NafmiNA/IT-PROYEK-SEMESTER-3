@@ -10,6 +10,7 @@ use App\Http\Controllers\Dosen\{
     PenelitianController,
     PengabdianController,
     DokumentasiController
+    // (PrestasiDosenController sudah kita pindah ke Admin)
 };
 use App\Http\Controllers\MahasiswaDashboardController;
 use App\Http\Controllers\Mahasiswa\DokumentasiController as MahasiswaDokumentasiController;
@@ -21,8 +22,11 @@ use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\PenelitianController as AdminPenelitianController;
 use App\Http\Controllers\Admin\PengabdianController as AdminPengabdianController;
-// -----------------------------------------------------------------
-
+// ========================================================================
+// TAMBAHAN BARU: Controller Prestasi Admin
+// ========================================================================
+use App\Http\Controllers\Admin\PrestasiDosenController as AdminPrestasiController;
+// ========================================================================
 
 /*
 |--------------------------------------------------------------------------
@@ -30,7 +34,6 @@ use App\Http\Controllers\Admin\PengabdianController as AdminPengabdianController
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    // MODIFIKASI: Lebih baik mengarahkan ke halaman login
     return redirect()->route('login');
 });
 
@@ -49,10 +52,10 @@ require __DIR__ . '/auth.php';
 Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
     // ========================================================================
-    // MODIFIKASI: Rute '/dashboard' (setelah login) sekarang "PINTAR"
+    // Rute '/dashboard' (setelah login) yang "PINTAR"
     // ========================================================================
     Route::get('/dashboard', function () {
-        $role = Auth::user()->role; // Ambil role user yang login
+        $role = Auth::user()->role; 
 
         if ($role == 'admin') {
             return redirect()->route('admin.dashboard');
@@ -61,11 +64,10 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
         } elseif ($role == 'mahasiswa') {
             return redirect()->route('mahasiswa.dashboard');
         } else {
-            // Jika role tidak dikenal, logout saja
             Auth::logout();
             return redirect()->route('login')->with('error', 'Role tidak dikenal.');
         }
-    })->name('dashboard'); // <-- INI ADALAH RUTE 'dashboard' YANG SEBENARNYA
+    })->name('dashboard');
 
     /*
     |--------------------------------------------------------------------------
@@ -105,6 +107,7 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
     |--------------------------------------------------------------------------
     */
    Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->group(function () {
+        // ... (Rute Mahasiswa Anda) ...
         // Dashboard Mahasiswa
         Route::get('/dashboard', [MahasiswaDashboardController::class, 'index'])
             ->name('dashboard');
@@ -129,9 +132,7 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
     // ========================================================================
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         
-        // ========================================================================
-        // TAMBAHAN BARU: Redirect /admin ke /admin/dashboard
-        // ========================================================================
+        // Redirect /admin ke /admin/dashboard
         Route::get('/', fn () => redirect()->route('admin.dashboard'));
 
         // Dashboard Admin (Halaman Utama Admin)
@@ -143,13 +144,21 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
         // Rute untuk Kelola Penelitian (Admin)
         Route::resource('penelitian', AdminPenelitianController::class)
-             ->names('penelitian') // ->name('admin.penelitian.index'), dll.
+             ->names('penelitian')
              ->parameters(['penelitian' => 'penelitian']);
         
         // Rute untuk Kelola Pengabdian (Admin)
         Route::resource('pengabdian', AdminPengabdianController::class)
-             ->names('pengabdian') // ->name('admin.pengabdian.index'), dll.
+             ->names('pengabdian')
              ->parameters(['pengabdian' => 'pengabdian']);
+        
+        Route::get('/pengabdian/export/excel', [AdminPengabdianController::class, 'export'])
+             ->name('pengabdian.export');
+
+        // ========================================================================
+        // TAMBAHAN BARU: Rute untuk Prestasi Admin
+        // ========================================================================
+        Route::get('/prestasi', [AdminPrestasiController::class, 'index'])->name('prestasi.index');
 
     });
 
