@@ -3,7 +3,7 @@
         'name' => 'laravel/laravel',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '674574bbf15a8102b070389229b78a5d39f2674b',
+        'reference' => 'ffd9d94fc38dca57657ccdb665ebe51e6b07a021',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -421,7 +421,7 @@
         'laravel/laravel' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '674574bbf15a8102b070389229b78a5d39f2674b',
+            'reference' => 'ffd9d94fc38dca57657ccdb665ebe51e6b07a021',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -562,6 +562,15 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'maatwebsite/excel' => array(
+            'pretty_version' => 'v1.1.5',
+            'version' => '1.1.5.0',
+            'reference' => '0c67aba8387726458d42461eae91a3415593bbc4',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../maatwebsite/excel',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'maximebf/debugbar' => array(
             'dev_requirement' => true,
             'replaced' => array(
@@ -699,6 +708,15 @@
             'install_path' => __DIR__ . '/../php-debugbar/php-debugbar',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'phpoffice/phpexcel' => array(
+            'pretty_version' => '1.8.1',
+            'version' => '1.8.1.0',
+            'reference' => '372c7cbb695a6f6f1e62649381aeaa37e7e70b32',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../phpoffice/phpexcel',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'phpoption/phpoption' => array(
             'pretty_version' => '1.9.4',

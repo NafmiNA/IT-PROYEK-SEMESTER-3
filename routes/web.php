@@ -26,15 +26,11 @@ use App\Http\Controllers\Admin\PengabdianController as AdminPengabdianController
 
 /*
 |--------------------------------------------------------------------------
-| Redirect root ke dashboard dosen
+| Redirect root ke halaman login
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    // NANTI ANDA PERLU UBAH INI:
-    // Buat controller baru untuk mengarahkan ke dashboard
-    // yang sesuai (Admin, Dosen, atau Mahasiswa) setelah login.
-    
-    // Untuk sekarang, kita arahkan ke halaman login
+    // MODIFIKASI: Lebih baik mengarahkan ke halaman login
     return redirect()->route('login');
 });
 
@@ -47,7 +43,7 @@ require __DIR__ . '/auth.php';
 
 /*
 |--------------------------------------------------------------------------
-| Setelah login arahkan ke dashboard dosen
+| Grup Rute Utama (Setelah Login)
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
@@ -129,10 +125,15 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
     });
 
     // ========================================================================
-    // Area ADMIN (BARU) (prefix: /admin , name: admin.*)
+    // Area ADMIN (prefix: /admin , name: admin.*)
     // ========================================================================
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         
+        // ========================================================================
+        // TAMBAHAN BARU: Redirect /admin ke /admin/dashboard
+        // ========================================================================
+        Route::get('/', fn () => redirect()->route('admin.dashboard'));
+
         // Dashboard Admin (Halaman Utama Admin)
         Route::get('/dashboard', [AdminDashboardController::class, 'index'])
              ->name('dashboard');
