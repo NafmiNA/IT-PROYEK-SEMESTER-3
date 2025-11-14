@@ -1,5 +1,4 @@
 <x-app-layout>
-    {{-- REFAKTOR: Menambahkan style konsisten dari halaman lain --}}
     <style>
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -19,19 +18,15 @@
         }
     </style>
 
-    {{-- REFAKTOR: Mengganti div utama agar konsisten --}}
     <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 bg-subtle">
 
-        {{-- REFAKTOR: Menghapus <x-slot name="header"> dan mengganti dengan header admin --}}
         <header class="bg-white border-b border-gray-200 shadow-sm">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     
-                    {{-- Kiri: Breadcrumb & Judul --}}
                     <div class="animate-fade">
-                        {{-- Breadcrumb --}}
                         <nav class="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                            {{-- Asumsi user adalah admin, sesuaikan jika perlu (cth: dosen.dashboard) --}}
+                            {{-- Anda bisa ganti route('admin.dashboard') ke route('dashboard') jika ini untuk Dosen --}}
                             <a href="{{ route('admin.dashboard') }}" 
                                class="flex items-center gap-1 hover:text-blue-600 transition-colors focus-visible">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,11 +37,9 @@
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
-                            {{-- PERUBAHAN: Diubah ke 'Profil' --}}
                             <span class="font-medium text-gray-900">Profil</span>
                         </nav>
     
-                        {{-- Judul & Tombol Kembali --}}
                         <div class="flex items-center gap-3">
                             <a href="{{ route('admin.dashboard') }}" 
                                class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
@@ -56,7 +49,6 @@
                                 </svg>
                             </a>
                             <div>
-                                {{-- PERUBAHAN: Diubah ke 'Profil' --}}
                                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
                                     Profil
                                 </h1>
@@ -66,20 +58,15 @@
                             </div>
                         </div>
                     </div>
-                    
-                    {{-- Bagian kanan header sengaja dikosongkan (tidak perlu search/add) --}}
 
                 </div>
             </div>
         </header>
 
-        {{-- REFAKTOR: Mengganti wrapper konten utama agar konsisten --}}
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-
-            {{-- REFAKTOR: Tombol kembali manual DIHAPUS karena sudah ada di header --}}
             
             <div class="space-y-6">
-                {{-- REFAKTOR: Card style disesuaikan --}}
+                {{-- KARTU 1: INFORMASI PROFIL --}}
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <div class="p-5 sm:p-6">
                         <div class="max-w-xl">
@@ -88,7 +75,7 @@
                     </div>
                 </div>
 
-                {{-- REFAKTOR: Card style disesuaikan --}}
+                {{-- KARTU 2: PERBARUI KATA SANDI --}}
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <div class="p-5 sm:p-6">
                         <div class="max-w-xl">
@@ -97,7 +84,8 @@
                     </div>
                 </div>
 
-                {{-- REFAKTOR: Card style disesuaikan --}}
+                {{-- KARTU 3: HAPUS AKUN --}}
+                {{-- Ini adalah satu-satunya panggilan. Versi duplikat sudah dihapus. --}}
                 <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                     <div class="p-5 sm:p-6">
                         <div class="max-w-xl">
@@ -105,6 +93,7 @@
                         </div>
                     </div>
                 </div>
+                
             </div>
         </main>
     </div>
