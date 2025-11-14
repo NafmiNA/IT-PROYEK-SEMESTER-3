@@ -1,8 +1,7 @@
-{{-- resources/views/admin/penelitian/index.blade.php --}}
-{{-- Dibuat berdasarkan file Dosen, disesuaikan untuk Admin --}}
+
 <x-app-layout>
     <style>
-        /* ... (style Anda yang lain tetap sama) ... */
+        /* Performance-optimized animations <400ms (Doherty Threshold) */
         @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
@@ -10,6 +9,7 @@
         .animate-slide-up { animation: slideUp 0.3s ease-out both; }
         .animate-fade { animation: fadeIn 0.4s ease-out both; }
         
+        /* Hover effects with proper timing */
         .card-hover { 
             transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -18,17 +18,20 @@
             box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
         
+        /* Accessible focus states */
         .focus-visible:focus-visible { 
             outline: 3px solid #3b82f6; 
             outline-offset: 2px; 
         }
         
+        /* Subtle background pattern */
         .bg-subtle {
             background-image: 
                 radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
                 radial-gradient(circle at 90% 80%, rgba(147, 51, 234, 0.04) 0%, transparent 50%);
         }
         
+        /* Stat number animation */
         .stat-num {
             transition: transform 0.3s ease;
         }
@@ -36,6 +39,7 @@
             transform: scale(1.08);
         }
 
+        /* Consistent, tidy action buttons */
         .action-group { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; justify-content:flex-end; }
         .action-btn {
             display:inline-flex; align-items:center; justify-content:center; gap:0.375rem;
@@ -45,6 +49,7 @@
         }
         .action-btn svg { width:16px; height:16px; }
 
+        /* REFAKTOR: Kelas tombol dipusatkan di sini untuk konsistensi */
         .btn-detail { background-color:#3b82f6; color:#fff; } /* blue-600 */
         .btn-detail:hover { background-color:#2563eb; } /* blue-700 */
         
@@ -73,6 +78,7 @@
                     <div class="animate-fade">
                         {{-- Breadcrumb --}}
                         <nav class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                            {{-- MODIFIKASI: Rute diubah ke admin --}}
                             <a href="{{ route('admin.dashboard') }}" 
                                class="flex items-center gap-1 hover:text-blue-600 transition-colors focus-visible">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,6 +95,7 @@
 
                         {{-- Title with back button (Fitts's Law - adequate size) --}}
                         <div class="flex items-center gap-3">
+                            {{-- MODIFIKASI: Rute diubah ke admin --}}
                             <a href="{{ route('admin.dashboard') }}" 
                                class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
                                aria-label="Kembali ke Dashboard">
@@ -102,12 +109,15 @@
                                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Penelitian</h1>
                                     <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">Live</span>
                                 </div>
-                                <p class="text-sm text-gray-600">Pantau dan kelola semua penelitian (Global)</p>
+                                {{-- =================================================== --}}
+                                {{-- PERUBAHAN: Kata (Global) dihapus --}}
+                                {{-- =================================================== --}}
+                                <p class="text-sm text-gray-600">Pantau dan kelola semua penelitian</p>
                             </div>
                         </div>
                     </div>
 
-                    {{-- Toolbar: Search, Add --}}
+                    {{-- REFAKTOR: Toolbar: Search, Add, Export (dipindahkan ke sini) --}}
                     <div class="mt-4 flex items-center gap-3 flex-wrap">
                         <div class="relative">
                             <input type="text"
@@ -120,6 +130,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
+                        {{-- MODIFIKASI: Rute diubah ke admin --}}
                         <a href="{{ route('admin.penelitian.create') }}"
                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -127,11 +138,7 @@
                             </svg>
                             Tambah Penelitian
                         </a>
-                        
-                        {{-- ======================================================================== --}}
-                        {{-- REFAKTOR: Tombol Export Excel DIHAPUS dari sini --}}
-                        {{-- ======================================================================== --}}
-
+                        {{-- Tombol Export Excel Dihapus Sesuai Permintaan --}}
                     </div>
                 </div>
             </div>
@@ -166,6 +173,7 @@
             {{-- Stats Cards (Miller's Law - 4 items max) --}}
             @php
                 $totalPenelitian = method_exists($penelitian, 'total') ? $penelitian->total() : $penelitian->count();
+                // REFAKTOR: Menyesuaikan key agar cocok dengan 'menunggu' dan 'disetujui'
                 $statusCounts = ['total' => $totalPenelitian, 'draft' => 0, 'menunggu' => 0, 'disetujui' => 0];
                 
                 $sourceData = method_exists($penelitian, 'items') ? $penelitian->items() : $penelitian;
@@ -211,6 +219,7 @@
                 </button>
 
                 {{-- Pending Card (Von Restorff - stands out when > 0) --}}
+                {{-- REFAKTOR: onclick diubah ke 'menunggu' --}}
                 <button onclick="filterStatus('menunggu')" 
                         class="text-left w-full {{ $statusCounts['menunggu'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['menunggu'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.15s">
@@ -229,6 +238,7 @@
                 </button>
 
                 {{-- Approved Card --}}
+                {{-- REFAKTOR: onclick diubah ke 'disetujui' --}}
                 <button onclick="filterStatus('disetujui')" 
                         class="text-left w-full bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.2s">
@@ -265,10 +275,12 @@
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Draft
                             </button>
+                            {{-- REFAKTOR: onclick diubah ke 'menunggu' --}}
                             <button onclick="filterStatus('menunggu')" 
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Menunggu
                             </button>
+                            {{-- REFAKTOR: onclick diubah ke 'disetujui' --}}
                             <button onclick="filterStatus('disetujui')" 
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Disetujui
@@ -352,6 +364,8 @@
 
                                     {{-- Action Buttons (tidy & consistent) --}}
                                     <div class="action-group flex-shrink-0">
+                                        {{-- MODIFIKASI: Rute diubah ke admin --}}
+                                        {{-- REFAKTOR: Kelas CSS diubah ke .btn-detail --}}
                                         <a href="{{ route('admin.penelitian.show', $p) }}" 
                                            class="action-btn btn-detail focus-visible">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,6 +375,8 @@
                                             Detail
                                         </a>
 
+                                        {{-- MODIFIKASI: Rute diubah ke admin --}}
+                                        {{-- REFAKTOR: Kelas CSS diubah ke .btn-edit --}}
                                         <a href="{{ route('admin.penelitian.edit', $p) }}" 
                                            class="action-btn btn-edit focus-visible">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,6 +385,9 @@
                                             Edit
                                         </a>
 
+                                        {{-- ======================================================================== --}}
+                                        {{-- KODE BARU DITAMBAHKAN: Tombol Aksi Verifikasi --}}
+                                        {{-- ======================================================================== --}}
                                         @if ($p->status == 'Menunggu')
                                             
                                             {{-- FORM UNTUK SETUJUI --}}
@@ -376,6 +395,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="Disetujui">
+                                                {{-- REFAKTOR: Kelas CSS diubah ke .btn-approve --}}
                                                 <button type="submit" 
                                                         class="action-btn btn-approve focus-visible">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -390,6 +410,7 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <input type="hidden" name="status" value="Ditolak">
+                                                {{-- REFAKTOR: Kelas CSS diubah ke .btn-reject --}}
                                                 <button type="submit" 
                                                         class="action-btn btn-reject focus-visible">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -399,11 +420,14 @@
                                                 </button>
                                             </form>
                                         @endif
+                                        {{-- ======================================================================== --}}
 
+                                        {{-- MODIFIKASI: Rute diubah ke admin --}}
                                         <form action="{{ route('admin.penelitian.destroy', $p) }}" method="POST" 
                                               onsubmit="return confirm('Yakin ingin menghapus penelitian ini?');" class="inline-block">
                                             @csrf
                                             @method('DELETE')
+                                            {{-- REFAKTOR: Kelas CSS diubah ke .btn-delete --}}
                                             <button type="submit" 
                                                     class="action-btn btn-delete focus-visible">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -425,8 +449,10 @@
                                 </div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Penelitian</h3>
                                 <p class="text-gray-600 mb-6 max-w-sm mx-auto">
+                                    {{-- MODIFIKASI: Teks diubah untuk Admin --}}
                                     Saat ini belum ada data penelitian yang terdaftar.
                                 </p>
+                                {{-- MODIFIKASI: Rute diubah ke admin --}}
                                 <a href="{{ route('admin.penelitian.create') }}"
                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all focus-visible">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -478,7 +504,7 @@
                 btn.classList.add('bg-gray-100', 'text-gray-700');
             });
             
-            // REFAKTOR: Perbaikan logika highlighting tombol
+            // REFAKTOR: Logika highlighting tombol diperbaiki
             const targetButton = Array.from(buttons).find(btn => btn.getAttribute('onclick') === `filterStatus('${status}')`);
             
             if (targetButton) {

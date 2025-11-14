@@ -42,7 +42,8 @@
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
-                            <span class="font-medium text-gray-900">Profile</span>
+                            {{-- PERUBAHAN: Diubah ke 'Profil' --}}
+                            <span class="font-medium text-gray-900">Profil</span>
                         </nav>
     
                         {{-- Judul & Tombol Kembali --}}
@@ -55,8 +56,9 @@
                                 </svg>
                             </a>
                             <div>
+                                {{-- PERUBAHAN: Diubah ke 'Profil' --}}
                                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
-                                    Profile
+                                    Profil
                                 </h1>
                                 <p class="text-sm text-gray-600 mt-1">
                                     Perbarui informasi profil dan kata sandi Anda.
