@@ -1,47 +1,57 @@
 <x-app-layout>
     
-    {{-- =================================================================== --}}
-    {{-- HEADER BARU (GAYA SEPERTI GAMBAR YG DIUPLOAD) --}}
-    {{-- Menggantikan <x-slot name="header"> lama --}}
-    {{-- =================================================================== --}}
     <header class="bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
 
+            {{-- Breadcrumb --}}
             <nav class="text-sm mb-3" aria-label="Breadcrumb">
-                <ol class="list-none p-0 inline-flex">
+                <ol class="list-none p-0 inline-flex items-center space-x-2">
                     <li class="flex items-center">
+                        <svg class="w-4 h-4 text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
                         <a href="{{ route('admin.dashboard') }}" class="text-gray-500 hover:text-gray-700">Dashboard</a>
+                    </li>
+                    <li class="flex items-center">
                         <svg class="fill-current w-3 h-3 mx-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                             <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/>
                         </svg>
-                    </li>
-                    <li class="flex items-center">
                         <span class="text-gray-700 font-medium">Manajemen User</span>
                     </li>
                 </ol>
             </nav>
 
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            
-                <div>
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('admin.dashboard') }}" class="bg-blue-600 text-white rounded-full p-1.5 hidden sm:block hover:bg-blue-700 transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                
+                {{-- Left Section: Arrow, Title, Live Badge, Description --}}
+                <div class="flex-grow">
+                    <div class="flex items-center gap-2">
+                        
+                        {{-- =================================================== --}}
+                        {{-- PERBAIKAN: Mengganti SVG panah agar lebih tipis --}}
+                        {{-- =================================================== --}}
+                        {{-- Arrow Back (Versi Kotak Biru) --}}
+                        <a href="{{ route('admin.dashboard') }}" class="bg-blue-600 text-white rounded-md p-2.5 hidden sm:block hover:bg-blue-700 transition">
+                            {{-- Ikon panah outline (lebih tipis) --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-6 w-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                             </svg>
                         </a>
                         
-                        <h1 class="text-2xl font-bold text-gray-900">
+                        {{-- Title --}}
+                        <h1 class="text-3xl font-bold text-gray-900">
                             Manajemen User
                         </h1>
+                        {{-- Live Badge (opsional, jika memang relevan untuk Manajemen User) --}}
+                        {{-- <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-800 rounded-full">Live</span> --}}
                     </div>
-                    <p class="text-sm text-gray-600 mt-1 ml-0 sm:ml-12">
+                    {{-- Description --}}
+                    <p class="text-gray-600 mt-1 sm:ml-10"> {{-- Tambah ml-10 di sm --}}
                         Pantau dan kelola semua akun pengguna
                     </p>
                 </div>
 
-                <div class="flex items-center gap-3 w-full md:w-auto">
-                    <div class="relative w-full md:w-64">
+                {{-- Right Section: Search Bar and Add Button --}}
+                <div class="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+                    <div class="relative flex-grow">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
@@ -64,7 +74,7 @@
         </div>
     </header>
 
-    <div class="py-8"> {{-- Padding dikurangi sedikit karena header sudah besar --}}
+    <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             {{-- =================================================================== --}}
@@ -156,13 +166,8 @@
                         </div>
                     @endif
 
-                    {{-- 
-                        CATATAN: Tombol "Kembali" dan "Tambah User" di sini DIHAPUS 
-                        karena sudah dipindah ke Header di atas.
-                    --}}
-
                     {{-- Tabel --}}
-                    <div class="overflow-x-auto"> {{-- Tambahan agar responsif di HP --}}
+                    <div class="overflow-x-auto">
                         <table class="table-auto w-full border-collapse border border-gray-200">
                             <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-500">
                                 <tr>
@@ -183,7 +188,8 @@
                                                 @elseif($user->role == 'dosen') bg-blue-100 text-blue-700
                                                 @elseif($user->role == 'mahasiswa') bg-emerald-100 text-emerald-700
                                                 @else bg-gray-100 text-gray-700
-                                                @endif">
+                                                @endif
+                                                ">
                                                 {{ ucfirst($user->role) }}
                                             </span>
                                         </td>

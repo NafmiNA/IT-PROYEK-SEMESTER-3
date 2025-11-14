@@ -97,41 +97,42 @@
                                 <p class="text-sm text-gray-600">Pantau dan kelola kegiatan pengabdian masyarakat (Global)</p>
                             </div>
                         </div>
-                        
-                        {{-- Toolbar: Search + Add --}}
-                        <div class="mt-4 flex items-center gap-3 flex-wrap">
-                            <div class="relative">
-                                <input type="text"
-                                       id="searchInput"
-                                       placeholder="Cari pengabdian..."
-                                       class="w-64 sm:w-80 pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all focus-visible"
-                                       onkeyup="searchPengabdian(this.value)"
-                                       aria-label="Cari pengabdian">
-                                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                            </div>
-                            {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.create --}}
-                            <a href="{{ route('admin.pengabdian.create') }}"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                                Tambah Pengabdian
-                            </a>
+                    </div>
+                    
+                    {{-- REFAKTOR: Toolbar sekarang berisi Search, Add, dan Export --}}
+                    <div class="mt-4 flex items-center gap-3 flex-wrap">
+                        <div class="relative">
+                            <input type="text"
+                                   id="searchInput"
+                                   placeholder="Cari pengabdian..."
+                                   class="w-64 sm:w-80 pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all focus-visible"
+                                   onkeyup="searchPengabdian(this.value)"
+                                   aria-label="Cari pengabdian">
+                            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
                         </div>
-                    </div>             
-{{-- ======================================================================== --}}
-{{-- TOMBOL BARU DITAMBAHKAN: Export Excel --}}
-{{-- ======================================================================== --}}
-<a href="{{ route('admin.pengabdian.export') }}"
-class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-</svg>
-Export Excel
-</a>
-{{-- ======================================================================== --}}
+                        {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.create --}}
+                        <a href="{{ route('admin.pengabdian.create') }}"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Tambah Pengabdian
+                        </a>
+                        
+                        {{-- ======================================================================== --}}
+                        {{-- REFAKTOR: Tombol Export dipindahkan ke sini agar sejajar --}}
+                        {{-- ======================================================================== --}}
+                        <a href="{{ route('admin.pengabdian.export') }}"
+                           class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Export Excel
+                        </a>
+                        {{-- ======================================================================== --}}
+                    </div>
                 </div>
             </div>
         </header>
@@ -165,14 +166,17 @@ Export Excel
             {{-- Stats Cards (Data Global dari AdminController) --}}
             @php
                 $totalPengabdian = method_exists($pengabdian, 'total') ? $pengabdian->total() : $pengabdian->count();
-                $statusCounts = ['total' => $totalPengabdian, 'draft' => 0, 'pending' => 0, 'approved' => 0];
-                if (!method_exists($pengabdian, 'total')) {
-                    foreach ($pengabdian as $p) {
-                        if (isset($p->status)) {
-                            if ($p->status == 'Draft') $statusCounts['draft']++;
-                            elseif ($p->status == 'Menunggu') $statusCounts['pending']++;
-                            elseif ($p->status == 'Disetujui') $statusCounts['approved']++;
-                        }
+                // REFAKTOR: Menyesuaikan key agar cocok dengan 'menunggu' dan 'disetujui'
+                $statusCounts = ['total' => $totalPengabdian, 'draft' => 0, 'menunggu' => 0, 'disetujui' => 0];
+                
+                $sourceData = method_exists($pengabdian, 'items') ? $pengabdian->items() : $pengabdian;
+
+                foreach ($sourceData as $p) {
+                    if (isset($p->status)) {
+                        if ($p->status == 'Draft') $statusCounts['draft']++;
+                        elseif ($p->status == 'Menunggu') $statusCounts['menunggu']++;
+                        elseif ($p->status == 'Disetujui') $statusCounts['disetujui']++;
+                        // Ditolak tidak ditampilkan di stats, jadi kita abaikan
                     }
                 }
             @endphp
@@ -209,25 +213,27 @@ Export Excel
                 </button>
 
                 {{-- Pending Card --}}
-                <button onclick="filterStatus('pending')" 
-                        class="text-left w-full {{ $statusCounts['pending'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['pending'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
+                {{-- REFAKTOR: onclick diubah ke 'menunggu' --}}
+                <button onclick="filterStatus('menunggu')" 
+                        class="text-left w-full {{ $statusCounts['menunggu'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['menunggu'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.15s">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 {{ $statusCounts['pending'] > 0 ? 'bg-white/20' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-11 h-11 {{ $statusCounts['menunggu'] > 0 ? 'bg-white/20' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 {{ $statusCounts['menunggu'] > 0 ? 'text-white' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
-                        @if($statusCounts['pending'] > 0)
+                        @if($statusCounts['menunggu'] > 0)
                             <span class="px-2 py-1 bg-white/30 text-white text-xs font-semibold rounded">⚡ Butuh Aksi</span>
                         @endif
                     </div>
-                    <p class="text-3xl sm:text-4xl font-bold {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-900' }} stat-num mb-1">{{ $statusCounts['pending'] }}</p>
-                    <p class="text-sm {{ $statusCounts['pending'] > 0 ? 'text-amber-50' : 'text-gray-600' }} font-medium">Menunggu Review</p>
+                    <p class="text-3xl sm:text-4xl font-bold {{ $statusCounts['menunggu'] > 0 ? 'text-white' : 'text-gray-900' }} stat-num mb-1">{{ $statusCounts['menunggu'] }}</p>
+                    <p class="text-sm {{ $statusCounts['menunggu'] > 0 ? 'text-amber-50' : 'text-gray-600' }} font-medium">Menunggu Review</p>
                 </button>
 
                 {{-- Approved Card --}}
-                <button onclick="filterStatus('approved')" 
+                {{-- REFAKTOR: onclick diubah ke 'disetujui' --}}
+                <button onclick="filterStatus('disetujui')" 
                         class="text-left w-full bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.2s">
                     <div class="flex items-center justify-between mb-3">
@@ -237,7 +243,7 @@ Export Excel
                             </svg>
                         </div>
                     </div>
-                    <p class="text-3xl sm:text-4xl font-bold text-white stat-num mb-1">{{ $statusCounts['approved'] }}</p>
+                    <p class="text-3xl sm:text-4xl font-bold text-white stat-num mb-1">{{ $statusCounts['disetujui'] }}</p>
                     <p class="text-sm text-emerald-50 font-medium">Disetujui ✓</p>
                 </button>
             </div>
@@ -263,11 +269,13 @@ Export Excel
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Draft
                             </button>
-                            <button onclick="filterStatus('pending')" 
+                            {{-- REFAKTOR: onclick diubah ke 'menunggu' --}}
+                            <button onclick="filterStatus('menunggu')" 
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Menunggu
                             </button>
-                            <button onclick="filterStatus('approved')" 
+                            {{-- REFAKTOR: onclick diubah ke 'disetujui' --}}
+                            <button onclick="filterStatus('disetujui')" 
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Disetujui
                             </button>
@@ -293,7 +301,7 @@ Export Excel
                             {{-- Card --}}
                             <div class="pengabdian-card border border-gray-200 rounded-lg p-4 sm:p-5 hover:border-blue-300 hover:shadow-md transition-all duration-200 animate-slide-up"
                                  style="animation-delay: {{ min($index * 0.03, 0.5) }}s"
-                                 data-status="{{ strtolower($status) }}">
+                                 data-status="{{ strtolower($status) }}"> {{-- data-status akan menjadi 'draft', 'menunggu', 'disetujui' --}}
                                 <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                                     
                                     {{-- Content --}}
@@ -492,11 +500,15 @@ Export Excel
                 btn.classList.add('bg-gray-100', 'text-gray-700');
             });
             
-            if (event && event.target.classList.contains('filter-btn')) {
-                event.target.classList.add('bg-blue-600', 'text-white');
-                event.target.classList.remove('bg-gray-100', 'text-gray-700');
-            } else {
-                // Highlight 'Semua' if called from stat card
+            // REFAKTOR: Mencari tombol yang sesuai berdasarkan atribut onclick
+            // Ini lebih aman daripada mengandalkan event.target
+            const targetButton = Array.from(buttons).find(btn => btn.getAttribute('onclick') === `filterStatus('${status}')`);
+            
+            if (targetButton) {
+                targetButton.classList.add('bg-blue-600', 'text-white');
+                targetButton.classList.remove('bg-gray-100', 'text-gray-700');
+            } else if (status === 'all') {
+                // Fallback jika dipanggil dari stat card 'all'
                 buttons[0].classList.add('bg-blue-600', 'text-white');
                 buttons[0].classList.remove('bg-gray-100', 'text-gray-700');
             }
@@ -505,10 +517,10 @@ Export Excel
             let count = 0;
             cards.forEach(card => {
                 const cardStatus = card.getAttribute('data-status');
-                const isMatch = (status === 'all' || 
-                                 (status === 'pending' && cardStatus === 'menunggu') ||
-                                 (status === 'approved' && cardStatus === 'disetujui') ||
-                                 cardStatus === status);
+                
+                // REFAKTOR: Logika disederhanakan karena 'status' dari JS 
+                // dan 'cardStatus' dari HTML sekarang sudah sinkron (e.g., 'menunggu' === 'menunggu')
+                const isMatch = (status === 'all' || cardStatus === status);
                 
                 if (isMatch) {
                     card.style.display = 'block';
