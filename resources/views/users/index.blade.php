@@ -1,21 +1,76 @@
 <x-app-layout>
-    {{-- Ini akan mengisi bagian 'header' di layout Anda --}}
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Manajemen User') }}
-        </h2>
-    </x-slot>
+    
+    {{-- =================================================================== --}}
+    {{-- HEADER BARU (GAYA SEPERTI GAMBAR YG DIUPLOAD) --}}
+    {{-- Menggantikan <x-slot name="header"> lama --}}
+    {{-- =================================================================== --}}
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
 
-    <div class="py-12">
+            <nav class="text-sm mb-3" aria-label="Breadcrumb">
+                <ol class="list-none p-0 inline-flex">
+                    <li class="flex items-center">
+                        <a href="{{ route('admin.dashboard') }}" class="text-gray-500 hover:text-gray-700">Dashboard</a>
+                        <svg class="fill-current w-3 h-3 mx-2 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"/>
+                        </svg>
+                    </li>
+                    <li class="flex items-center">
+                        <span class="text-gray-700 font-medium">Manajemen User</span>
+                    </li>
+                </ol>
+            </nav>
+
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            
+                <div>
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('admin.dashboard') }}" class="bg-blue-600 text-white rounded-full p-1.5 hidden sm:block hover:bg-blue-700 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                        
+                        <h1 class="text-2xl font-bold text-gray-900">
+                            Manajemen User
+                        </h1>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-1 ml-0 sm:ml-12">
+                        Pantau dan kelola semua akun pengguna
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="relative w-full md:w-64">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input type="text" 
+                               class="block w-full bg-white border border-gray-300 rounded-md py-2 pl-10 pr-3 text-sm placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition" 
+                               placeholder="Cari user...">
+                    </div>
+                    
+                    <a href="{{ route('admin.users.create') }}" class="flex-shrink-0 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Tambah User Baru
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <div class="py-8"> {{-- Padding dikurangi sedikit karena header sudah besar --}}
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
             {{-- =================================================================== --}}
-            {{-- KODE BARU: BLOK @PHP UNTUK MENGHITUNG USER --}}
+            {{-- BLOK PHP (TETAP SAMA) --}}
             {{-- =================================================================== --}}
             @php
-                // 1. Menggunakan variabel $users yang dikirim dari Controller
-                // 2. Menghitung berdasarkan 'role' (diasumsikan 'admin', 'dosen', 'mahasiswa')
-                //    (Ini didasarkan pada kode badge Anda)
                 $totalUsers = $users->count();
                 $roleCounts = [
                     'total'     => $totalUsers,
@@ -26,14 +81,13 @@
             @endphp
 
             {{-- =================================================================== --}}
-            {{-- KODE BARU: STAT CARD HEADER --}}
+            {{-- STAT CARD HEADER (TETAP SAMA) --}}
             {{-- =================================================================== --}}
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
                 
-                {{-- Total Card (Biru - Primary) --}}
+                {{-- Total Card (Biru) --}}
                 <button onclick="filterRole('all')" 
-                        class="filter-role-btn text-left w-full bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md p-5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300"
-                        style="animation-delay: 0.05s">
+                        class="filter-role-btn text-left w-full bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md p-5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,10 +99,9 @@
                     <p class="text-sm text-blue-100 font-medium">Total User</p>
                 </button>
             
-                {{-- Admin Card (Rose - Sesuai Badge) --}}
+                {{-- Admin Card (Rose) --}}
                 <button onclick="filterRole('admin')" 
-                        class="filter-role-btn text-left w-full bg-rose-600 hover:bg-rose-700 rounded-lg shadow-md p-5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-rose-300"
-                        style="animation-delay: 0.1s">
+                        class="filter-role-btn text-left w-full bg-rose-600 hover:bg-rose-700 rounded-lg shadow-md p-5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-rose-300">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,10 +113,9 @@
                     <p class="text-sm text-rose-100 font-medium">Total Admin</p>
                 </button>
             
-                {{-- Dosen Card (Sky - Sesuai Badge) --}}
+                {{-- Dosen Card (Sky) --}}
                 <button onclick="filterRole('dosen')" 
-                        class="filter-role-btn text-left w-full bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md p-5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-sky-300"
-                        style="animation-delay: 0.15s">
+                        class="filter-role-btn text-left w-full bg-sky-600 hover:bg-sky-700 rounded-lg shadow-md p-5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-sky-300">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -75,10 +127,9 @@
                     <p class="text-sm text-sky-100 font-medium">Total Dosen</p>
                 </button>
             
-                {{-- Mahasiswa Card (Emerald - Sesuai Badge) --}}
+                {{-- Mahasiswa Card (Emerald) --}}
                 <button onclick="filterRole('mahasiswa')" 
-                        class="filter-role-btn text-left w-full bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md p-5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-300"
-                        style="animation-delay: 0.2s">
+                        class="filter-role-btn text-left w-full bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md p-5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-emerald-300">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center">
                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,96 +144,77 @@
 
 
             {{-- =================================================================== --}}
-            {{-- KONTEN ASLI ANDA (DIMULAI DARI SINI) --}}
+            {{-- KONTEN UTAMA (TABEL) --}}
             {{-- =================================================================== --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    {{-- Menampilkan notifikasi sukses (jika ada) --}}
+                    {{-- Menampilkan notifikasi sukses --}}
                     @if (session('success'))
                         <div class="mb-4 p-3 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                             {{ session('success') }}
                         </div>
                     @endif
 
-                    <div class="flex items-center gap-4 mb-4">
-                        
-                        {{-- Tombol Kembali --}}
-                        <a href="{{ route('admin.dashboard') }}"
-                           class="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold
-                                  bg-white text-gray-700 hover:bg-gray-100 border border-gray-300
-                                  transition-all duration-200 shadow-sm hover:shadow-md">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                            </svg>
-                            Kembali
-                        </a>
+                    {{-- 
+                        CATATAN: Tombol "Kembali" dan "Tambah User" di sini DIHAPUS 
+                        karena sudah dipindah ke Header di atas.
+                    --}}
 
-                        {{-- Tombol untuk 'tambah akun' --}}
-                        <a href="{{ route('admin.users.create') }}" class="inline-flex items-center gap-2 rounded-full bg-[#2050A0] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#163B78]">
-                            <span class="grid h-6 w-6 place-content-center rounded-full bg-white/15 text-lg">+</span>
-                            Tambah User Baru
-                        </a>
-                    </div>
-
-
-                    {{-- Tabel untuk 'lihat akun' --}}
-                    <table class="table-auto w-full border-collapse border border-gray-400">
-                        <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-500">
-                            <tr>
-                                <th class="border border-gray-300 px-4 py-3 text-left">Nama</th>
-                                <th class="border border-gray-300 px-4 py-3 text-left">Email</th>
-                                <th class="border border-gray-300 px-4 py-3 text-left">Role</th>
-                                <th class="border border-gray-300 px-4 py-3 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100 bg-white text-sm text-gray-700">
-                            {{-- Loop data $users (dari UserController@index) --}}
-                            @forelse ($users as $user)
-                            
-                                {{-- =================================================================== --}}
-                                {{-- PERUBAHAN: Menambahkan class="user-row" dan data-role --}}
-                                {{-- =================================================================== --}}
-                                <tr class="user-row transition hover:bg-gray-50" data-role="{{ $user->role }}">
-                                    <td class="border border-gray-300 px-4 py-2 font-medium text-gray-900">{{ $user->name }}</td>
-                                    <td class="border border-gray-300 px-4 py-2">{{ $user->email }}</td>
-                                    <td class="border border-gray-300 px-4 py-2">
-                                        <span class="px-2 py-1 text-xs font-semibold rounded-full
-                                            @if($user->role == 'admin') bg-rose-100 text-rose-700
-                                            @elseif($user->role == 'dosen') bg-blue-100 text-blue-700
-                                            @elseif($user->role == 'mahasiswa') bg-emerald-100 text-emerald-700
-                                            @else bg-gray-100 text-gray-700
-                                            @endif">
-                                            {{ ucfirst($user->role) }}
-                                        </span>
-                                    </td>
-                                    <td class="border border-gray-300 px-4 py-2">
-                                        <div class="flex justify-end gap-2 text-xs font-semibold">
-                                            {{-- Tombol untuk 'edit akun' --}}
-                                            <a href="{{ route('admin.users.edit', $user->id) }}" class="inline-flex items-center gap-2 rounded-full border border-amber-300 px-3 py-1 text-amber-600 transition hover:bg-amber-500 hover:text-white">
-                                                Edit
-                                            </a>
-                                            
-                                            {{-- Tombol untuk 'hapus akun' --}}
-                                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus user ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-rose-300 px-3 py-1 text-rose-600 transition hover:bg-rose-500 hover:text-white">
-                                                    Hapus
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
+                    {{-- Tabel --}}
+                    <div class="overflow-x-auto"> {{-- Tambahan agar responsif di HP --}}
+                        <table class="table-auto w-full border-collapse border border-gray-200">
+                            <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wider text-gray-500">
                                 <tr>
-                                    <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500">
-                                        Belum ada data user.
-                                    </td>
+                                    <th class="border border-gray-200 px-4 py-3 text-left">Nama</th>
+                                    <th class="border border-gray-200 px-4 py-3 text-left">Email</th>
+                                    <th class="border border-gray-200 px-4 py-3 text-left">Role</th>
+                                    <th class="border border-gray-200 px-4 py-3 text-right">Aksi</th>
                                 </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 bg-white text-sm text-gray-700">
+                                @forelse ($users as $user)
+                                    <tr class="user-row transition hover:bg-gray-50" data-role="{{ $user->role }}">
+                                        <td class="border border-gray-200 px-4 py-2 font-medium text-gray-900">{{ $user->name }}</td>
+                                        <td class="border border-gray-200 px-4 py-2">{{ $user->email }}</td>
+                                        <td class="border border-gray-200 px-4 py-2">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full
+                                                @if($user->role == 'admin') bg-rose-100 text-rose-700
+                                                @elseif($user->role == 'dosen') bg-blue-100 text-blue-700
+                                                @elseif($user->role == 'mahasiswa') bg-emerald-100 text-emerald-700
+                                                @else bg-gray-100 text-gray-700
+                                                @endif">
+                                                {{ ucfirst($user->role) }}
+                                            </span>
+                                        </td>
+                                        <td class="border border-gray-200 px-4 py-2">
+                                            <div class="flex justify-end gap-2 text-xs font-semibold">
+                                                {{-- Tombol Edit --}}
+                                                <a href="{{ route('admin.users.edit', $user->id) }}" class="inline-flex items-center gap-2 rounded-full border border-amber-300 px-3 py-1 text-amber-600 transition hover:bg-amber-500 hover:text-white">
+                                                    Edit
+                                                </a>
+                                                
+                                                {{-- Tombol Hapus --}}
+                                                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Anda yakin ingin menghapus user ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="inline-flex items-center gap-2 rounded-full border border-rose-300 px-3 py-1 text-rose-600 transition hover:bg-rose-500 hover:text-white">
+                                                        Hapus
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="px-6 py-12 text-center text-sm text-gray-500">
+                                            Belum ada data user.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>
@@ -191,43 +223,32 @@
 
 
     {{-- =================================================================== --}}
-    {{-- KODE BARU: JAVASCRIPT UNTUK FILTER --}}
+    {{-- JAVASCRIPT (TETAP SAMA) --}}
     {{-- =================================================================== --}}
     <script>
-        // Filter untuk tabel berdasarkan role
         function filterRole(role) {
-            const rows = document.querySelectorAll('.user-row'); // Mengambil semua baris dengan class 'user-row'
+            const rows = document.querySelectorAll('.user-row'); 
             
             rows.forEach(row => {
-                // Mengambil data-role dari setiap baris
                 const rowRole = row.dataset.role; 
-                
-                // Cek apakah role-nya 'all' atau sama dengan role baris
                 const isMatch = (role === 'all' || rowRole === role);
         
                 if (isMatch) {
-                    // Tampilkan baris (gunakan 'table-row' untuk tabel)
                     row.style.display = 'table-row'; 
                 } else {
-                    // Sembunyikan baris
                     row.style.display = 'none';
                 }
             });
     
-            // (Opsional) Mengubah style tombol stat card yang aktif
             const buttons = document.querySelectorAll('.filter-role-btn');
             buttons.forEach(btn => {
-                // Reset semua style tombol
                 btn.classList.remove('ring-4', 'ring-white/50');
                 if (btn.onclick.toString().includes(`'${role}'`)) {
-                    // Tambahkan style 'ring' ke tombol yang diklik
                     btn.classList.add('ring-4', 'ring-white/50'); 
                 }
             });
         }
     
-        // Panggil filter 'all' saat halaman dimuat 
-        // agar style tombol 'Total User' aktif
         document.addEventListener('DOMContentLoaded', () => {
             filterRole('all');
         });
