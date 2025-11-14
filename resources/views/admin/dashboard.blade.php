@@ -97,13 +97,13 @@
             <div class="flex flex-wrap gap-3">
                 {{-- Tombol ini mengarah ke 'users.index' (halaman tabel) --}}
                 <a href="{{ route('admin.users.index') }}"
-                   class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
+                   class="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold
                           {{-- PERUBAHAN: 'bg-rose-700' dan 'hover:bg-rose-800' diubah menjadi 'bg-blue-700' dan 'hover:bg-blue-800' --}}
                           bg-blue-700 text-white hover:bg-blue-800 transition-all duration-200
                           shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {{-- <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
+                    </svg> --}}
                     Buka Halaman Kelola Akun
                 </a>
             </div>

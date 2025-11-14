@@ -18,12 +18,31 @@
                         </div>
                     @endif
 
-                    {{-- Tombol untuk 'tambah akun' --}}
-                    {{-- PERHATIKAN: Rute ini mengarah ke 'admin.users.create' --}}
-                    <a href="{{ route('admin.users.create') }}" class="inline-flex items-center gap-2 rounded-full bg-[#2050A0] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#163B78] mb-4">
-                        <span class="grid h-6 w-6 place-content-center rounded-full bg-white/15 text-lg">+</span>
-                        Tambah User Baru
-                    </a>
+                    {{-- =================================================================== --}}
+                    {{-- PERUBAHAN: Membungkus tombol dalam Flexbox --}}
+                    {{-- =================================================================== --}}
+                    <div class="flex items-center gap-4 mb-4">
+                        
+                        {{-- Tombol Kembali (BARU) --}}
+                        <a href="{{ route('admin.dashboard') }}"
+                           class="inline-flex items-center justify-center gap-2 rounded-full px-5 py-2 text-sm font-semibold
+                                  bg-white text-gray-700 hover:bg-gray-100 border border-gray-300
+                                  transition-all duration-200 shadow-sm hover:shadow-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Kembali
+                        </a>
+
+                        {{-- Tombol untuk 'tambah akun' (Lama) --}}
+                        {{-- PERHATIKAN: Rute ini mengarah ke 'admin.users.create' --}}
+                        <a href="{{ route('admin.users.create') }}" class="inline-flex items-center gap-2 rounded-full bg-[#2050A0] px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-[#163B78]">
+                            <span class="grid h-6 w-6 place-content-center rounded-full bg-white/15 text-lg">+</span>
+                            Tambah User Baru
+                        </a>
+                    </div>
+                    {{-- =================================================================== --}}
+
 
                     {{-- Tabel untuk 'lihat akun' --}}
                     <table class="table-auto w-full border-collapse border border-gray-400">
