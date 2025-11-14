@@ -60,7 +60,8 @@
                             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                             </svg>
-                            <span class="font-medium text-gray-900">Kelola Prestasi (Global)</span>
+                            {{-- PERUBAHAN: Kata (Global) dihapus --}}
+                            <span class="font-medium text-gray-900">Kelola Prestasi</span>
                         </nav>
                 
                         {{-- Judul Halaman & Tombol Kembali --}}
@@ -73,8 +74,9 @@
                                 </svg>
                             </a>
                             <div>
+                                {{-- PERUBAHAN: Kata (Global) dihapus --}}
                                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">
-                                    Kelola Prestasi (Global)
+                                    Kelola Prestasi
                                 </h1>
                                 <p class="text-sm text-gray-600 mt-1">
                                     Melihat data prestasi dari semua dosen
@@ -371,14 +373,16 @@
             const searchTerm = query.toLowerCase().trim();
             
             // Reset filters
-            buttons.forEach((btn, i) => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-100', 'text-gray-700');
-                if (i === 0) {
-                    btn.classList.remove('bg-gray-100', 'text-gray-700');
-                    btn.classList.add('bg-blue-600', 'text-white');
-                }
-            });
+            if(buttons.length > 0) { // Hanya jika tombol filter ada
+                buttons.forEach((btn, i) => {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('bg-gray-100', 'text-gray-700');
+                    if (i === 0) {
+                        btn.classList.remove('bg-gray-100', 'text-gray-700');
+                        btn.classList.add('bg-blue-600', 'text-white');
+                    }
+                });
+            }
 
             // Filter rows based on search
             rows.forEach(row => {
@@ -390,5 +394,12 @@
                 }
             });
         }
+
+        // Set filter 'all' on page load, jika tombol filter ada
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.querySelectorAll('.filter-btn').length > 0) {
+                filterStatus('all');
+            }
+        });
     </script>
 </x-app-layout>
