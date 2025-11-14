@@ -6,9 +6,11 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'App\\Exports\\PengabdianExport' => $baseDir . '/app/Exports/PengabdianExport.php',
     'App\\Http\\Controllers\\Admin\\AdminDashboardController' => $baseDir . '/app/Http/Controllers/Admin/AdminDashboardController.php',
     'App\\Http\\Controllers\\Admin\\PenelitianController' => $baseDir . '/app/Http/Controllers/Admin/PenelitianController.php',
     'App\\Http\\Controllers\\Admin\\PengabdianController' => $baseDir . '/app/Http/Controllers/Admin/PengabdianController.php',
+    'App\\Http\\Controllers\\Admin\\PrestasiDosenController' => $baseDir . '/app/Http/Controllers/Admin/PrestasiDosenController.php',
     'App\\Http\\Controllers\\Auth\\AuthenticatedSessionController' => $baseDir . '/app/Http/Controllers/Auth/AuthenticatedSessionController.php',
     'App\\Http\\Controllers\\Auth\\ConfirmablePasswordController' => $baseDir . '/app/Http/Controllers/Auth/ConfirmablePasswordController.php',
     'App\\Http\\Controllers\\Auth\\EmailVerificationNotificationController' => $baseDir . '/app/Http/Controllers/Auth/EmailVerificationNotificationController.php',

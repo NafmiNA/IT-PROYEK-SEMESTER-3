@@ -1,4 +1,3 @@
-{{-- resources/views/admin/dashboard.blade.php --}}
 {{-- Dashboard with Sidebar Integration --}}
 <x-app-layout>
   <style>
@@ -37,6 +36,9 @@
           </div>
 
           {{-- Primary CTAs --}}
+          
+          <!-- PERBAIKAN: Menghapus komentar Blade {{-- --}} yang salah dan hanya menggunakan HTML comment -->
+          <!--
           <div class="flex flex-wrap gap-3">
             {{-- MODIFIKASI: Rute diubah ke 'admin.penelitian.create' --}}
             <a href="{{ route('admin.penelitian.create') }}"
@@ -59,6 +61,8 @@
               Tambah Pengabdian
             </a>
           </div>
+          -->
+          
         </div>
       </section>
 
@@ -67,37 +71,43 @@
         == TAMBAHAN BARU: FITUR KHUSUS ADMIN (KELOLA AKUN) ==
         ==============================================================
       --}}
-      <section class="bg-rose-100 border-2 border-rose-300 rounded-2xl shadow-lg p-6 sm:p-8 mb-6 sm:mb-8 animate-fade-in">
-          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-              
-              {{-- Deskripsi Fitur --}}
-              <div class="flex items-center gap-4">
-                  <div class="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-rose-200 border-2 border-rose-300 
-                              flex items-center justify-center shadow-lg">
-                      <svg class="w-8 h-8 text-rose-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                  </div>
-                  <div>
-                      <h2 class="font-bold text-xl sm:text-2xl text-rose-900">Kelola Akun Pengguna</h2>
-                      <p class="text-sm text-rose-700">Fitur khusus Admin Koordinator P3M untuk mengelola semua akun.</p>
-                  </div>
-              </div>
+      {{-- PERUBAHAN: 'bg-rose-100 border-rose-300' diubah menjadi 'bg-blue-50 border-blue-200' --}}
+      <section class="bg-blue-50 border-2 border-blue-200 rounded-2xl shadow-lg p-6 sm:p-8 mb-6 sm:mb-8 animate-fade-in">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            
+            {{-- Deskripsi Fitur --}}
+            <div class="flex items-center gap-4">
+                {{-- PERUBAHAN: 'bg-rose-200 border-rose-300' diubah menjadi 'bg-blue-100 border-blue-200' --}}
+                <div class="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-blue-100 border-2 border-blue-200 
+                                flex items-center justify-center shadow-lg">
+                    {{-- PERUBAHAN: 'text-rose-700' diubah menjadi 'text-blue-700' --}}
+                    <svg class="w-8 h-8 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                </div>
+                <div>
+                    {{-- PERUBAHAN: 'text-rose-900' diubah menjadi 'text-blue-900' --}}
+                    <h2 class="font-bold text-xl sm:text-2xl text-blue-900">Kelola Akun Pengguna</h2>
+                    {{-- PERUBAHAN: 'text-rose-700' diubah menjadi 'text-blue-700' --}}
+                    <p class="text-sm text-blue-700">Fitur khusus Admin Koordinator P3M untuk mengelola semua akun.</p>
+                </div>
+            </div>
       
-              {{-- Tombol Aksi (CTA) --}}
-              <div class="flex flex-wrap gap-3">
-                  {{-- Tombol ini mengarah ke 'users.index' (halaman tabel) --}}
-                  <a href="{{ route('admin.users.index') }}"
-                     class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
-                            bg-rose-700 text-white hover:bg-rose-800 transition-all duration-200
-                            shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                      </svg>
-                      Buka Halaman Kelola Akun
-                  </a>
-              </div>
-          </div>
+            {{-- Tombol Aksi (CTA) --}}
+            <div class="flex flex-wrap gap-3">
+                {{-- Tombol ini mengarah ke 'users.index' (halaman tabel) --}}
+                <a href="{{ route('admin.users.index') }}"
+                   class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
+                          {{-- PERUBAHAN: 'bg-rose-700' dan 'hover:bg-rose-800' diubah menjadi 'bg-blue-700' dan 'hover:bg-blue-800' --}}
+                          bg-blue-700 text-white hover:bg-blue-800 transition-all duration-200
+                          shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Buka Halaman Kelola Akun
+                </a>
+            </div>
+        </div>
       </section>
       {{-- =============================================================== --}}
 

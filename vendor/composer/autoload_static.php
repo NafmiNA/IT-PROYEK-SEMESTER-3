@@ -591,9 +591,11 @@ class ComposerStaticInit9bff416cd113ce4a57a85cbe2731b5b5
     );
 
     public static $classMap = array (
+        'App\\Exports\\PengabdianExport' => __DIR__ . '/../..' . '/app/Exports/PengabdianExport.php',
         'App\\Http\\Controllers\\Admin\\AdminDashboardController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/AdminDashboardController.php',
         'App\\Http\\Controllers\\Admin\\PenelitianController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/PenelitianController.php',
         'App\\Http\\Controllers\\Admin\\PengabdianController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/PengabdianController.php',
+        'App\\Http\\Controllers\\Admin\\PrestasiDosenController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/PrestasiDosenController.php',
         'App\\Http\\Controllers\\Auth\\AuthenticatedSessionController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/AuthenticatedSessionController.php',
         'App\\Http\\Controllers\\Auth\\ConfirmablePasswordController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/ConfirmablePasswordController.php',
         'App\\Http\\Controllers\\Auth\\EmailVerificationNotificationController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/EmailVerificationNotificationController.php',
