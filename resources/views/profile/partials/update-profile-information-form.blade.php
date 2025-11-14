@@ -13,6 +13,11 @@
         @csrf
     </form>
 
+    {{-- =================================================================== --}}
+    {{-- PERBAIKAN ADA DI SINI: class "mt-6" dan "space-y-6" --}}
+    {{-- "mt-6" memberi jarak dari header di atasnya. --}}
+    {{-- "space-y-6" memberi jarak antar field (Nama, Email, Tombol Simpan). --}}
+    {{-- =================================================================== --}}
     <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
         @csrf
         @method('patch')
@@ -50,6 +55,7 @@
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Simpan') }}</x-primary-button>
 
+            {{-- File ini (action-message) wajib ada di folder components/ --}}
             <x-action-message class="me-3" on="profile-updated">
                 {{ __('Tersimpan.') }}
             </x-action-message>
