@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Dokumentasi;
 use App\Models\Dosen;
 use App\Models\Penelitian;
+use App\Models\Mahasiswa; // <-- Diperbaiki
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -37,7 +38,7 @@ class PenelitianController extends Controller
         $this->authorize('create', Penelitian::class);
 
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
+        $mahasiswas = Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         [$skemaOptions, $sumberDanaOptions] = $this->penelitianOptions();
 
         // MODIFIKASI: Mengarah ke view admin
@@ -91,6 +92,7 @@ class PenelitianController extends Controller
                 'sumber_dana' => $validated['sumber_dana'] ?? null,
                 'dana'        => $validated['dana'] ?? null,
                 'dosen_id'    => $validated['ketua_id'],
+                'status'      => 'Menunggu', // <-- Menambahkan status default
             ];
 
             if (Schema::hasColumn('penelitian', 'link_jurnal')) {
@@ -144,7 +146,7 @@ class PenelitianController extends Controller
 
         $penelitian->load(['dosens', 'ketua', 'dokumentasi']);
         $dosens = Dosen::orderBy('nama')->get(['id', 'nama', 'email']);
-        $mahasiswas = \App\Models\Mahasiswa::orderBy('nama')->get(['id','nama','email']);
+        $mahasiswas = Mahasiswa::orderBy('nama')->get(['id','nama','email']);
         $anggotaTerpilih = $penelitian->dosens
             ->filter(fn ($d) => optional($d->pivot)->peran === 'Anggota')
             ->pluck('id')
@@ -176,9 +178,10 @@ class PenelitianController extends Controller
             'mahasiswa_id.*' => 'nullable|exists:mahasiswa,id',
             'link_jurnal'    => 'nullable|url',
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'status'         => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak', // Menambahkan validasi status
         ]);
 
-        // (Logika DDL dan DB::transaction di bawah ini sudah benar dan tidak perlu diubah)
+        // (Logika DDL dan DB::transaction di bawah ini sudah benar)
         $this->ensurePenelitianMahasiswaPivot();
 
         DB::transaction(function () use ($data, $request, $penelitian) {
@@ -189,6 +192,7 @@ class PenelitianController extends Controller
                 'sumber_dana' => $data['sumber_dana'] ?? null,
                 'dana'        => $data['dana'] ?? null,
                 'dosen_id'    => $data['ketua_id'],
+                'status'      => $data['status'] ?? $penelitian->status, // Memperbarui status
             ];
 
             if (Schema::hasColumn('penelitian', 'link_jurnal')) {
@@ -261,6 +265,26 @@ class PenelitianController extends Controller
             ->route('admin.penelitian.index')
             ->with('success', 'Penelitian berhasil dihapus.');
     }
+
+    // ========================================================================
+    // FUNGSI BARU DITAMBAHKAN: Untuk tombol Verifikasi
+    // ========================================================================
+    public function updateStatus(Request $request, Penelitian $penelitian)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:Disetujui,Ditolak',
+        ]);
+
+        $penelitian->update([
+            'status' => $validated['status']
+        ]);
+
+        return redirect()
+            ->route('admin.penelitian.index')
+            ->with('success', 'Status penelitian berhasil diperbarui!');
+    }
+    // ========================================================================
+
 
     // (Helper function di bawah ini sudah benar dan tidak perlu diubah)
     private function penelitianOptions(): array

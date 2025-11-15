@@ -33,6 +33,7 @@
     29 => 'Carbon\\Laravel\\ServiceProvider',
     30 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     31 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    32 => 'App\\Providers\\GoogleDriveServiceProvider',
   ),
   'eager' => 
   array (
@@ -51,6 +52,7 @@
     12 => 'Carbon\\Laravel\\ServiceProvider',
     13 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
     14 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    15 => 'App\\Providers\\GoogleDriveServiceProvider',
   ),
   'deferred' => 
   array (

@@ -39,6 +39,7 @@
                 </div>
                 <div>
                     <h2 class="text-lg font-bold">P3M Sistem</h2>
+                    {{-- MODIFIKASI: Menampilkan role user --}}
                     <p class="text-xs text-gray-400">{{ ucfirst(Auth::user()->role ?? 'Portal') }} Portal</p>
                 </div>
             </div>
@@ -61,8 +62,10 @@
               ==============================================================
             --}}
             @php
+                // Tentukan rute dan status aktif berdasarkan role
                 $dashboardRoute = route('dosen.dashboard'); // Default
                 $dashboardActive = request()->routeIs('dosen.dashboard');
+
                 if (auth()->user()->role == 'admin') {
                     $dashboardRoute = route('admin.dashboard');
                     $dashboardActive = request()->routeIs('admin.dashboard');
@@ -71,6 +74,7 @@
                     $dashboardActive = request()->routeIs('mahasiswa.dashboard');
                 }
             @endphp
+            
             <a href="{{ $dashboardRoute }}" 
                class="group flex w-full items-center py-2.5 rounded-lg transition-all duration-200 {{ $dashboardActive ? 'bg-blue-600 text-white shadow-lg' : 'text-gray-300 hover:bg-gray-700 hover:text-white' }}"
                :class="sidebarOpen ? 'gap-3 px-3 justify-start' : 'gap-0 px-0 justify-center'"
@@ -166,8 +170,8 @@
                 $prestasiRoute = route('dosen.prestasi.index'); // Default
                 $prestasiActive = request()->routeIs('dosen.prestasi.*');
                 if (auth()->user()->role == 'admin') {
-                    // Ganti '#' dengan rute admin prestasi jika sudah Anda buat
-                    $prestasiRoute = '#'; 
+                    // SEKARANG SUDAH ADA, KITA UBAH DARI '#'
+                    $prestasiRoute = route('admin.prestasi.index'); 
                     $prestasiActive = request()->routeIs('admin.prestasi.*');
                 }
             @endphp
@@ -219,6 +223,9 @@
                         </span>
                     @endif
                 </a>
+                
+                {{-- Tambahkan link admin lain di sini (misal: Kelola Verifikasi) --}}
+                
             @endif
             {{-- =============================================================== --}}
 

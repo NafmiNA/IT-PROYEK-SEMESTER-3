@@ -45,11 +45,25 @@
             display:inline-flex; align-items:center; justify-content:center; gap:0.375rem;
             height:36px; padding:0 12px; border-radius:10px; font-weight:600; font-size:0.875rem; white-space:nowrap;
             box-shadow: 0 1px 1px rgba(0,0,0,0.04);
+            transition-colors: 0.2s ease;
         }
         .action-btn svg { width:16px; height:16px; }
-        /* Fallback in case Tailwind orange not built */
-        .btn-edit { background-color:#f97316; color:#fff; }
-        .btn-edit:hover { background-color:#ea580c; }
+
+        /* REFAKTOR: Kelas tombol dipusatkan di sini untuk konsistensi */
+        .btn-detail { background-color:#3b82f6; color:#fff; } /* blue-600 */
+        .btn-detail:hover { background-color:#2563eb; } /* blue-700 */
+        
+        .btn-edit { background-color:#f97316; color:#fff; } /* orange-500 */
+        .btn-edit:hover { background-color:#ea580c; } /* orange-600 */
+
+        .btn-approve { background-color:#16a34a; color:#fff; } /* green-600 */
+        .btn-approve:hover { background-color:#15803d; } /* green-700 */
+
+        .btn-reject { background-color:#4b5563; color:#fff; } /* gray-600 */
+        .btn-reject:hover { background-color:#374151; } /* gray-700 */
+        
+        .btn-delete { background-color:#dc2626; color:#fff; } /* red-600 */
+        .btn-delete:hover { background-color:#b91c1c; } /* red-700 */
     </style>
 
     {{-- Clean background with subtle pattern --}}
@@ -66,7 +80,7 @@
                         <nav class="flex items-center gap-2 text-sm text-gray-600 mb-3">
                             {{-- MODIFIKASI: Rute diubah ke admin.dashboard --}}
                             <a href="{{ route('admin.dashboard') }}" 
-                               class="flex items-center gap-1 hover:text-blue-600 transition-colors focus-visible">
+                                class="flex items-center gap-1 hover:text-blue-600 transition-colors focus-visible">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
@@ -82,8 +96,8 @@
                         <div class="flex items-center gap-3">
                             {{-- MODIFIKASI: Rute diubah ke admin.dashboard --}}
                             <a href="{{ route('admin.dashboard') }}" 
-                               class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
-                               aria-label="Kembali ke Dashboard">
+                                class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
+                                aria-label="Kembali ke Dashboard">
                                  <svg class="w-5 h-5 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                                  </svg>
@@ -94,32 +108,40 @@
                                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Pengabdian</h1>
                                     <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">Live</span>
                                 </div>
-                                <p class="text-sm text-gray-600">Pantau dan kelola kegiatan pengabdian masyarakat (Global)</p>
+                                <p class="text-sm text-gray-600">Pantau dan kelola kegiatan pengabdian masyarakat</p>
                             </div>
                         </div>
+                    </div>
+                    
+                    {{-- Toolbar: Search, Add, & Export --}}
+                    <div class="mt-4 flex items-center gap-3 flex-wrap">
+                        <div class="relative">
+                            <input type="text"
+                                   id="searchInput"
+                                   placeholder="Cari pengabdian..."
+                                   class="w-64 sm:w-80 pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all focus-visible"
+                                   onkeyup="searchPengabdian(this.value)"
+                                   aria-label="Cari pengabdian">
+                            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.create --}}
+                        <a href="{{ route('admin.pengabdian.create') }}"
+                            class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Tambah Pengabdian
+                        </a>
                         
-                        {{-- Toolbar: Search + Add --}}
-                        <div class="mt-4 flex items-center gap-3 flex-wrap">
-                            <div class="relative">
-                                <input type="text"
-                                       id="searchInput"
-                                       placeholder="Cari pengabdian..."
-                                       class="w-64 sm:w-80 pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all focus-visible"
-                                       onkeyup="searchPengabdian(this.value)"
-                                       aria-label="Cari pengabdian">
-                                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                            </div>
-                            {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.create --}}
-                            <a href="{{ route('admin.pengabdian.create') }}"
-                               class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                                Tambah Pengabdian
-                            </a>
-                        </div>
+                        <a href="{{ route('admin.pengabdian.export') }}"
+                           class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Export Excel
+                        </a>
                     </div>
                 </div>
             </div>
@@ -151,17 +173,20 @@
                 </div>
             @endif
 
-            {{-- Stats Cards (Data Global dari AdminController) --}}
+            {{-- =================================================== --}}
+            {{-- PERBAIKAN: Mengganti semua $prestasi -> $pengabdian --}}
+            {{-- =================================================== --}}
             @php
                 $totalPengabdian = method_exists($pengabdian, 'total') ? $pengabdian->total() : $pengabdian->count();
-                $statusCounts = ['total' => $totalPengabdian, 'draft' => 0, 'pending' => 0, 'approved' => 0];
-                if (!method_exists($pengabdian, 'total')) {
-                    foreach ($pengabdian as $p) {
-                        if (isset($p->status)) {
-                            if ($p->status == 'Draft') $statusCounts['draft']++;
-                            elseif ($p->status == 'Menunggu') $statusCounts['pending']++;
-                            elseif ($p->status == 'Disetujui') $statusCounts['approved']++;
-                        }
+                $statusCounts = ['total' => $totalPengabdian, 'draft' => 0, 'menunggu' => 0, 'disetujui' => 0];
+                
+                $sourceData = method_exists($pengabdian, 'items') ? $pengabdian->items() : $pengabdian;
+
+                foreach ($sourceData as $p) {
+                    if (isset($p->status)) {
+                        if ($p->status == 'Draft') $statusCounts['draft']++;
+                        elseif ($p->status == 'Menunggu') $statusCounts['menunggu']++;
+                        elseif ($p->status == 'Disetujui') $statusCounts['disetujui']++;
                     }
                 }
             @endphp
@@ -198,25 +223,25 @@
                 </button>
 
                 {{-- Pending Card --}}
-                <button onclick="filterStatus('pending')" 
-                        class="text-left w-full {{ $statusCounts['pending'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['pending'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
+                <button onclick="filterStatus('menunggu')" 
+                        class="text-left w-full {{ $statusCounts['menunggu'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['menunggu'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.15s">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 {{ $statusCounts['pending'] > 0 ? 'bg-white/20' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-11 h-11 {{ $statusCounts['menunggu'] > 0 ? 'bg-white/20' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 {{ $statusCounts['menunggu'] > 0 ? 'text-white' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
-                        @if($statusCounts['pending'] > 0)
+                        @if($statusCounts['menunggu'] > 0)
                             <span class="px-2 py-1 bg-white/30 text-white text-xs font-semibold rounded">⚡ Butuh Aksi</span>
                         @endif
                     </div>
-                    <p class="text-3xl sm:text-4xl font-bold {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-900' }} stat-num mb-1">{{ $statusCounts['pending'] }}</p>
-                    <p class="text-sm {{ $statusCounts['pending'] > 0 ? 'text-amber-50' : 'text-gray-600' }} font-medium">Menunggu Review</p>
+                    <p class="text-3xl sm:text-4xl font-bold {{ $statusCounts['menunggu'] > 0 ? 'text-white' : 'text-gray-900' }} stat-num mb-1">{{ $statusCounts['menunggu'] }}</p>
+                    <p class="text-sm {{ $statusCounts['menunggu'] > 0 ? 'text-amber-50' : 'text-gray-600' }} font-medium">Menunggu Review</p>
                 </button>
 
                 {{-- Approved Card --}}
-                <button onclick="filterStatus('approved')" 
+                <button onclick="filterStatus('disetujui')" 
                         class="text-left w-full bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.2s">
                     <div class="flex items-center justify-between mb-3">
@@ -226,7 +251,7 @@
                             </svg>
                         </div>
                     </div>
-                    <p class="text-3xl sm:text-4xl font-bold text-white stat-num mb-1">{{ $statusCounts['approved'] }}</p>
+                    <p class="text-3xl sm:text-4xl font-bold text-white stat-num mb-1">{{ $statusCounts['disetujui'] }}</p>
                     <p class="text-sm text-emerald-50 font-medium">Disetujui ✓</p>
                 </button>
             </div>
@@ -252,11 +277,11 @@
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Draft
                             </button>
-                            <button onclick="filterStatus('pending')" 
+                            <button onclick="filterStatus('menunggu')" 
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Menunggu
                             </button>
-                            <button onclick="filterStatus('approved')" 
+                            <button onclick="filterStatus('disetujui')" 
                                     class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
                                 Disetujui
                             </button>
@@ -267,6 +292,9 @@
                 {{-- Pengabdian List --}}
                 <div class="p-5 sm:p-6">
                     <div class="space-y-4" id="pengabdianList">
+                        {{-- =================================================== --}}
+                        {{-- PERBAIKAN: Mengganti $prestasi -> $pengabdian --}}
+                        {{-- =================================================== --}}
                         @forelse ($pengabdian as $index => $p)
                             @php
                                 $statusConfig = [
@@ -349,7 +377,7 @@
                                     <div class="action-group flex-shrink-0">
                                         {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.show --}}
                                         <a href="{{ route('admin.pengabdian.show', $p) }}" 
-                                           class="action-btn bg-blue-600 hover:bg-blue-700 text-white transition-colors focus-visible">
+                                           class="action-btn btn-detail focus-visible">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -359,12 +387,47 @@
 
                                         {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.edit --}}
                                         <a href="{{ route('admin.pengabdian.edit', $p) }}" 
-                                           class="action-btn btn-edit transition-colors focus-visible">
+                                           class="action-btn btn-edit focus-visible">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                             Edit
                                         </a>
+
+                                        {{-- ======================================================================== --}}
+                                        {{-- KODE BARU DITAMBAHKAN: Tombol Aksi Verifikasi --}}
+                                        {{-- ======================================================================== --}}
+                                        @if ($p->status == 'Menunggu')
+                                            
+                                            {{-- FORM UNTUK SETUJUI --}}
+                                            <form action="{{ route('admin.pengabdian.updateStatus', $p->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status" value="Disetujui">
+                                                <button type="submit" 
+                                                        class="action-btn btn-approve focus-visible">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    Setujui
+                                                </button>
+                                            </form>
+
+                                            {{-- FORM UNTUK TOLAK --}}
+                                            <form action="{{ route('admin.pengabdian.updateStatus', $p->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="hidden" name="status" value="Ditolak">
+                                                <button type="submit" 
+                                                        class="action-btn btn-reject focus-visible">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                    Tolak
+                                                </button>
+                                            </form>
+                                        @endif
+                                        {{-- ======================================================================== --}}
 
                                         {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.destroy --}}
                                         <form action="{{ route('admin.pengabdian.destroy', $p) }}" method="POST" 
@@ -372,7 +435,7 @@
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" 
-                                                    class="action-btn bg-red-600 hover:bg-red-700 text-white transition-colors focus-visible">
+                                                    class="action-btn btn-delete focus-visible">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
@@ -408,6 +471,9 @@
                 </div>
 
                 {{-- Pagination --}}
+                {{-- =================================================== --}}
+                {{-- PERBAIKAN: Mengganti semua $prestasi -> $pengabdian --}}
+                {{-- =================================================== --}}
                 @if (method_exists($pengabdian, 'links') && $pengabdian->lastPage() > 1)
                     <div class="px-5 sm:px-6 py-4 border-t border-gray-200 bg-gray-50">
                         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -446,80 +512,56 @@
                 btn.classList.add('bg-gray-100', 'text-gray-700');
             });
             
-            if (event && event.target.classList.contains('filter-btn')) {
-                event.target.classList.remove('bg-gray-100', 'text-gray-700');
-                event.target.classList.add('bg-blue-600', 'text-white');
-            }
+            const targetButton = Array.from(buttons).find(btn => btn.getAttribute('onclick') === `filterStatus('${status}')`);
             
-            // Filter cards with animation
-            let visibleCount = 0;
+            if (targetButton) {
+                targetButton.classList.add('bg-blue-600', 'text-white');
+                targetButton.classList.remove('bg-gray-100', 'text-gray-700');
+            } else if (status === 'all') {
+                buttons[0].classList.add('bg-blue-600', 'text-white');
+                buttons[0].classList.remove('bg-gray-100', 'text-gray-700');
+            }
+
+            // Show/hide cards
+            let count = 0;
             cards.forEach(card => {
-                const cardStatus = card.dataset.status;
-                if (status === 'all' || cardStatus === status) {
-                    card.style.display = '';
-                    visibleCount++;
+                const cardStatus = card.getAttribute('data-status');
+                const isMatch = (status === 'all' || cardStatus === status);
+                
+                if (isMatch) {
+                    card.style.display = 'block';
+                    count++;
                 } else {
                     card.style.display = 'none';
                 }
             });
-            
-            showFeedback(visibleCount + ' pengabdian ditampilkan');
         }
-        
-        // Search functionality
+
+        // Live search
         function searchPengabdian(query) {
             const cards = document.querySelectorAll('.pengabdian-card');
+            const lowerQuery = query.toLowerCase();
             const buttons = document.querySelectorAll('.filter-btn');
-            const searchTerm = query.toLowerCase().trim();
-            
+
             // Reset filters
-            buttons.forEach((btn, i) => {
+            buttons.forEach(btn => {
                 btn.classList.remove('bg-blue-600', 'text-white');
                 btn.classList.add('bg-gray-100', 'text-gray-700');
-                if (i === 0) {
-                    btn.classList.remove('bg-gray-100', 'text-gray-700');
-                    btn.classList.add('bg-blue-600', 'text-white');
-                }
             });
-            
-            let visibleCount = 0;
+            buttons[0].classList.add('bg-blue-600', 'text-white');
+            buttons[0].classList.remove('bg-gray-100', 'text-gray-700');
+
             cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                if (searchTerm === '' || title.includes(searchTerm)) {
-                    card.style.display = '';
-                    visibleCount++;
+                const title = card.querySelector('h3') ? card.querySelector('h3').textContent.toLowerCase() : '';
+                const yearSpan = card.querySelector('span[class*="gap-1"]');
+                const year = yearSpan ? yearSpan.textContent.toLowerCase() : '';
+                
+                if (title.includes(lowerQuery) || year.includes(lowerQuery)) {
+                    card.style.display = 'block';
                 } else {
                     card.style.display = 'none';
                 }
             });
-            
-            if (searchTerm) showFeedback(visibleCount + ' hasil ditemukan');
         }
-        
-        // Feedback toast
-        function showFeedback(message) {
-            const existing = document.getElementById('feedback-toast');
-            if (existing) existing.remove();
-            
-            const toast = document.createElement('div');
-            toast.id = 'feedback-toast';
-            toast.className = 'fixed bottom-6 right-6 px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-lg animate-slide-up z-50';
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        }
-        
-        // Keyboard shortcut: Ctrl/Cmd + K for search
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                document.getElementById('searchInput')?.focus();
-            }
-        });
     </script>
 </x-app-layout>
