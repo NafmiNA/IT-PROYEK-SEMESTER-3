@@ -3,68 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Mahasiswa</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    {{-- Tambahkan Tailwind/Vite agar view dashboard yang memakai Tailwind ter-render rapi --}}
+    <title>Dashboard Mahasiswa - P3M Sistem</title>
+    
+    {{-- Alpine.js CDN --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {{-- Vite: Tailwind CSS & JS --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
     <style>
       /* Animations used in mahasiswa views */
       @keyframes slideUp { from { opacity:0; transform: translateY(12px);} to { opacity:1; transform: translateY(0);} }
       @keyframes fadeIn { from { opacity:0;} to { opacity:1;} }
       .animate-slide-up { animation: slideUp .3s ease-out both; }
       .animate-fade { animation: fadeIn .4s ease-out both; }
+      
+      /* Sidebar Styles */
+      .sidebar-main {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          width: 256px !important;
+          height: 100vh !important;
+          background-color: #0f172a !important;
+          color: white !important;
+          z-index: 9999 !important;
+          padding: 1rem !important;
+          overflow: hidden !important;
+          transition: transform 0.3s ease !important;
+      }
+      .sidebar-hidden {
+          transform: translateX(-100%) !important;
+      }
+      .content-shifted {
+          margin-left: 256px !important;
+          transition: margin-left 0.3s ease !important;
+      }
+      .content-full {
+          margin-left: 0 !important;
+      }
+      .toggle-btn {
+          position: fixed !important;
+          top: 1rem !important;
+          left: 1rem !important;
+          z-index: 99999 !important;
+          background: #2563eb !important;
+          color: white !important;
+          border: none !important;
+          padding: 0.5rem !important;
+          border-radius: 0.5rem !important;
+          cursor: pointer !important;
+          transition: left 0.3s ease !important;
+          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+      }
+      .toggle-btn:hover {
+          background: #1d4ed8 !important;
+          box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
+      }
+      .toggle-btn-shifted {
+          left: 272px !important;
+      }
     </style>
 </head>
-<body>
-    <div class="d-flex">
-        <!-- Sidebar -->
-        <div class="bg-primary text-white p-3 d-flex flex-column" style="width: 250px; min-height: 100vh;">
-            <div class="flex-grow-1">
-                <h5 class="mb-4"> Dashboard Mahasiswa</h5>
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2">
-                        <a href="{{ route('mahasiswa.dashboard') }}" class="nav-link text-white">Beranda Penelitian</a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="{{ route('mahasiswa.dokumentasi.index') }}" class="nav-link text-white">Dokumentasi</a>
-                    </li>
-                    <li class="nav-item mb-2">
-                        <a href="{{ route('dosen.pengabdian.index') }}" class="nav-link text-white">Pengabdian Dosen</a>
-                    </li>
-                </ul>
-            </div>
-            
-            <!-- Logout Button -->
-            <div class="mt-auto pt-3 border-top border-white border-opacity-25">
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="btn btn-light w-100 d-flex align-items-center justify-content-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
-                            <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
-                        </svg>
-                        Logout
-                    </button>
-                </form>
-            </div>
-        </div>
+<body class="bg-gray-50" x-data="{ sidebarOpen: true }">
+    {{-- Toggle Button --}}
+    <button @click="sidebarOpen = !sidebarOpen" 
+            class="toggle-btn"
+            :class="{ 'toggle-btn-shifted': sidebarOpen }">
+        <svg x-show="!sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+        <svg x-show="sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+    </button>
 
-        <!-- Konten Utama -->
-        <div class="flex-grow-1 p-4 bg-light">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4 class="fw-bold">Dashboard Mahasiswa - Penelitian & Pengabdian</h4>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="rounded-circle bg-secondary text-white p-2">
-                    </div>
-                    <span>{{ Auth::user()->name ?? 'Mahasiswa' }}</span>
+    {{-- SIDEBAR --}}
+    <div class="sidebar-main" 
+         :class="{ 'sidebar-hidden': !sidebarOpen }"
+         x-show="sidebarOpen"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="-translate-x-full"
+         x-transition:enter-end="translate-x-0"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="translate-x-0"
+         x-transition:leave-end="-translate-x-full">
+        <h2 style="color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">SIDOPPAN</h2>
+        <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 1.5rem;">Mahasiswa</p>
+        
+        <div style="background: {{ request()->routeIs('mahasiswa.dashboard') ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+            <a href="{{ route('mahasiswa.dashboard') }}" style="color: white; text-decoration: none; display: block;">Dashboard</a>
+        </div>
+        <div style="background: {{ request()->routeIs('mahasiswa.dokumentasi.*') ? '#10b981' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+            <a href="{{ route('mahasiswa.dokumentasi.index') }}" style="color: white; text-decoration: none; display: block;">Dokumentasi</a>
+        </div>
+        
+        <hr style="border-color: #374151; margin: 1rem 0;">
+        
+        <div style="background: {{ request()->routeIs('profile.*') ? '#f59e0b' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+            <a href="{{ route('profile.edit') }}" style="color: white; text-decoration: none; display: block;">Profile</a>
+        </div>
+        
+        <form method="POST" action="{{ route('logout') }}" style="margin-bottom: 0;">
+            @csrf
+            <button type="submit" style="width: 100%; background: #1e293b; color: #ef4444; padding: 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer; text-align: left; font-size: 1rem;">
+                Logout
+            </button>
+        </form>
+        
+        <div style="margin-top: 2rem; padding: 0.75rem; background: #1e293b; border-radius: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; background: linear-gradient(to bottom right, #4b5563, #374151); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                    {{ strtoupper(substr(Auth::user()->name ?? 'U', 0, 1)) }}
+                </div>
+                <div>
+                    <p style="color: white; font-size: 0.875rem; font-weight: 600; margin: 0;">{{ Auth::user()->name ?? 'User' }}</p>
+                    <p style="color: #9ca3af; font-size: 0.75rem; margin: 0;">{{ Auth::user()->email ?? '' }}</p>
                 </div>
             </div>
-
-            {{-- Konten Halaman --}}
-            <main>
-                @yield('content')
-            </main>
         </div>
+    </div>
+
+    {{-- Content with left margin --}}
+    <div class="content-shifted" 
+         :class="{ 'content-full': !sidebarOpen }"
+         style="min-height: 100vh;">
+        <main class="p-6">
+            @yield('content')
+        </main>
     </div>
 </body>
 </html>
