@@ -119,10 +119,10 @@
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {{-- (Data KPI ini global, diambil dari AdminDashboardController) --}}
         {{-- Penelitian Card --}}
-        <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-blue-600 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.1s">
+        <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-gray-300 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.1s">
           <div class="flex items-center justify-between mb-3">
-            <div class="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
@@ -133,10 +133,10 @@
         </div>
 
         {{-- Pengabdian Card --}}
-        <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-emerald-600 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.2s">
+        <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-gray-300 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.2s">
           <div class="flex items-center justify-between mb-3">
-            <div class="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center">
-              <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
               </svg>
             </div>
@@ -147,10 +147,10 @@
         </div>
 
         {{-- Dokumentasi Card --}}
-        <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-purple-600 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.3s">
+        <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-gray-300 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.3s">
           <div class="flex items-center justify-between mb-3">
-            <div class="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
-              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
               </svg>
             </div>
@@ -161,18 +161,18 @@
         </div>
 
         {{-- Pending Card --}}
-        <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 {{ $kpi['pending'] > 0 ? 'border-amber-500' : 'border-gray-300' }} focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.4s">
+        <div class="bg-white rounded-xl shadow-md hover-lift p-5 sm:p-6 border-l-4 border-gray-300 focus-ring animate-slide-in" tabindex="0" style="animation-delay: 0.4s">
           <div class="flex items-center justify-between mb-3">
-            <div class="h-10 w-10 rounded-lg {{ $kpi['pending'] > 0 ? 'bg-amber-100' : 'bg-gray-100' }} flex items-center justify-center">
-              <svg class="w-6 h-6 {{ $kpi['pending'] > 0 ? 'text-amber-600' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center">
+              <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
             </div>
             @if($kpi['pending'] > 0)
-              <span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full animate-pulse">Perlu Aksi</span>
+              <span class="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded-full animate-pulse">Perlu Aksi</span>
             @endif
           </div>
-          <p class="text-3xl sm:text-4xl font-bold {{ $kpi['pending'] > 0 ? 'text-amber-600' : 'text-gray-900' }}">{{ $kpi['pending'] }}</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900">{{ $kpi['pending'] }}</p>
           <p class="text-sm text-gray-600 mt-1">Menunggu Verifikasi</p>
           <p class="text-xs text-gray-400 mt-1">Item tertunda</p>
         </div>

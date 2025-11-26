@@ -18,7 +18,7 @@
       .animate-slide-up { animation: slideUp .3s ease-out both; }
       .animate-fade { animation: fadeIn .4s ease-out both; }
       
-      /* Sidebar Styles */
+      /* Sidebar Styles - Tetap 100%, tidak zoom */
       .sidebar-main {
           position: fixed !important;
           top: 0 !important;
@@ -29,52 +29,84 @@
           color: white !important;
           z-index: 9999 !important;
           padding: 1rem !important;
-          overflow: hidden !important;
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
           transition: transform 0.3s ease !important;
+      }
+      
+      /* Scrollbar styling untuk sidebar */
+      .sidebar-main::-webkit-scrollbar {
+          width: 6px;
+      }
+      .sidebar-main::-webkit-scrollbar-track {
+          background: #1e293b;
+      }
+      .sidebar-main::-webkit-scrollbar-thumb {
+          background: #475569;
+          border-radius: 3px;
+      }
+      .sidebar-main::-webkit-scrollbar-thumb:hover {
+          background: #64748b;
       }
       .sidebar-hidden {
           transform: translateX(-100%) !important;
       }
+      
+      /* Konten utama - Zoom 80% */
       .content-shifted {
           margin-left: 256px !important;
           transition: margin-left 0.3s ease !important;
+          zoom: 80%;
+          -moz-transform: scale(0.8);
+          -moz-transform-origin: 0 0;
       }
       .content-full {
           margin-left: 0 !important;
+          zoom: 80%;
+          -moz-transform: scale(0.8);
+          -moz-transform-origin: 0 0;
       }
-      .toggle-btn {
+      .toggle-btn-outside {
           position: fixed !important;
           top: 1rem !important;
           left: 1rem !important;
-          z-index: 99999 !important;
+          z-index: 10 !important;
           background: #2563eb !important;
           color: white !important;
           border: none !important;
           padding: 0.5rem !important;
           border-radius: 0.5rem !important;
           cursor: pointer !important;
-          transition: left 0.3s ease !important;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
       }
-      .toggle-btn:hover {
+      .toggle-btn-outside:hover {
           background: #1d4ed8 !important;
           box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
       }
-      .toggle-btn-shifted {
-          left: 272px !important;
+      .toggle-btn-inside {
+          position: absolute !important;
+          top: 1rem !important;
+          right: 1rem !important;
+          z-index: 1 !important;
+          background: transparent !important;
+          color: white !important;
+          border: none !important;
+          padding: 0.5rem !important;
+          border-radius: 0.5rem !important;
+          cursor: pointer !important;
+      }
+      .toggle-btn-inside:hover {
+          background: rgba(255, 255, 255, 0.1) !important;
       }
     </style>
 </head>
 <body class="bg-gray-50" x-data="{ sidebarOpen: true }">
-    {{-- Toggle Button --}}
+    {{-- Toggle Button (Outside - when sidebar closed) --}}
     <button @click="sidebarOpen = !sidebarOpen" 
-            class="toggle-btn"
-            :class="{ 'toggle-btn-shifted': sidebarOpen }">
-        <svg x-show="!sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+            class="toggle-btn-outside"
+            x-show="!sidebarOpen">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
-        <svg x-show="sidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
     </button>
 
@@ -88,19 +120,29 @@
          x-transition:leave="transition ease-in duration-300"
          x-transition:leave-start="translate-x-0"
          x-transition:leave-end="-translate-x-full">
-        <h2 style="color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">SIDOPPAN</h2>
+        
+        {{-- Close Button (Inside Sidebar) --}}
+        <button @click="sidebarOpen = false" 
+                class="toggle-btn-inside"
+                title="Close Sidebar">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+        
+        <h2 style="color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; margin-top: 3rem;">SIDOPPAN</h2>
         <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 1.5rem;">Mahasiswa</p>
         
         <div style="background: {{ request()->routeIs('mahasiswa.dashboard') ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
             <a href="{{ route('mahasiswa.dashboard') }}" style="color: white; text-decoration: none; display: block;">Dashboard</a>
         </div>
-        <div style="background: {{ request()->routeIs('mahasiswa.dokumentasi.*') ? '#10b981' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+        <div style="background: {{ request()->routeIs('mahasiswa.dokumentasi.*') ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
             <a href="{{ route('mahasiswa.dokumentasi.index') }}" style="color: white; text-decoration: none; display: block;">Dokumentasi</a>
         </div>
         
         <hr style="border-color: #374151; margin: 1rem 0;">
         
-        <div style="background: {{ request()->routeIs('profile.*') ? '#f59e0b' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+        <div style="background: {{ request()->routeIs('profile.*') ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
             <a href="{{ route('profile.edit') }}" style="color: white; text-decoration: none; display: block;">Profile</a>
         </div>
         

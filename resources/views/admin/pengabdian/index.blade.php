@@ -194,17 +194,17 @@
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
                 {{-- Total Card --}}
                 <button onclick="filterStatus('all')" 
-                        class="text-left w-full bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md card-hover p-5 animate-slide-up focus-visible"
+                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.05s">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                             </svg>
                         </div>
                     </div>
-                    <p class="text-3xl sm:text-4xl font-bold text-white stat-num mb-1">{{ $statusCounts['total'] }}</p>
-                    <p class="text-sm text-blue-100 font-medium">Total Pengabdian</p>
+                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['total'] }}</p>
+                    <p class="text-sm text-gray-600 font-medium">Total Pengabdian</p>
                 </button>
 
                 {{-- Draft Card --}}
@@ -224,35 +224,35 @@
 
                 {{-- Pending Card --}}
                 <button onclick="filterStatus('menunggu')" 
-                        class="text-left w-full {{ $statusCounts['menunggu'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['menunggu'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
+                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.15s">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 {{ $statusCounts['menunggu'] > 0 ? 'bg-white/20' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 {{ $statusCounts['menunggu'] > 0 ? 'text-white' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-11 h-11 {{ $statusCounts['menunggu'] > 0 ? 'bg-gray-100' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
                         @if($statusCounts['menunggu'] > 0)
-                            <span class="px-2 py-1 bg-white/30 text-white text-xs font-semibold rounded">⚡ Butuh Aksi</span>
+                            <span class="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded">⚡ Butuh Aksi</span>
                         @endif
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold {{ $statusCounts['menunggu'] > 0 ? 'text-white' : 'text-gray-900' }} stat-num mb-1">{{ $statusCounts['menunggu'] }}</p>
-                    <p class="text-sm {{ $statusCounts['menunggu'] > 0 ? 'text-amber-50' : 'text-gray-600' }} font-medium">Menunggu Review</p>
+                    <p class="text-sm text-gray-600 font-medium">Menunggu Review</p>
                 </button>
 
                 {{-- Approved Card --}}
                 <button onclick="filterStatus('disetujui')" 
-                        class="text-left w-full bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md card-hover p-5 animate-slide-up focus-visible"
+                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
                         style="animation-delay: 0.2s">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 bg-white/20 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
                     </div>
-                    <p class="text-3xl sm:text-4xl font-bold text-white stat-num mb-1">{{ $statusCounts['disetujui'] }}</p>
-                    <p class="text-sm text-emerald-50 font-medium">Disetujui ✓</p>
+                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['disetujui'] }}</p>
+                    <p class="text-sm text-gray-600 font-medium">Disetujui ✓</p>
                 </button>
             </div>
 

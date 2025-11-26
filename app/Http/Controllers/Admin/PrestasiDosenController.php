@@ -6,12 +6,20 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Dosen;
 use App\Models\PrestasiDosen;
+use App\Services\AhpService;
 // (Model Penelitian & Pengabdian tidak diperlukan di controller ini)
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class PrestasiDosenController extends Controller
 {
+    protected $ahpService;
+    
+    public function __construct(AhpService $ahpService)
+    {
+        $this->ahpService = $ahpService;
+    }
+    
     /**
      * Menampilkan daftar SEMUA prestasi dari SEMUA dosen (Global Admin View).
      */
@@ -35,8 +43,11 @@ class PrestasiDosenController extends Controller
             'buku' => 0,
         ];
 
+        // Ambil bobot kriteria dari AHP
+        $bobot = $this->ahpService->getCurrentWeights();
+
         // MODIFIKASI: Mengarah ke view 'admin.prestasi.index'
-        return view('admin.prestasi.index', compact('prestasi', 'currentPrestasi', 'currentYear', 'dosen'));
+        return view('admin.prestasi.index', compact('prestasi', 'currentPrestasi', 'currentYear', 'dosen', 'bobot'));
     }
 
     // MODIFIKASI: Fungsi store, edit, update, dan calculatePrestasi dihapus.

@@ -26,6 +26,7 @@ use App\Http\Controllers\Admin\PengabdianController as AdminPengabdianController
 // TAMBAHAN BARU: Controller Prestasi Admin
 // ========================================================================
 use App\Http\Controllers\Admin\PrestasiDosenController as AdminPrestasiController;
+use App\Http\Controllers\Admin\AhpController;
 // ========================================================================
 
 /*
@@ -171,6 +172,16 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
         // TAMBAHAN BARU: Rute untuk Prestasi Admin
         // ========================================================================
         Route::get('/prestasi', [AdminPrestasiController::class, 'index'])->name('prestasi.index');
+
+        // ========================================================================
+        // TAMBAHAN: Rute untuk AHP (Perhitungan Bobot Kriteria)
+        // ========================================================================
+        Route::prefix('ahp')->name('ahp.')->group(function () {
+            Route::get('/', [AhpController::class, 'index'])->name('index');
+            Route::post('/comparison', [AhpController::class, 'saveComparison'])->name('saveComparison');
+            Route::post('/calculate', [AhpController::class, 'calculate'])->name('calculate');
+            Route::get('/results', [AhpController::class, 'showResults'])->name('results');
+        });
 
     });
 
