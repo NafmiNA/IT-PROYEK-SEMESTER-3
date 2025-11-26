@@ -30,7 +30,10 @@ class MahasiswaController extends Controller
         ]);
 
         if ($request->hasFile('file')) {
-            $validated['file'] = $request->file('file')->store('dokumentasi', 'public');
+            $file = $request->file('file');
+            $folder = 'SIDOPPAN/Dokumentasi';
+            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+            $validated['file'] = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
 
         Dokumentasi::create($validated);
@@ -57,7 +60,10 @@ class MahasiswaController extends Controller
         ]);
 
         if ($request->hasFile('file')) {
-            $validated['file'] = $request->file('file')->store('dokumentasi', 'public');
+            $file = $request->file('file');
+            $folder = 'SIDOPPAN/Dokumentasi';
+            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+            $validated['file'] = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
 
         $mhs->update($validated);

@@ -65,7 +65,10 @@ class MahasiswaDashboardController extends Controller
 
         $path = null;
         if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('dokumentasi', 'public');
+            $file = $request->file('file');
+            $folder = 'SIDOPPAN/Dokumentasi';
+            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+            $path = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
 
         Dokumentasi::create([
@@ -102,7 +105,10 @@ class MahasiswaDashboardController extends Controller
             if ($path) {
                 Storage::disk('public')->delete($path);
             }
-            $path = $request->file('file')->store('dokumentasi', 'public');
+            $file = $request->file('file');
+            $folder = 'SIDOPPAN/Dokumentasi';
+            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+            $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
 
         $dokumentasi->update([

@@ -31,7 +31,10 @@ class PenelitianController extends Controller
         ]);
 
         if ($request->hasFile('dokumen')) {
-            $validated['dokumen'] = $request->file('dokumen')->store('dokumen_penelitian', 'public');
+            $file = $request->file('dokumen');
+            $folder = 'SIDOPPAN/Penelitian/Dokumen';
+            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+            $validated['dokumen'] = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
 
         Penelitian::create($validated);
@@ -56,7 +59,10 @@ class PenelitianController extends Controller
         ]);
 
         if ($request->hasFile('dokumen')) {
-            $validated['dokumen'] = $request->file('dokumen')->store('dokumen_penelitian', 'public');
+            $file = $request->file('dokumen');
+            $folder = 'SIDOPPAN/Penelitian/Dokumen';
+            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+            $validated['dokumen'] = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
 
         $penelitian->update($validated);
@@ -71,7 +77,10 @@ class PenelitianController extends Controller
         ]);
 
         if ($request->hasFile('dokumen')) {
-            $path = $request->file('dokumen')->store('dokumen_penelitian', 'public');
+            $file = $request->file('dokumen');
+            $folder = 'SIDOPPAN/Penelitian/Dokumen';
+            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+            $path = \Storage::disk('public')->putFileAs($folder, $file, $filename);
             $penelitian->update(['dokumen' => $path]);
         }
 

@@ -124,7 +124,7 @@ class PenelitianController extends Controller
         
             if ($request->hasFile('laporan_jurnal')) {
                 $file = $request->file('laporan_jurnal');
-                $folder   = "penelitian/laporan/{$penelitian->id}";
+                $folder   = "SIDOPPAN/Penelitian/{$penelitian->id}/laporan";
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
@@ -230,7 +230,7 @@ class PenelitianController extends Controller
                 }
 
                 $file = $request->file('laporan_jurnal');
-                $folder   = "penelitian/laporan/{$penelitian->id}";
+                $folder   = "SIDOPPAN/Penelitian/{$penelitian->id}/laporan";
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
 

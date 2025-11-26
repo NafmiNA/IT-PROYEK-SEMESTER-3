@@ -183,6 +183,18 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
             Route::get('/results', [AhpController::class, 'showResults'])->name('results');
         });
 
+        // ========================================================================
+        // TAMBAHAN: Rute untuk Cloud Storage (Google Drive)
+        // ========================================================================
+        Route::prefix('cloud-storage')->name('cloud-storage.')->group(function () {
+            Route::get('/settings', [\App\Http\Controllers\Admin\CloudStorageController::class, 'settings'])->name('settings');
+            Route::get('/connect', [\App\Http\Controllers\Admin\CloudStorageController::class, 'connect'])->name('connect');
+            Route::get('/callback', [\App\Http\Controllers\Admin\CloudStorageController::class, 'callback'])->name('callback');
+            Route::post('/disconnect', [\App\Http\Controllers\Admin\CloudStorageController::class, 'disconnect'])->name('disconnect');
+            Route::post('/save-folders', [\App\Http\Controllers\Admin\CloudStorageController::class, 'saveFolders'])->name('save-folders');
+            Route::get('/status', [\App\Http\Controllers\Admin\CloudStorageController::class, 'getStatus'])->name('status');
+        });
+
     });
 
 });

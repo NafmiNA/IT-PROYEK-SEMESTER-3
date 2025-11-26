@@ -50,22 +50,8 @@ class DokumentasiController extends Controller
         $saved = [];
         foreach ($files as $file) {
             try {
-                // Upload to Google Drive
-                $folder = ucfirst($data['context']) . '/' . $model->id;
-                $uploadResult = $this->googleDrive->upload($file, $folder);
-
-                $saved[] = Dokumentasi::create([
-                    $data['context'] === 'penelitian' ? 'penelitian_id' : 'pengabdian_id' => $model->id,
-                    'file_name'   => $uploadResult['original_name'],
-                    'mime'        => $uploadResult['mime_type'],
-                    'size'        => $uploadResult['size'],
-                    'gdrive_path' => $uploadResult['path'],
-                ]);
-            } catch (\Exception $e) {
-                \Log::error('Upload to Google Drive failed: ' . $e->getMessage());
-                
-                // Fallback to local storage
-                $folder = ucfirst($data['context']) . '/' . $model->id;
+                // Store file to local storage
+                $folder = 'SIDOPPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
@@ -76,6 +62,8 @@ class DokumentasiController extends Controller
                     'size'        => $file->getSize(),
                     'gdrive_path' => $path,
                 ]);
+            } catch (\Exception $e) {
+                \Log::error('Upload file failed: ' . $e->getMessage());
             }
         }
 

@@ -50,8 +50,8 @@ class UserController extends Controller
             'role' => $request->role,
         ]);
 
-        // MODIFIKASI: Redirect ke 'users.index'
-        return redirect()->route('users.index')->with('success', 'User berhasil ditambahkan.');
+        // MODIFIKASI: Redirect ke 'admin.users.index'
+        return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambahkan.');
     }
 
     /**
@@ -96,8 +96,8 @@ class UserController extends Controller
 
         $user->update($data);
 
-        // MODIFIKASI: Redirect ke 'users.index'
-        return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');
+        // MODIFIKASI: Redirect ke 'admin.users.index'
+        return redirect()->route('admin.users.index')->with('success', 'User berhasil diperbarui.');
     }
 
     /**
@@ -109,7 +109,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $user->delete();
 
-        // MODIFIKASI: Redirect ke 'users.index'
-        return redirect()->route('users.index')->with('success', 'User berhasil dihapus.');
+        // MODIFIKASI: Redirect ke 'admin.users.index'
+        return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus.');
     }
 }

@@ -97,15 +97,53 @@
             <div class="flex flex-wrap gap-3">
                 {{-- Tombol ini mengarah ke 'users.index' (halaman tabel) --}}
                 <a href="{{ route('admin.users.index') }}"
-                   class="inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-semibold
-                          {{-- PERUBAHAN: 'bg-rose-700' dan 'hover:bg-rose-800' diubah menjadi 'bg-blue-700' dan 'hover:bg-blue-800' --}}
-                          bg-blue-700 text-white hover:bg-blue-800 transition-all duration-200
-                          shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
-                    {{-- <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg> --}}
+                   class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
+                          bg-white text-blue-700 border-2 border-blue-300 hover:bg-blue-700 hover:text-white hover:border-blue-700 
+                          transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
                     Buka Halaman Kelola Akun
                 </a>
+            </div>
+        </div>
+      </section>
+      {{-- =============================================================== --}}
+
+      {{-- 
+        ==============================================================
+        == TAMBAHAN BARU: CLOUD STORAGE MANAGEMENT ==
+        ==============================================================
+      --}}
+      <section class="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl shadow-lg p-6 sm:p-8 mb-6 sm:mb-8 animate-fade-in">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            
+            {{-- Deskripsi Fitur --}}
+            <div class="flex items-center gap-4">
+                <div class="h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 border-2 border-green-200 
+                                flex items-center justify-center shadow-lg">
+                    <svg class="w-8 h-8 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="font-bold text-xl sm:text-2xl text-green-900">Penyimpanan Cloud</h2>
+                    <p class="text-sm text-green-700">Kelola backup file ke Google Drive secara otomatis</p>
+                </div>
+            </div>
+      
+            {{-- Tombol Aksi (CTA) --}}
+            <div class="flex flex-wrap gap-3">
+                <button onclick="openCloudStorageModal()"
+                   class="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold
+                          bg-white text-green-700 border-2 border-green-300 hover:bg-green-700 hover:text-white hover:border-green-700
+                          transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 focus-ring">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    Pengaturan Cloud Storage
+                </button>
             </div>
         </div>
       </section>
@@ -442,6 +480,297 @@
           }
         }
       });
+    }
+  </script>
+
+  {{-- Cloud Storage Modal --}}
+  <div id="cloudStorageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4" onclick="closeCloudStorageModal(event)">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+      {{-- Modal Header --}}
+      <div class="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xl font-bold text-white">Pengaturan Cloud Storage</h3>
+            <p class="text-sm text-green-100">Kelola backup ke Google Drive</p>
+          </div>
+          <button onclick="closeCloudStorageModal()" class="text-white hover:text-green-100 transition-colors text-2xl font-bold w-8 h-8 flex items-center justify-center">
+            ×
+          </button>
+        </div>
+      </div>
+
+      {{-- Modal Body --}}
+      <div class="p-5 space-y-5">
+        {{-- Connection Status --}}
+        <div id="connectionStatus" class="border-2 border-gray-200 rounded-xl p-4 bg-white">
+          <div class="flex flex-col gap-4">
+            <div>
+              <p id="statusText" class="font-semibold text-gray-900 text-base mb-1">Status: Belum Terhubung</p>
+              <p id="statusEmail" class="text-sm text-gray-500">Silakan hubungkan Google Drive Anda</p>
+            </div>
+            <button id="connectBtn" onclick="connectGoogleDrive()" 
+                    class="w-full px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg">
+              Connect Google Drive
+            </button>
+          </div>
+          
+          {{-- Additional Info --}}
+          <div class="mt-3 pt-3 border-t border-gray-200">
+            <p class="text-xs text-gray-600">
+              <span class="font-semibold">Info:</span> Hubungkan Google Drive untuk backup otomatis.
+            </p>
+          </div>
+        </div>
+
+        {{-- Folder Configuration (Always visible now for easier setup) --}}
+        <div id="folderConfig" class="space-y-3">
+          <div class="border-t pt-4">
+            <h4 class="font-semibold text-gray-800 mb-2 text-sm">Konfigurasi Folder</h4>
+            <p class="text-xs text-gray-600 mb-3">
+              Buat folder "SIDOPPAN" di Google Drive, lalu paste ID-nya di bawah.
+            </p>
+            
+            {{-- Main Folder --}}
+            <div class="space-y-2">
+              <label class="block text-xs font-medium text-gray-700">Nama Folder:</label>
+              <input type="text" id="mainFolderName" placeholder="SIDOPPAN" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+              
+              <label class="block text-xs font-medium text-gray-700 mt-2">Folder ID:</label>
+              <input type="text" id="mainFolderId" placeholder="Paste dari Google Drive" 
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs">
+              
+              <details class="mt-2">
+                <summary class="text-xs text-blue-600 cursor-pointer hover:text-blue-700 font-medium">
+                  Cara dapat Folder ID?
+                </summary>
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2">
+                  <p class="text-xs text-amber-800 leading-relaxed">
+                    <strong>Langkah:</strong><br>
+                    1. Buka Google Drive<br>
+                    2. Buat folder "SIDOPPAN"<br>
+                    3. Klik kanan folder, pilih Share, lalu Copy link<br>
+                    4. Paste ID dari URL<br>
+                    <code class="text-[10px] bg-amber-100 px-1">drive.google.com/drive/folders/<strong>ID_INI</strong></code>
+                  </p>
+                </div>
+              </details>
+            </div>
+
+            {{-- Info Subfolders --}}
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5 mt-3">
+              <p class="text-xs text-blue-800 font-semibold mb-1">Sistem akan otomatis membuat 3 subfolder:</p>
+              <ul class="text-xs text-blue-700 space-y-0.5 ml-4 list-disc">
+                <li>Penelitian/</li>
+                <li>Pengabdian/</li>
+                <li>Dokumentasi/</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+
+        {{-- Save Button (Always visible) --}}
+        <div class="flex gap-2 pt-4 border-t">
+          <button onclick="closeCloudStorageModal()" class="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
+            Batal
+          </button>
+          <button id="saveFoldersBtn" onclick="saveFolderConfiguration()" 
+                  style="background: linear-gradient(to right, #16a34a, #059669); color: white !important;"
+                  class="flex-1 px-4 py-2.5 rounded-lg hover:opacity-90 transition-all font-semibold shadow-lg hover:shadow-xl text-sm">
+            <span style="color: white !important;">Simpan Konfigurasi</span>
+          </button>
+        </div>
+
+        {{-- Loading Indicator --}}
+        <div id="loadingIndicator" class="hidden text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-green-600"></div>
+          <p class="text-gray-600 mt-3">Memproses...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- Google Picker API --}}
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script>
+    let pickerApiLoaded = false;
+    let oauthToken = null;
+
+    // Modal Functions
+    function openCloudStorageModal() {
+      console.log('Opening cloud storage modal...');
+      const modal = document.getElementById('cloudStorageModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        loadCloudStorageStatus();
+      } else {
+        console.error('Modal element not found!');
+      }
+    }
+
+    function closeCloudStorageModal(event) {
+      if (!event || event.target === event.currentTarget) {
+        document.getElementById('cloudStorageModal').classList.add('hidden');
+      }
+    }
+
+    // Load current status
+    async function loadCloudStorageStatus() {
+      console.log('Loading cloud storage status...');
+      try {
+        const response = await fetch('{{ route("admin.cloud-storage.status") }}');
+        const data = await response.json();
+        console.log('Status response:', data);
+        
+        if (data.success && data.isConnected) {
+          console.log('Connected! Showing folder config...');
+          updateConnectionStatus(true, data.settings);
+          document.getElementById('folderConfig').classList.remove('hidden');
+        } else {
+          console.log('Not connected. Showing connect button...');
+          updateConnectionStatus(false);
+        }
+      } catch (error) {
+        console.error('Error loading status:', error);
+        // Ensure button is visible even on error
+        updateConnectionStatus(false);
+      }
+    }
+
+    function updateConnectionStatus(connected, settings = null) {
+      const statusText = document.getElementById('statusText');
+      const statusEmail = document.getElementById('statusEmail');
+      const connectBtn = document.getElementById('connectBtn');
+
+      if (connected) {
+        statusText.textContent = 'Status: Terhubung';
+        statusText.classList.add('text-green-700');
+        statusEmail.textContent = settings?.email || 'Connected';
+        connectBtn.textContent = 'Disconnect';
+        connectBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        connectBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        connectBtn.onclick = disconnectGoogleDrive;
+        
+        if (settings?.main_folder_name) {
+          document.getElementById('mainFolderName').value = settings.main_folder_name;
+        }
+      } else {
+        statusText.textContent = 'Status: Belum Terhubung';
+        statusText.classList.remove('text-green-700');
+        statusEmail.textContent = 'Silakan hubungkan Google Drive Anda';
+        connectBtn.textContent = 'Connect Google Drive';
+        connectBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+        connectBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        connectBtn.onclick = connectGoogleDrive;
+      }
+    }
+
+    // Connect to Google Drive
+    function connectGoogleDrive() {
+      window.location.href = '{{ route("admin.cloud-storage.connect") }}';
+    }
+
+    // Disconnect from Google Drive
+    async function disconnectGoogleDrive() {
+      if (!confirm('Yakin ingin memutuskan koneksi Google Drive?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch('{{ route("admin.cloud-storage.disconnect") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          }
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          alert('Berhasil memutuskan koneksi');
+          location.reload();
+        } else {
+          alert('Gagal memutuskan koneksi');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan');
+      }
+    }
+
+    // Validation helper
+    function validateFolderInputs() {
+      const folderId = document.getElementById('mainFolderId').value.trim();
+      const folderName = document.getElementById('mainFolderName').value.trim();
+      
+      if (!folderId) {
+        alert('❌ Folder ID tidak boleh kosong!\n\nSilakan masukkan Google Drive Folder ID.');
+        document.getElementById('mainFolderId').focus();
+        return false;
+      }
+      
+      if (!folderName) {
+        alert('❌ Nama folder tidak boleh kosong!\n\nContoh: SIDOPPAN');
+        document.getElementById('mainFolderName').focus();
+        return false;
+      }
+      
+      // Basic validation for folder ID (should be alphanumeric)
+      if (!/^[a-zA-Z0-9_-]+$/.test(folderId)) {
+        alert('❌ Folder ID tidak valid!\n\nFolder ID hanya boleh berisi huruf, angka, dash (-) dan underscore (_).');
+        document.getElementById('mainFolderId').focus();
+        return false;
+      }
+      
+      return true;
+    }
+
+    // Save folder configuration
+    async function saveFolderConfiguration() {
+      // Validate inputs first
+      if (!validateFolderInputs()) {
+        return;
+      }
+
+      const folderId = document.getElementById('mainFolderId').value.trim();
+      const folderName = document.getElementById('mainFolderName').value.trim();
+
+      document.getElementById('loadingIndicator').classList.remove('hidden');
+      document.getElementById('saveFoldersBtn').disabled = true;
+
+      try {
+        const response = await fetch('{{ route("admin.cloud-storage.save-folders") }}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          },
+          body: JSON.stringify({
+            main_folder_id: folderId,
+            main_folder_name: folderName
+          })
+        });
+
+        const data = await response.json();
+        
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        document.getElementById('saveFoldersBtn').disabled = false;
+
+        if (data.success) {
+          alert('Konfigurasi berhasil disimpan!\n\nFolder yang dibuat:\n- Penelitian\n- Pengabdian\n- Dokumentasi');
+          closeCloudStorageModal();
+          location.reload();
+        } else {
+          alert('Gagal menyimpan konfigurasi: ' + data.message);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('loadingIndicator').classList.add('hidden');
+        document.getElementById('saveFoldersBtn').disabled = false;
+        alert('Terjadi kesalahan');
+      }
     }
   </script>
 </x-app-layout>

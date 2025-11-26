@@ -67,33 +67,32 @@ class DokumentasiController extends Controller
 
         if ($request->hasFile('file')) {
             try {
-                // Delete old file from Google Drive if exists
-                if ($doc->google_id) {
-                    $this->googleDrive->delete($doc->google_id);
-                    Log::info('Old mahasiswa dokumentasi deleted from Google Drive', ['google_id' => $doc->google_id]);
+                // Delete old file from local storage if exists
+                if ($doc->gdrive_path && Storage::disk('public')->exists($doc->gdrive_path)) {
+                    Storage::disk('public')->delete($doc->gdrive_path);
+                    Log::info('Old mahasiswa dokumentasi deleted from local storage', ['path' => $doc->gdrive_path]);
                 }
 
                 $context = $doc->penelitian_id ? 'penelitian' : 'pengabdian';
                 $contextId = $doc->penelitian_id ?: $doc->pengabdian_id;
-                $folder = 'Mahasiswa/' . ucfirst($context) . '/' . $contextId;
+                $folder = 'SIDOPPAN/' . ucfirst($context) . '/' . $contextId . '/dokumentasi';
                 
                 $file = $request->file('file');
                 
-                // Upload new file to Google Drive
-                $uploadResult = $this->googleDrive->upload($file, $folder);
+                // Store file to local storage
+                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
                 
                 Log::info('Mahasiswa dokumentasi updated', [
                     'doc_id' => $id,
-                    'new_file' => $uploadResult['filename'],
-                    'google_id' => $uploadResult['google_id'] ?? null,
+                    'new_file' => $file->getClientOriginalName(),
+                    'path' => $path,
                 ]);
 
-                $doc->gdrive_path = $uploadResult['path'];
-                $doc->google_id = $uploadResult['google_id'] ?? null;
-                $doc->google_url = $uploadResult['url'] ?? null;
-                $doc->mime = $uploadResult['mime_type'];
-                $doc->size = $uploadResult['size'];
-                $doc->file_name = $data['file_name'] ?? $uploadResult['original_name'];
+                $doc->gdrive_path = $path;
+                $doc->mime = $file->getMimeType();
+                $doc->size = $file->getSize();
+                $doc->file_name = $data['file_name'] ?? $file->getClientOriginalName();
             } catch (\Exception $e) {
                 Log::error('Failed to update mahasiswa dokumentasi', [
                     'error' => $e->getMessage(),
@@ -106,7 +105,7 @@ class DokumentasiController extends Controller
         }
 
         $doc->save();
-        return redirect()->route('mahasiswa.dokumentasi.index')->with('success', 'Dokumentasi diperbarui di Google Drive.');
+        return redirect()->route('mahasiswa.dokumentasi.index')->with('success', 'Dokumentasi berhasil diperbarui.');
     }
 
     public function destroy(int $id): RedirectResponse
@@ -117,17 +116,17 @@ class DokumentasiController extends Controller
         }
 
         try {
-            // Delete from Google Drive if exists
-            if ($doc->google_id) {
-                $this->googleDrive->delete($doc->google_id);
-                Log::info('Mahasiswa dokumentasi deleted from Google Drive', [
+            // Delete from local storage if exists
+            if ($doc->gdrive_path && Storage::disk('public')->exists($doc->gdrive_path)) {
+                Storage::disk('public')->delete($doc->gdrive_path);
+                Log::info('Mahasiswa dokumentasi deleted from local storage', [
                     'doc_id' => $id,
-                    'google_id' => $doc->google_id,
+                    'path' => $doc->gdrive_path,
                 ]);
             }
             
             $doc->delete();
-            return redirect()->back()->with('success', 'Dokumentasi dihapus dari Google Drive.');
+            return redirect()->back()->with('success', 'Dokumentasi berhasil dihapus.');
         } catch (\Exception $e) {
             Log::error('Failed to delete mahasiswa dokumentasi', [
                 'error' => $e->getMessage(),
@@ -167,27 +166,24 @@ class DokumentasiController extends Controller
 
         foreach ($request->file('dokumentasi', []) as $file) {
             try {
-                // Build folder path: Mahasiswa/Penelitian/ID or Mahasiswa/Pengabdian/ID
-                $folder = 'Mahasiswa/' . ucfirst($data['context']) . '/' . $model->id;
-                
-                // Upload to Google Drive
-                $uploadResult = $this->googleDrive->upload($file, $folder);
+                // Store file to local storage
+                $folder = 'SIDOPPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
+                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
                 
                 Log::info('Mahasiswa dokumentasi uploaded', [
                     'context' => $data['context'],
                     'context_id' => $model->id,
-                    'file' => $uploadResult['filename'],
-                    'google_id' => $uploadResult['google_id'] ?? null,
+                    'file' => $file->getClientOriginalName(),
+                    'path' => $path,
                 ]);
 
                 Dokumentasi::create([
                     $data['context'] === 'penelitian' ? 'penelitian_id' : 'pengabdian_id' => $model->id,
-                    'file_name'   => $uploadResult['original_name'],
-                    'mime'        => $uploadResult['mime_type'],
-                    'size'        => $uploadResult['size'],
-                    'gdrive_path' => $uploadResult['path'],
-                    'google_id'   => $uploadResult['google_id'] ?? null,
-                    'google_url'  => $uploadResult['url'] ?? null,
+                    'file_name'   => $file->getClientOriginalName(),
+                    'mime'        => $file->getMimeType(),
+                    'size'        => $file->getSize(),
+                    'gdrive_path' => $path,
                 ]);
             } catch (\Exception $e) {
                 Log::error('Failed to upload mahasiswa dokumentasi', [
@@ -198,7 +194,7 @@ class DokumentasiController extends Controller
             }
         }
 
-        return back()->with('success', 'Dokumentasi berhasil diunggah ke Google Drive.');
+        return back()->with('success', 'Dokumentasi berhasil diunggah.');
     }
 
     private function isOwnedByCurrentStudent(Dokumentasi $doc): bool

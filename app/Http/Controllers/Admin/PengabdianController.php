@@ -122,7 +122,7 @@ class PengabdianController extends Controller
 
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {
-                    $folder = "pengabdian/{$pengabdian->id}";
+                    $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
                     $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
                     $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
 
@@ -221,7 +221,7 @@ class PengabdianController extends Controller
 
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {
-                    $folder = "pengabdian/{$pengabdian->id}";
+                    $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
                     $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
                     $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
 

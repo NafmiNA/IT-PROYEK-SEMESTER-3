@@ -2,274 +2,304 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\UploadedFile;
-use Google\Client;
-use Google\Service\Drive;
+use App\Models\CloudStorageSetting;
+use Google\Client as GoogleClient;
+use Google\Service\Drive as GoogleDrive;
 use Google\Service\Drive\DriveFile;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Exception;
 
 class GoogleDriveService
 {
-    protected $service;
-    protected $folderId;
-    protected $useGoogleDrive = true;
+    protected $client;
+    protected $driveService;
+    protected $settings;
 
     public function __construct()
     {
-        // Check if Google Drive credentials are configured
-        if (empty(config('filesystems.disks.google.clientId')) || 
-            empty(config('filesystems.disks.google.clientSecret')) || 
-            empty(config('filesystems.disks.google.refreshToken'))) {
-            $this->useGoogleDrive = false;
-            \Log::warning('Google Drive credentials not configured, using local storage');
-        } else {
-            try {
-                $client = new Client();
-                $client->setClientId(config('filesystems.disks.google.clientId'));
-                $client->setClientSecret(config('filesystems.disks.google.clientSecret'));
-                $client->refreshToken(config('filesystems.disks.google.refreshToken'));
-                
-                $this->service = new Drive($client);
-                
-                // Get or create main folder "Integrasi Sistem PBL Drive"
-                $this->folderId = $this->getOrCreateMainFolder();
-                
-                \Log::info('Google Drive initialized successfully with folder ID: ' . $this->folderId);
-            } catch (\Exception $e) {
-                $this->useGoogleDrive = false;
-                \Log::error('Google Drive initialization failed: ' . $e->getMessage());
+        $this->settings = CloudStorageSetting::first();
+        $this->initializeClient();
+    }
+
+    protected function initializeClient()
+    {
+        $this->client = new GoogleClient();
+        $this->client->setApplicationName(config('app.name'));
+        $this->client->setScopes([GoogleDrive::DRIVE_FILE]);
+        
+        // Build redirect URI safely
+        $redirectUri = url('/admin/cloud-storage/callback');
+        
+        $this->client->setAuthConfig([
+            'client_id' => config('services.google.client_id'),
+            'client_secret' => config('services.google.client_secret'),
+            'redirect_uris' => [$redirectUri],
+        ]);
+        $this->client->setAccessType('offline');
+        $this->client->setPrompt('consent');
+
+        if ($this->settings && $this->settings->isConnected()) {
+            $this->client->setAccessToken($this->settings->access_token);
+            
+            if ($this->settings->isTokenExpired()) {
+                $this->refreshToken();
             }
         }
+
+        $this->driveService = new GoogleDrive($this->client);
     }
-    
-    /**
-     * Get or create main folder "Integrasi Sistem PBL Drive"
-     */
-    protected function getOrCreateMainFolder(): string
+
+    public function getAuthUrl(): string
     {
-        $folderName = 'Integrasi Sistem PBL Drive';
-        
-        // Check if folder already exists
-        $query = "name='" . addslashes($folderName) . "' and mimeType='application/vnd.google-apps.folder' and trashed=false";
-        
+        return $this->client->createAuthUrl();
+    }
+
+    public function authenticate(string $code): bool
+    {
         try {
-            $results = $this->service->files->listFiles([
-                'q' => $query,
-                'fields' => 'files(id, name)',
-                'pageSize' => 1,
-            ]);
+            $token = $this->client->fetchAccessTokenWithAuthCode($code);
             
-            if (count($results->getFiles()) > 0) {
-                // Folder exists
-                $folderId = $results->getFiles()[0]->id;
-                \Log::info('Found existing main folder: ' . $folderName . ' (ID: ' . $folderId . ')');
-                return $folderId;
+            if (isset($token['error'])) {
+                throw new Exception($token['error']);
             }
+
+            $accessToken = $token['access_token'];
+            $refreshToken = $token['refresh_token'] ?? null;
+            $expiresIn = $token['expires_in'] ?? 3600;
             
-            // Create main folder
-            $folderMetadata = new DriveFile([
+            $setting = CloudStorageSetting::firstOrNew();
+            $setting->access_token = $accessToken;
+            if ($refreshToken) {
+                $setting->refresh_token = $refreshToken;
+            }
+            $setting->token_expires_at = now()->addSeconds($expiresIn);
+            $setting->configured_by = auth()->id();
+            $setting->save();
+
+            $this->settings = $setting;
+            $this->initializeClient();
+
+            return true;
+        } catch (Exception $e) {
+            Log::error('Google Drive authentication error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function refreshToken(): bool
+    {
+        try {
+            if (!$this->settings || !$this->settings->refresh_token) {
+                Log::warning('Cannot refresh token: No refresh token available');
+                return false;
+            }
+
+            Log::info('Refreshing Google Drive access token...');
+            
+            $this->client->refreshToken($this->settings->refresh_token);
+            $newToken = $this->client->getAccessToken();
+
+            if (!isset($newToken['access_token'])) {
+                throw new Exception('Failed to get new access token');
+            }
+
+            $this->settings->access_token = $newToken['access_token'];
+            $this->settings->token_expires_at = now()->addSeconds($newToken['expires_in'] ?? 3600);
+            $this->settings->save();
+
+            // Update client with new token
+            $this->client->setAccessToken($newToken['access_token']);
+
+            Log::info('Google Drive token refreshed successfully');
+            return true;
+        } catch (Exception $e) {
+            Log::error('Google Drive token refresh error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ensure token is valid before operations
+     */
+    protected function ensureValidToken(): bool
+    {
+        if (!$this->settings || !$this->settings->isConnected()) {
+            Log::warning('Google Drive not connected');
+            return false;
+        }
+
+        if ($this->settings->isTokenExpired()) {
+            Log::info('Token expired, attempting to refresh...');
+            
+            if (!$this->refreshToken()) {
+                Log::error('Failed to refresh expired token');
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function disconnect(): bool
+    {
+        try {
+            if ($this->settings) {
+                $this->client->revokeToken();
+                $this->settings->update([
+                    'access_token' => null,
+                    'refresh_token' => null,
+                    'token_expires_at' => null,
+                    'is_configured' => false,
+                ]);
+            }
+            return true;
+        } catch (Exception $e) {
+            Log::error('Google Drive disconnect error: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function createFolder(string $folderName, ?string $parentId = null): ?string
+    {
+        try {
+            // Ensure token is valid before operation
+            if (!$this->ensureValidToken()) {
+                throw new Exception('Google Drive token is invalid');
+            }
+
+            $fileMetadata = new DriveFile([
                 'name' => $folderName,
                 'mimeType' => 'application/vnd.google-apps.folder',
             ]);
-            
-            $folder = $this->service->files->create($folderMetadata, [
-                'fields' => 'id',
+
+            if ($parentId) {
+                $fileMetadata->setParents([$parentId]);
+            }
+
+            $folder = $this->driveService->files->create($fileMetadata, [
+                'fields' => 'id, name, webViewLink'
             ]);
-            
-            \Log::info('Created main folder: ' . $folderName . ' (ID: ' . $folder->id . ')');
+
             return $folder->id;
-        } catch (\Exception $e) {
-            \Log::error('Failed to get/create main folder: ' . $e->getMessage());
-            // Return empty string if failed
-            return '';
+        } catch (Exception $e) {
+            Log::error('Google Drive create folder error: ' . $e->getMessage());
+            return null;
         }
     }
 
-    /**
-     * Upload file to Google Drive
-     *
-     * @param UploadedFile $file
-     * @param string $folder
-     * @return array ['path' => string, 'url' => string, 'id' => string]
-     */
-    public function upload(UploadedFile $file, string $folder = '')
+    public function setupFolders(string $mainFolderId): array
     {
-        $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-        
-        if ($this->useGoogleDrive && $this->service) {
-            try {
-                // Create folder structure if needed
-                $parentId = $this->folderId ?: null;
-                
-                if (!empty($folder)) {
-                    $parentId = $this->createFolderPath($folder, $parentId);
-                }
-                
-                // Prepare file metadata
-                $fileMetadata = new DriveFile([
-                    'name' => $filename,
+        try {
+            $folders = [];
+
+            $penelitianId = $this->createFolder('Penelitian', $mainFolderId);
+            $pengabdianId = $this->createFolder('Pengabdian', $mainFolderId);
+            $dokumentasiId = $this->createFolder('Dokumentasi', $mainFolderId);
+
+            if ($penelitianId && $pengabdianId && $dokumentasiId) {
+                $this->settings->update([
+                    'main_folder_id' => $mainFolderId,
+                    'penelitian_folder_id' => $penelitianId,
+                    'pengabdian_folder_id' => $pengabdianId,
+                    'dokumentasi_folder_id' => $dokumentasiId,
+                    'is_configured' => true,
                 ]);
-                
-                if ($parentId) {
-                    $fileMetadata->setParents([$parentId]);
-                }
-                
-                // Upload file
-                $content = file_get_contents($file->getRealPath());
-                $uploadedFile = $this->service->files->create($fileMetadata, [
-                    'data' => $content,
-                    'mimeType' => $file->getMimeType(),
-                    'uploadType' => 'multipart',
-                    'fields' => 'id,name,webViewLink,webContentLink',
-                ]);
-                
-                $path = $folder ? "{$folder}/{$filename}" : $filename;
-                
-                \Log::info('File uploaded to Google Drive: ' . $uploadedFile->id);
-                
-                return [
-                    'path' => $path,
-                    'google_id' => $uploadedFile->id,
-                    'url' => $uploadedFile->webViewLink ?? $uploadedFile->webContentLink,
-                    'filename' => $filename,
-                    'original_name' => $file->getClientOriginalName(),
-                    'mime_type' => $file->getMimeType(),
-                    'size' => $file->getSize(),
+
+                $folders = [
+                    'main' => $mainFolderId,
+                    'penelitian' => $penelitianId,
+                    'pengabdian' => $pengabdianId,
+                    'dokumentasi' => $dokumentasiId,
                 ];
-            } catch (\Exception $e) {
-                \Log::error('Google Drive upload failed, falling back to local: ' . $e->getMessage());
-                $this->useGoogleDrive = false;
             }
+
+            return $folders;
+        } catch (Exception $e) {
+            Log::error('Google Drive setup folders error: ' . $e->getMessage());
+            return [];
         }
-        
-        // Local storage fallback
-        $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
-        
-        return [
-            'path' => $path,
-            'url' => Storage::disk('public')->url($path),
-            'filename' => $filename,
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize(),
-        ];
-    }
-    
-    /**
-     * Create folder path in Google Drive
-     */
-    protected function createFolderPath(string $path, ?string $parentId = null): ?string
-    {
-        $folders = explode('/', trim($path, '/'));
-        $currentParentId = $parentId;
-        
-        foreach ($folders as $folderName) {
-            // Check if folder exists
-            $query = "name='" . addslashes($folderName) . "' and mimeType='application/vnd.google-apps.folder' and trashed=false";
-            
-            if ($currentParentId) {
-                $query .= " and '" . $currentParentId . "' in parents";
-            }
-            
-            $results = $this->service->files->listFiles([
-                'q' => $query,
-                'fields' => 'files(id, name)',
-                'pageSize' => 1,
-            ]);
-            
-            if (count($results->getFiles()) > 0) {
-                // Folder exists
-                $currentParentId = $results->getFiles()[0]->id;
-            } else {
-                // Create folder
-                $folderMetadata = new DriveFile([
-                    'name' => $folderName,
-                    'mimeType' => 'application/vnd.google-apps.folder',
-                ]);
-                
-                if ($currentParentId) {
-                    $folderMetadata->setParents([$currentParentId]);
-                }
-                
-                $folder = $this->service->files->create($folderMetadata, [
-                    'fields' => 'id',
-                ]);
-                
-                $currentParentId = $folder->id;
-                \Log::info('Created folder in Google Drive: ' . $folderName . ' (ID: ' . $currentParentId . ')');
-            }
-        }
-        
-        return $currentParentId;
     }
 
-    /**
-     * Delete file from Google Drive
-     *
-     * @param string $pathOrId
-     * @return bool
-     */
-    public function delete(string $pathOrId): bool
+    public function uploadFile(string $filePath, string $fileName, string $folderId): ?array
     {
-        if (!$this->useGoogleDrive || !$this->service) {
-            // Try local storage
-            try {
-                if (Storage::disk('public')->exists($pathOrId)) {
-                    Storage::disk('public')->delete($pathOrId);
-                    return true;
-                }
-            } catch (\Exception $e) {
-                \Log::error('Local storage delete error: ' . $e->getMessage());
+        try {
+            // Ensure token is valid before operation
+            if (!$this->ensureValidToken()) {
+                throw new Exception('Google Drive token is invalid');
             }
+
+            $fileMetadata = new DriveFile([
+                'name' => $fileName,
+                'parents' => [$folderId]
+            ]);
+
+            $content = file_get_contents($filePath);
+            $mimeType = mime_content_type($filePath);
+
+            $file = $this->driveService->files->create($fileMetadata, [
+                'data' => $content,
+                'mimeType' => $mimeType,
+                'uploadType' => 'multipart',
+                'fields' => 'id, name, webViewLink, webContentLink'
+            ]);
+
+            Log::info('File uploaded to Google Drive successfully', [
+                'file_id' => $file->id,
+                'file_name' => $fileName,
+            ]);
+
+            return [
+                'file_id' => $file->id,
+                'file_url' => $file->webViewLink,
+                'download_url' => $file->webContentLink,
+            ];
+        } catch (Exception $e) {
+            Log::error('Google Drive upload error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function deleteFile(string $fileId): bool
+    {
+        try {
+            // Ensure token is valid before operation
+            if (!$this->ensureValidToken()) {
+                throw new Exception('Google Drive token is invalid');
+            }
+
+            $this->driveService->files->delete($fileId);
+            Log::info('File deleted from Google Drive successfully', ['file_id' => $fileId]);
+            return true;
+        } catch (Exception $e) {
+            Log::error('Google Drive delete error: ' . $e->getMessage());
             return false;
         }
-        
-        try {
-            // Try to delete by Google Drive file ID
-            $this->service->files->delete($pathOrId);
-            \Log::info('File deleted from Google Drive: ' . $pathOrId);
-            return true;
-        } catch (\Exception $e) {
-            \Log::error('GoogleDrive delete error: ' . $e->getMessage());
-            
-            // Fallback: try local storage
-            try {
-                if (Storage::disk('public')->exists($pathOrId)) {
-                    Storage::disk('public')->delete($pathOrId);
-                    return true;
-                }
-            } catch (\Exception $e2) {
-                \Log::error('Local storage delete error: ' . $e2->getMessage());
-            }
-        }
-        
-        return false;
     }
 
-    /**
-     * Get file URL from Google Drive
-     *
-     * @param string $pathOrId
-     * @return string|null
-     */
-    public function getUrl(string $pathOrId): ?string
+    public function getFolderIdByType(string $type): ?string
     {
-        if (!$this->useGoogleDrive || !$this->service) {
-            // Fallback to local storage
-            return Storage::disk('public')->url($pathOrId);
+        if (!$this->settings) {
+            return null;
         }
-        
-        try {
-            // Try to get file metadata by ID
-            $file = $this->service->files->get($pathOrId, [
-                'fields' => 'webViewLink,webContentLink',
-            ]);
-            
-            return $file->webViewLink ?? $file->webContentLink;
-        } catch (\Exception $e) {
-            \Log::error('GoogleDrive getUrl error: ' . $e->getMessage());
-            // Fallback to local storage
-            return Storage::disk('public')->url($pathOrId);
-        }
+
+        return match($type) {
+            'penelitian' => $this->settings->penelitian_folder_id,
+            'pengabdian' => $this->settings->pengabdian_folder_id,
+            'dokumentasi' => $this->settings->dokumentasi_folder_id,
+            default => null,
+        };
+    }
+
+    public function isConfigured(): bool
+    {
+        return $this->settings && 
+               $this->settings->isConnected() && 
+               $this->settings->isFolderConfigured();
+    }
+
+    public function getSettings(): ?CloudStorageSetting
+    {
+        return $this->settings;
     }
 }

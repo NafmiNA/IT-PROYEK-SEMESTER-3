@@ -130,15 +130,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        {{-- MODIFIKASI: Rute diubah ke admin --}}
-                        <a href="{{ route('admin.penelitian.create') }}"
-                           class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Tambah Penelitian
-                        </a>
-                        {{-- Tombol Export Excel Dihapus Sesuai Permintaan --}}
+                        {{-- Tombol Tambah & Export Dihapus Sesuai Permintaan --}}
                     </div>
                 </div>
             </div>
@@ -187,11 +179,10 @@
                 }
             @endphp
 
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
-                {{-- Total Card (Clickable - Aesthetic-Usability) --}}
-                <button onclick="filterStatus('all')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
-                        style="animation-delay: 0.05s">
+            <div class="grid grid-cols-2 gap-4 sm:gap-5 mb-6">
+                {{-- Total Card --}}
+                <div class="text-left w-full bg-white rounded-lg shadow-md border border-gray-200 p-5 animate-slide-up"
+                     style="animation-delay: 0.05s">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,12 +192,11 @@
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['total'] }}</p>
                     <p class="text-sm text-gray-600 font-medium">Total Penelitian</p>
-                </button>
+                </div>
 
                 {{-- Draft Card --}}
-                <button onclick="filterStatus('draft')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
-                        style="animation-delay: 0.1s">
+                <div class="text-left w-full bg-white rounded-lg shadow-md border border-gray-200 p-5 animate-slide-up"
+                     style="animation-delay: 0.1s">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,42 +206,7 @@
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['draft'] }}</p>
                     <p class="text-sm text-gray-600 font-medium">Draft</p>
-                </button>
-
-                {{-- Pending Card (Von Restorff - stands out when > 0) --}}
-                {{-- REFAKTOR: onclick diubah ke 'menunggu' --}}
-                <button onclick="filterStatus('menunggu')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
-                        style="animation-delay: 0.15s">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        @if($statusCounts['menunggu'] > 0)
-                            <span class="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded">⚡ Butuh Aksi</span>
-                        @endif
-                    </div>
-                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['menunggu'] }}</p>
-                    <p class="text-sm text-gray-600 font-medium">Menunggu Review</p>
-                </button>
-
-                {{-- Approved Card --}}
-                {{-- REFAKTOR: onclick diubah ke 'disetujui' --}}
-                <button onclick="filterStatus('disetujui')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
-                        style="animation-delay: 0.2s">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['disetujui'] }}</p>
-                    <p class="text-sm text-gray-600 font-medium">Disetujui ✓</p>
-                </button>
+                </div>
             </div>
 
             {{-- Main Content (Law of Common Region) --}}
@@ -265,27 +220,7 @@
                             <p class="text-sm text-gray-600 mt-0.5">{{ $totalPenelitian }} penelitian terdaftar</p>
                         </div>
                         
-                        {{-- Filter Buttons (Pareto + Law of Similarity) --}}
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="filterStatus('all')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible">
-                                Semua
-                            </button>
-                            <button onclick="filterStatus('draft')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
-                                Draft
-                            </button>
-                            {{-- REFAKTOR: onclick diubah ke 'menunggu' --}}
-                            <button onclick="filterStatus('menunggu')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
-                                Menunggu
-                            </button>
-                            {{-- REFAKTOR: onclick diubah ke 'disetujui' --}}
-                            <button onclick="filterStatus('disetujui')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
-                                Disetujui
-                            </button>
-                        </div>
+                        {{-- Filter Buttons Dihapus - Tidak Perlu Filter Status --}}
                     </div>
                 </div>
 
@@ -345,21 +280,7 @@
                                             </div>
                                         </div>
 
-                                        {{-- Status Badge (Goal-Gradient Effect) --}}
-                                        <div class="ml-14">
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $config['bg'] }} {{ $config['text'] }} text-xs font-semibold rounded-full">
-                                                @if($status == 'Disetujui')
-                                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
-                                                    </svg>
-                                                @elseif($status == 'Menunggu')
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/>
-                                                    </svg>
-                                                @endif
-                                                {{ $status }}
-                                            </span>
-                                        </div>
+                                        {{-- Status Badge Dihapus - Penelitian Tidak Perlu Status Approval --}}
                                     </div>
 
                                     {{-- Action Buttons (tidy & consistent) --}}
@@ -386,41 +307,7 @@
                                         </a>
 
                                         {{-- ======================================================================== --}}
-                                        {{-- KODE BARU DITAMBAHKAN: Tombol Aksi Verifikasi --}}
-                                        {{-- ======================================================================== --}}
-                                        @if ($p->status == 'Menunggu')
-                                            
-                                            {{-- FORM UNTUK SETUJUI --}}
-                                            <form action="{{ route('admin.penelitian.updateStatus', $p->id) }}" method="POST" class="inline-block">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="Disetujui">
-                                                {{-- REFAKTOR: Kelas CSS diubah ke .btn-approve --}}
-                                                <button type="submit" 
-                                                        class="action-btn btn-approve focus-visible">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
-                                                    </svg>
-                                                    Setujui
-                                                </button>
-                                            </form>
-
-                                            {{-- FORM UNTUK TOLAK --}}
-                                            <form action="{{ route('admin.penelitian.updateStatus', $p->id) }}" method="POST" class="inline-block">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="status" value="Ditolak">
-                                                {{-- REFAKTOR: Kelas CSS diubah ke .btn-reject --}}
-                                                <button type="submit" 
-                                                        class="action-btn btn-reject focus-visible">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                                                    </svg>
-                                                    Tolak
-                                                </button>
-                                            </form>
-                                        @endif
-                                        {{-- ======================================================================== --}}
+                                        {{-- Tombol Approve/Reject Dihapus - Penelitian Tidak Perlu Approval --}}
 
                                         {{-- MODIFIKASI: Rute diubah ke admin --}}
                                         <form action="{{ route('admin.penelitian.destroy', $p) }}" method="POST" 

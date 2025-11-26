@@ -135,18 +135,41 @@ class PengabdianController extends Controller
                     
                     foreach ((array) $request->file('dokumentasi') as $file) {
                         try {
-                            $folder = "Pengabdian/{$pengabdian->id}";
+                            // Store file locally
+                            $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
+                            $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                            $filePath = Storage::disk('public')->putFileAs($folder, $file, $filename);
                             
-                            // Upload to Google Drive
-                            $uploadResult = $this->googleDrive->upload($file, $folder);
+                            // Optional: Upload to Google Drive if configured
+                            $driveFileId = null;
+                            $driveFileUrl = null;
+                            
+                            if ($this->googleDrive && $this->googleDrive->isConfigured()) {
+                                try {
+                                    $folderId = $this->googleDrive->getFolderIdByType('pengabdian');
+                                    if ($folderId) {
+                                        $uploadResult = $this->googleDrive->uploadFile(
+                                            storage_path('app/public/' . $filePath),
+                                            $file->getClientOriginalName(),
+                                            $folderId
+                                        );
+                                        $driveFileId = $uploadResult['file_id'] ?? null;
+                                        $driveFileUrl = $uploadResult['file_url'] ?? null;
+                                    }
+                                } catch (\Exception $e) {
+                                    Log::warning('Failed to upload to Google Drive: ' . $e->getMessage());
+                                }
+                            }
                             
                             Dokumentasi::create([
                                 'pengabdian_id' => $pengabdian->id,
                                 'file_name'     => $file->getClientOriginalName(),
                                 'mime'          => $file->getMimeType(),
                                 'size'          => $file->getSize(),
-                                'gdrive_path'   => $uploadResult['path'],
-                                'gdrive_url'    => $uploadResult['url'] ?? null,
+                                'gdrive_path'   => $filePath,
+                                'drive_file_id' => $driveFileId,
+                                'drive_file_url' => $driveFileUrl,
+                                'uploaded_to_drive' => !empty($driveFileId),
                             ]);
                             
                             Log::info('Dokumentasi uploaded', ['file' => $file->getClientOriginalName()]);
@@ -251,18 +274,18 @@ class PengabdianController extends Controller
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {
                     try {
-                        $folder = "Pengabdian/{$pengabdian->id}";
+                        $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
                         
-                        // Upload to Google Drive
-                        $uploadResult = $this->googleDrive->upload($file, $folder);
+                        // Store file to local storage
+                        $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                        $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
                         
                         Dokumentasi::create([
                             'pengabdian_id' => $pengabdian->id,
                             'file_name'     => $file->getClientOriginalName(),
                             'mime'          => $file->getMimeType(),
                             'size'          => $file->getSize(),
-                            'gdrive_path'   => $uploadResult['path'],
-                            'gdrive_url'    => $uploadResult['url'] ?? null,
+                            'gdrive_path'   => $path,
                         ]);
                     } catch (\Exception $e) {
                         Log::error('Failed to upload dokumentasi in update: ' . $e->getMessage());

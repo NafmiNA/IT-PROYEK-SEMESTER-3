@@ -223,9 +223,9 @@
                         {{-- Ketua --}}
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-2">
-                                Ketua Pengabdian <span class="text-red-600">*</span>
+                                Ketua Pengabdian <span class="text-red-600">*</span> ({{ count($dosens) }} dosen)
                             </label>
-                            <select name="ketua_id" required class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 hover:border-gray-400">
+                            <select name="ketua_id" required size="1" class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 hover:border-gray-400" style="overflow-y: auto; max-height: 300px;">
                                 <option value="">Pilih ketua pengabdian</option>
                                 @foreach($dosens as $d)
                                     <option value="{{ $d->id }}" @selected(old('ketua_id') == $d->id)>{{ $d->nama }} — {{ $d->email }}</option>
@@ -243,10 +243,10 @@
 
                         {{-- Anggota --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-900 mb-2">Anggota Tim</label>
+                            <label class="block text-sm font-semibold text-gray-900 mb-2">Anggota Tim ({{ count($dosens) }} dosen)</label>
                             <div id="anggota-wrapper" class="space-y-3">
                                 <div class="flex gap-3">
-                                    <select name="anggota_id[]" class="flex-1 rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 hover:border-gray-400">
+                                    <select name="anggota_id[]" size="1" class="flex-1 rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 hover:border-gray-400" style="overflow-y: auto; max-height: 300px;">
                                         <option value="">Pilih anggota (opsional)</option>
                                         @foreach($dosens as $d)
                                             <option value="{{ $d->id }}">{{ $d->nama }} — {{ $d->email }}</option>
@@ -274,10 +274,10 @@
 
                         {{-- Mahasiswa --}}
                         <div>
-                            <label class="block text-sm font-semibold text-gray-900 mb-2">Mahasiswa Pendukung</label>
+                            <label class="block text-sm font-semibold text-gray-900 mb-2">Mahasiswa Pendukung ({{ count($mahasiswas ?? []) }} mahasiswa)</label>
                             <div id="mahasiswa-wrapper" class="space-y-3">
                                 <div class="flex gap-3">
-                                    <select name="mahasiswa_id[]" class="flex-1 rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 hover:border-gray-400">
+                                    <select name="mahasiswa_id[]" size="1" class="flex-1 rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 hover:border-gray-400" style="overflow-y: auto; max-height: 300px;">
                                         <option value="">Pilih mahasiswa (opsional)</option>
                                         @foreach(($mahasiswas ?? []) as $m)
                                             <option value="{{ $m->id }}">{{ $m->nama }} — {{ $m->email }}</option>

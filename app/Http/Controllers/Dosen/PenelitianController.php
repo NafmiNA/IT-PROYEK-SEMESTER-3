@@ -124,21 +124,37 @@ class PenelitianController extends Controller
         
             if ($request->hasFile('laporan_jurnal')) {
                 $file = $request->file('laporan_jurnal');
-                $folder = "Penelitian/laporan/{$penelitian->id}";
+                $folder = "SIDOPPAN/Penelitian/{$penelitian->id}/laporan";
                 
-                try {
-                    // Upload to Google Drive
-                    $uploadResult = $this->googleDrive->upload($file, $folder);
-                    $path = $uploadResult['path'];
-                } catch (\Exception $e) {
-                    \Log::error('Upload laporan to Google Drive failed: ' . $e->getMessage());
-                    // Fallback to local storage
-                    $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
-                    $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
-                }
+                // Store file locally
+                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
                 if (Schema::hasColumn('penelitian', 'laporan_path')) {
                     $penelitian->update(['laporan_path' => $path]);
+                }
+                
+                // Optional: Upload to Google Drive if configured
+                if ($this->googleDrive && $this->googleDrive->isConfigured()) {
+                    try {
+                        $folderId = $this->googleDrive->getFolderIdByType('penelitian');
+                        if ($folderId) {
+                            $uploadResult = $this->googleDrive->uploadFile(
+                                storage_path('app/public/' . $path),
+                                $file->getClientOriginalName(),
+                                $folderId
+                            );
+                            if (isset($uploadResult['file_id'])) {
+                                $penelitian->update([
+                                    'drive_file_id' => $uploadResult['file_id'],
+                                    'drive_file_url' => $uploadResult['file_url'] ?? null,
+                                    'uploaded_to_drive' => true,
+                                ]);
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        \Log::warning('Upload to Google Drive failed: ' . $e->getMessage());
+                    }
                 }
             }
         });
@@ -243,21 +259,37 @@ class PenelitianController extends Controller
                 }
 
                 $file = $request->file('laporan_jurnal');
-                $folder = "Penelitian/laporan/{$penelitian->id}";
+                $folder = "SIDOPPAN/Penelitian/{$penelitian->id}/laporan";
                 
-                try {
-                    // Upload to Google Drive
-                    $uploadResult = $this->googleDrive->upload($file, $folder);
-                    $storedPath = $uploadResult['path'];
-                } catch (\Exception $e) {
-                    \Log::error('Upload laporan to Google Drive failed: ' . $e->getMessage());
-                    // Fallback to local storage
-                    $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
-                    $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
-                }
+                // Store file locally
+                $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
+                $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
                 if (Schema::hasColumn('penelitian', 'laporan_path')) {
                     $penelitian->update(['laporan_path' => $storedPath]);
+                }
+                
+                // Optional: Upload to Google Drive if configured
+                if ($this->googleDrive && $this->googleDrive->isConfigured()) {
+                    try {
+                        $folderId = $this->googleDrive->getFolderIdByType('penelitian');
+                        if ($folderId) {
+                            $uploadResult = $this->googleDrive->uploadFile(
+                                storage_path('app/public/' . $storedPath),
+                                $file->getClientOriginalName(),
+                                $folderId
+                            );
+                            if (isset($uploadResult['file_id'])) {
+                                $penelitian->update([
+                                    'drive_file_id' => $uploadResult['file_id'],
+                                    'drive_file_url' => $uploadResult['file_url'] ?? null,
+                                    'uploaded_to_drive' => true,
+                                ]);
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        \Log::warning('Upload to Google Drive failed: ' . $e->getMessage());
+                    }
                 }
             }
         });

@@ -41,7 +41,7 @@ class DokumentasiController extends Controller
 
         $saved = [];
         foreach ($files as $file) {
-            $folder = $data['context'] . '/' . $model->id;
+            $folder = 'SIDOPPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
