@@ -1,33 +1,33 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth; // <-- SAYA TAMBAHKAN INI
+use Illuminate\Support\Facades\Auth;
 
-// Controllers
+// Controllers Umum
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+
+// Controllers Dosen
 use App\Http\Controllers\Dosen\{
     DashboardController,
     PenelitianController,
     PengabdianController,
-    DokumentasiController
-    // (PrestasiDosenController sudah kita pindah ke Admin)
+    DokumentasiController,
+    PrestasiDosenController
 };
+
+// Controllers Mahasiswa
 use App\Http\Controllers\MahasiswaDashboardController;
 use App\Http\Controllers\Mahasiswa\DokumentasiController as MahasiswaDokumentasiController;
 
-// -----------------------------------------------------------------
-// Controller-controller BARU untuk Admin
-// -----------------------------------------------------------------
+// Controllers Admin
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\UserController;
+// Perhatikan Alias ini (AdminPenelitianController) penting agar tidak bentrok dengan Dosen
 use App\Http\Controllers\Admin\PenelitianController as AdminPenelitianController;
 use App\Http\Controllers\Admin\PengabdianController as AdminPengabdianController;
-// ========================================================================
-// TAMBAHAN BARU: Controller Prestasi Admin
-// ========================================================================
 use App\Http\Controllers\Admin\PrestasiDosenController as AdminPrestasiController;
 use App\Http\Controllers\Admin\AhpController;
-// ========================================================================
+use App\Http\Controllers\Admin\CloudStorageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,7 +40,7 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Route bawaan Breeze (login, register, dsb.)
+| Route bawaan Breeze
 |--------------------------------------------------------------------------
 */
 require __DIR__ . '/auth.php';
@@ -52,11 +52,9 @@ require __DIR__ . '/auth.php';
 */
 Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
-    // ========================================================================
-    // Rute '/dashboard' (setelah login) yang "PINTAR"
-    // ========================================================================
+    // Routing cerdas berdasarkan Role
     Route::get('/dashboard', function () {
-        $role = Auth::user()->role; 
+        $role = Auth::user()->role;
 
         if ($role == 'admin') {
             return redirect()->route('admin.dashboard');
@@ -72,110 +70,86 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Area DOSEN (prefix: /dosen , name: dosen.*)
+    | Area DOSEN
     |--------------------------------------------------------------------------
     */
     Route::prefix('dosen')->name('dosen.')->middleware('role:dosen')->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Dashboard Dosen
-        Route::get('/dashboard', [DashboardController::class, 'index'])
-            ->name('dashboard');
-
-        // Kelola Penelitian
         Route::resource('penelitian', PenelitianController::class)
-            ->names('penelitian')
             ->parameters(['penelitian' => 'penelitian']);
 
-        // Kelola Pengabdian
         Route::resource('pengabdian', PengabdianController::class)
-            ->names('pengabdian')
             ->parameters(['pengabdian' => 'pengabdian']);
 
-        // Kelola Dokumentasi (hanya store & destroy)
         Route::resource('dokumentasi', DokumentasiController::class)
             ->only(['store', 'destroy']);
         
-        // Kelola Prestasi
-        Route::get('/prestasi', [\App\Http\Controllers\Dosen\PrestasiDosenController::class, 'index'])->name('prestasi.index');
-        Route::post('/prestasi', [\App\Http\Controllers\Dosen\PrestasiDosenController::class, 'store'])->name('prestasi.store');
-        Route::get('/prestasi/{id}/edit', [\App\Http\Controllers\Dosen\PrestasiDosenController::class, 'edit'])->name('prestasi.edit');
-        Route::put('/prestasi/{id}', [\App\Http\Controllers\Dosen\PrestasiDosenController::class, 'update'])->name('prestasi.update');
+        // Prestasi Dosen
+        Route::get('/prestasi', [PrestasiDosenController::class, 'index'])->name('prestasi.index');
+        Route::post('/prestasi', [PrestasiDosenController::class, 'store'])->name('prestasi.store');
+        Route::get('/prestasi/{id}/edit', [PrestasiDosenController::class, 'edit'])->name('prestasi.edit');
+        Route::put('/prestasi/{id}', [PrestasiDosenController::class, 'update'])->name('prestasi.update');
     });
 
     /*
     |--------------------------------------------------------------------------
-    | Area MAHASISWA (prefix: /mahasiswa , name: mahasiswa.*)
+    | Area MAHASISWA
     |--------------------------------------------------------------------------
     */
     Route::prefix('mahasiswa')->name('mahasiswa.')->middleware('role:mahasiswa')->group(function () {
-        // ... (Rute Mahasiswa Anda) ...
-        // Dashboard Mahasiswa
-        Route::get('/dashboard', [MahasiswaDashboardController::class, 'index'])
-            ->name('dashboard');
+        Route::get('/dashboard', [MahasiswaDashboardController::class, 'index'])->name('dashboard');
 
         // CRUD Dokumentasi Mahasiswa
-        Route::get('/dokumentasi', [MahasiswaDokumentasiController::class, 'index'])
-            ->name('dokumentasi.index');
-        Route::get('/dokumentasi/create', [MahasiswaDokumentasiController::class, 'create'])
-            ->name('dokumentasi.create');
-        Route::post('/dokumentasi', [MahasiswaDokumentasiController::class, 'store'])
-            ->name('dokumentasi.store');
-        Route::get('/dokumentasi/{id}/edit', [MahasiswaDokumentasiController::class, 'edit'])
-            ->name('dokumentasi.edit');
-        Route::put('/dokumentasi/{id}', [MahasiswaDokumentasiController::class, 'update'])
-            ->name('dokumentasi.update');
-        Route::delete('/dokumentasi/{id}', [MahasiswaDokumentasiController::class, 'destroy'])
-            ->name('dokumentasi.destroy');
+        Route::resource('dokumentasi', MahasiswaDokumentasiController::class);
     });
 
-    // ========================================================================
-    // Area ADMIN (prefix: /admin , name: admin.*)
-    // ========================================================================
+    /*
+    |--------------------------------------------------------------------------
+    | Area ADMIN
+    |--------------------------------------------------------------------------
+    */
     Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
         
-        // Redirect /admin ke /admin/dashboard
         Route::get('/', fn () => redirect()->route('admin.dashboard'));
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-        // Dashboard Admin (Halaman Utama Admin)
-        Route::get('/dashboard', [AdminDashboardController::class, 'index'])
-            ->name('dashboard');
-
-        // Kelola Akun Pengguna (Use Case Admin)
+        // Kelola Users
         Route::resource('users', UserController::class);
 
-        // Rute untuk Kelola Penelitian (Admin)
+        // ==========================================================
+        // FITUR PENELITIAN ADMIN (Sudah Termasuk Tambah/Create)
+        // ==========================================================
+        // Route::resource ini otomatis membuat route:
+        // - admin.penelitian.index (Daftar)
+        // - admin.penelitian.create (Form Tambah) <-- INI YANG KAMU CARI
+        // - admin.penelitian.store (Proses Simpan) <-- INI YANG KAMU CARI
+        // - admin.penelitian.edit (Form Edit)
+        // - admin.penelitian.update (Proses Update)
+        // - admin.penelitian.destroy (Hapus)
         Route::resource('penelitian', AdminPenelitianController::class)
-            ->names('penelitian')
             ->parameters(['penelitian' => 'penelitian']);
         
-        // ========================================================================
-        // RUTE BARU: Untuk Setujui / Verifikasi / Tolak Penelitian
-        // ========================================================================
+        // Custom Route: Update Status Penelitian
         Route::patch('/penelitian/{penelitian}/update-status', [AdminPenelitianController::class, 'updateStatus'])
             ->name('penelitian.updateStatus');
 
-        // Rute untuk Kelola Pengabdian (Admin)
+        // ==========================================================
+        // FITUR PENGABDIAN ADMIN
+        // ==========================================================
         Route::resource('pengabdian', AdminPengabdianController::class)
-            ->names('pengabdian')
             ->parameters(['pengabdian' => 'pengabdian']);
         
-        // ========================================================================
-        // RUTE BARU: Untuk Setujui / Verifikasi / Tolak Pengabdian
-        // ========================================================================
         Route::patch('/pengabdian/{pengabdian}/update-status', [AdminPengabdianController::class, 'updateStatus'])
             ->name('pengabdian.updateStatus');
         
         Route::get('/pengabdian/export/excel', [AdminPengabdianController::class, 'export'])
             ->name('pengabdian.export');
 
-        // ========================================================================
-        // TAMBAHAN BARU: Rute untuk Prestasi Admin
-        // ========================================================================
+        // Prestasi
         Route::get('/prestasi', [AdminPrestasiController::class, 'index'])->name('prestasi.index');
 
-        // ========================================================================
-        // TAMBAHAN: Rute untuk AHP (Perhitungan Bobot Kriteria)
-        // ========================================================================
+        // AHP
         Route::prefix('ahp')->name('ahp.')->group(function () {
             Route::get('/', [AhpController::class, 'index'])->name('index');
             Route::post('/comparison', [AhpController::class, 'saveComparison'])->name('saveComparison');
@@ -183,16 +157,14 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
             Route::get('/results', [AhpController::class, 'showResults'])->name('results');
         });
 
-        // ========================================================================
-        // TAMBAHAN: Rute untuk Cloud Storage (Google Drive)
-        // ========================================================================
+        // Cloud Storage
         Route::prefix('cloud-storage')->name('cloud-storage.')->group(function () {
-            Route::get('/settings', [\App\Http\Controllers\Admin\CloudStorageController::class, 'settings'])->name('settings');
-            Route::get('/connect', [\App\Http\Controllers\Admin\CloudStorageController::class, 'connect'])->name('connect');
-            Route::get('/callback', [\App\Http\Controllers\Admin\CloudStorageController::class, 'callback'])->name('callback');
-            Route::post('/disconnect', [\App\Http\Controllers\Admin\CloudStorageController::class, 'disconnect'])->name('disconnect');
-            Route::post('/save-folders', [\App\Http\Controllers\Admin\CloudStorageController::class, 'saveFolders'])->name('save-folders');
-            Route::get('/status', [\App\Http\Controllers\Admin\CloudStorageController::class, 'getStatus'])->name('status');
+            Route::get('/settings', [CloudStorageController::class, 'settings'])->name('settings');
+            Route::get('/connect', [CloudStorageController::class, 'connect'])->name('connect');
+            Route::get('/callback', [CloudStorageController::class, 'callback'])->name('callback');
+            Route::post('/disconnect', [CloudStorageController::class, 'disconnect'])->name('disconnect');
+            Route::post('/save-folders', [CloudStorageController::class, 'saveFolders'])->name('save-folders');
+            Route::get('/status', [CloudStorageController::class, 'getStatus'])->name('status');
         });
 
     });
@@ -201,7 +173,7 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Pengaturan profil user
+| Profil User
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -209,7 +181,6 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Upload dokumen penelitian (khusus dosen)
     Route::post('penelitian/{penelitian}/upload', [PenelitianController::class, 'uploadDokumen'])
         ->name('penelitian.upload');
 });
