@@ -6,12 +6,20 @@ use App\Models\Mahasiswa;
 use App\Models\Penelitian;
 use App\Models\Pengabdian;
 use App\Models\Dokumentasi;
+use App\Services\GoogleDriveService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class MahasiswaDashboardController extends Controller
 {
+    protected $googleDrive;
+
+    public function __construct(GoogleDriveService $googleDrive)
+    {
+        $this->googleDrive = $googleDrive;
+    }
     /**
      * Halaman utama Dashboard Mahasiswa
      */
@@ -64,16 +72,51 @@ class MahasiswaDashboardController extends Controller
         ]);
 
         $path = null;
+        $driveFileId = null;
+        $driveFileUrl = null;
+        
         if ($request->hasFile('file')) {
             $file = $request->file('file');
             $folder = 'SIDOPPAN/Dokumentasi';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $path = \Storage::disk('public')->putFileAs($folder, $file, $filename);
+            
+            Log::info('Mahasiswa standalone dokumentasi uploaded to local storage', ['file' => $file->getClientOriginalName(), 'path' => $path]);
+            
+            // Try to upload to Google Drive
+            if ($this->googleDrive && $this->googleDrive->isConfigured()) {
+                try {
+                    $folderId = $this->googleDrive->getFolderIdByType('dokumentasi');
+                    
+                    if ($folderId) {
+                        $uploadResult = $this->googleDrive->uploadFile(
+                            storage_path('app/public/' . $path),
+                            $file->getClientOriginalName(),
+                            $folderId
+                        );
+                        
+                        if ($uploadResult) {
+                            $driveFileId = $uploadResult['file_id'];
+                            $driveFileUrl = $uploadResult['file_url'];
+                            Log::info('File uploaded to Google Drive successfully', ['file_id' => $driveFileId]);
+                        }
+                    } else {
+                        Log::warning('Google Drive folder ID not found for dokumentasi');
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to upload to Google Drive', ['error' => $e->getMessage()]);
+                }
+            } else {
+                Log::warning('Google Drive not configured');
+            }
         }
 
         Dokumentasi::create([
             'judul' => $request->judul,
             'file' => $path,
+            'drive_file_id' => $driveFileId,
+            'drive_file_url' => $driveFileUrl,
+            'uploaded_to_drive' => !empty($driveFileId),
         ]);
 
         return redirect()->route('mahasiswa.dashboard')->with('success', 'Dokumentasi berhasil ditambahkan!');
@@ -101,19 +144,66 @@ class MahasiswaDashboardController extends Controller
         ]);
 
         $path = $dokumentasi->file;
+        $driveFileId = $dokumentasi->drive_file_id;
+        $driveFileUrl = $dokumentasi->drive_file_url;
+        
         if ($request->hasFile('file')) {
+            // Delete old file from local storage
             if ($path) {
                 Storage::disk('public')->delete($path);
             }
+            
+            // Delete old file from Google Drive
+            if ($driveFileId && $this->googleDrive) {
+                try {
+                    $this->googleDrive->deleteFile($driveFileId);
+                    Log::info('Old file deleted from Google Drive', ['file_id' => $driveFileId]);
+                } catch (\Exception $e) {
+                    Log::warning('Failed to delete old file from Google Drive', ['error' => $e->getMessage()]);
+                }
+            }
+            
+            // Upload new file to local storage
             $file = $request->file('file');
             $folder = 'SIDOPPAN/Dokumentasi';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
+            
+            Log::info('Mahasiswa standalone dokumentasi updated in local storage', ['file' => $file->getClientOriginalName()]);
+            
+            // Upload new file to Google Drive
+            $driveFileId = null;
+            $driveFileUrl = null;
+            
+            if ($this->googleDrive && $this->googleDrive->isConfigured()) {
+                try {
+                    $folderId = $this->googleDrive->getFolderIdByType('dokumentasi');
+                    
+                    if ($folderId) {
+                        $uploadResult = $this->googleDrive->uploadFile(
+                            storage_path('app/public/' . $path),
+                            $file->getClientOriginalName(),
+                            $folderId
+                        );
+                        
+                        if ($uploadResult) {
+                            $driveFileId = $uploadResult['file_id'];
+                            $driveFileUrl = $uploadResult['file_url'];
+                            Log::info('Updated file uploaded to Google Drive successfully', ['file_id' => $driveFileId]);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to upload updated file to Google Drive', ['error' => $e->getMessage()]);
+                }
+            }
         }
 
         $dokumentasi->update([
             'judul' => $request->judul,
             'file' => $path,
+            'drive_file_id' => $driveFileId,
+            'drive_file_url' => $driveFileUrl,
+            'uploaded_to_drive' => !empty($driveFileId),
         ]);
 
         return redirect()->route('mahasiswa.dashboard')->with('success', 'Dokumentasi berhasil diperbarui!');

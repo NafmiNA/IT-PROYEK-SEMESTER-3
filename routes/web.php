@@ -120,6 +120,8 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
             ->name('dokumentasi.create');
         Route::post('/dokumentasi', [MahasiswaDokumentasiController::class, 'store'])
             ->name('dokumentasi.store');
+        Route::get('/dokumentasi/{id}', [MahasiswaDokumentasiController::class, 'show'])
+            ->name('dokumentasi.show');
         Route::get('/dokumentasi/{id}/edit', [MahasiswaDokumentasiController::class, 'edit'])
             ->name('dokumentasi.edit');
         Route::put('/dokumentasi/{id}', [MahasiswaDokumentasiController::class, 'update'])
@@ -181,6 +183,18 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
             Route::post('/comparison', [AhpController::class, 'saveComparison'])->name('saveComparison');
             Route::post('/calculate', [AhpController::class, 'calculate'])->name('calculate');
             Route::get('/results', [AhpController::class, 'showResults'])->name('results');
+        });
+
+        // ========================================================================
+        // TAMBAHAN: Rute untuk SAW (Simple Additive Weighting - Ranking Prestasi)
+        // ========================================================================
+        Route::prefix('saw')->name('saw.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\SawController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Admin\SawController::class, 'store'])->name('store');
+            Route::put('/{id}', [\App\Http\Controllers\Admin\SawController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\Admin\SawController::class, 'destroy'])->name('destroy');
+            Route::get('/ranking', [\App\Http\Controllers\Admin\SawController::class, 'ranking'])->name('ranking');
+            Route::get('/export', [\App\Http\Controllers\Admin\SawController::class, 'export'])->name('export');
         });
 
         // ========================================================================

@@ -48,6 +48,7 @@
                     <td class="px-4 py-3">{{ $doc->created_at?->diffForHumans() }}</td>
                     <td class="px-4 py-3 text-right">
                         <div class="inline-flex items-center gap-2">
+                            <a href="{{ route('mahasiswa.dokumentasi.show', $doc->dokumentasi_id) }}" class="inline-flex items-center px-3 py-1.5 rounded-md bg-blue-500 text-white hover:bg-blue-600">Detail</a>
                             <a href="{{ route('mahasiswa.dokumentasi.edit', $doc->dokumentasi_id) }}" class="inline-flex items-center px-3 py-1.5 rounded-md bg-orange-500 text-white hover:bg-orange-600">Edit</a>
                             <form action="{{ route('mahasiswa.dokumentasi.destroy', $doc->dokumentasi_id) }}" method="POST" onsubmit="return confirm('Hapus file ini?')">
                                 @csrf

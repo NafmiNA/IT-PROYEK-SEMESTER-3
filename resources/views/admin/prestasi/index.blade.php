@@ -65,6 +65,7 @@
                         <div class="flex items-center gap-3">
                             <a href="{{ route('admin.dashboard') }}" 
                                class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
+                               style="background-color: #2563eb !important; color: white !important;"
                                aria-label="Kembali ke Dashboard">
                                 <svg class="w-5 h-5 transform group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -97,21 +98,23 @@
 
                         {{-- Tombol Kelola Bobot --}}
                         <a href="{{ route('admin.ahp.index') }}" 
-                           class="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all focus-visible">
+                           class="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all focus-visible"
+                           style="background-color: #9333ea; color: white;">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                             </svg>
                             Kelola Bobot
                         </a>
 
-                        {{-- Tombol Hitung TPK (Nanti) --}}
-                        <button disabled
-                                class="inline-flex items-center gap-2 px-4 py-2.5 bg-gray-400 text-white text-sm font-semibold rounded-lg shadow-md cursor-not-allowed opacity-60">
+                        {{-- Tombol Hitung Ranking (SAW) --}}
+                        <a href="{{ route('admin.saw.index') }}"
+                           class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md transition-all duration-200"
+                           style="background: linear-gradient(to right, #9333ea, #4f46e5); color: white;">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
-                            Hitung TPK (Coming Soon)
-                        </button>
+                            Hitung Ranking (SAW)
+                        </a>
                     </div>
 
                 </div>

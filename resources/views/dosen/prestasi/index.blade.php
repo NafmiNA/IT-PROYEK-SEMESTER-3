@@ -21,33 +21,21 @@
     </div>
     @endif
 
-    <!-- Current Year Stats -->
-    <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
-        <h2 class="text-xl font-bold text-gray-900 mb-4">Prestasi Tahun {{ $currentYear }}</h2>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-                <div class="text-sm text-gray-600 mb-2">Publikasi</div>
-                <div class="text-3xl font-bold text-gray-900">{{ $currentPrestasi['publikasi'] }}</div>
-                <div class="text-xs text-gray-500 mt-1">Auto-calculated</div>
+    <!-- Info -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div>
+                <h3 class="font-semibold text-blue-900 mb-1">Informasi Penting</h3>
+                <p class="text-sm text-blue-800">
+                    Silakan input data prestasi Anda per tahun. Data ini akan digunakan oleh Admin untuk menghitung ranking prestasi dosen menggunakan metode SAW.
+                </p>
+                <p class="text-sm text-blue-800 mt-2">
+                    <strong>Kriteria yang dinilai:</strong> Publikasi, Hibah (Dana Penelitian/Pengabdian), Skor SINTA, dan Buku.
+                </p>
             </div>
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-                <div class="text-sm text-gray-600 mb-2">Hibah</div>
-                <div class="text-3xl font-bold text-gray-900">Rp {{ number_format($currentPrestasi['hibah'], 0, ',', '.') }}</div>
-                <div class="text-xs text-gray-500 mt-1">Auto-calculated</div>
-            </div>
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-                <div class="text-sm text-gray-600 mb-2">Skor SINTA</div>
-                <div class="text-3xl font-bold text-gray-900">-</div>
-                <div class="text-xs text-gray-500 mt-1">Belum diisi</div>
-            </div>
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
-                <div class="text-sm text-gray-600 mb-2">Buku</div>
-                <div class="text-3xl font-bold text-gray-900">-</div>
-                <div class="text-xs text-gray-500 mt-1">Belum diisi</div>
-            </div>
-        </div>
-        <div class="mt-4 text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded p-3">
-            <strong class="text-blue-900">Info:</strong> Publikasi = jumlah penelitian | Hibah = dana penelitian + pengabdian disetujui
         </div>
     </div>
 
@@ -92,7 +80,7 @@
                             {{ $p->buku }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button onclick="openEditModal({{ $p->id }}, {{ $p->tahun }}, {{ $p->skor_sinta }}, {{ $p->buku }})" 
+                            <button onclick="openEditModal({{ $p->id }}, {{ $p->tahun }}, {{ $p->publikasi }}, {{ $p->hibah }}, {{ $p->skor_sinta }}, {{ $p->buku }})" 
                                 class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
                         </td>
                     </tr>
@@ -123,26 +111,33 @@
         <form action="{{ route('dosen.prestasi.store') }}" method="POST">
             @csrf
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Tahun</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tahun *</label>
                 <input type="number" name="tahun" value="{{ $currentYear }}" min="2000" max="2100" required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Skor SINTA</label>
-                <input type="number" name="skor_sinta" min="0" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <p class="text-xs text-gray-500 mt-1">Skor SINTA Anda saat ini</p>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Publikasi *</label>
+                    <input type="number" name="publikasi" min="0" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Skor SINTA *</label>
+                    <input type="number" name="skor_sinta" min="0" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Buku</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hibah (Rupiah) *</label>
+                <input type="number" name="hibah" min="0" required placeholder="Contoh: 50000000"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="text-xs text-gray-500 mt-1">Total dana hibah penelitian/pengabdian</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Buku *</label>
                 <input type="number" name="buku" min="0" required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <p class="text-xs text-gray-500 mt-1">Jumlah buku yang diterbitkan</p>
-            </div>
-            <div class="bg-blue-50 p-3 rounded mb-4">
-                <p class="text-xs text-blue-800">
-                    <strong>Info:</strong> Publikasi dan Hibah akan dihitung otomatis dari data penelitian dan pengabdian Anda.
-                </p>
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
@@ -175,13 +170,25 @@
                 <input type="text" id="edit_tahun" readonly
                     class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100">
             </div>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Publikasi *</label>
+                    <input type="number" name="publikasi" id="edit_publikasi" min="0" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Skor SINTA *</label>
+                    <input type="number" name="skor_sinta" id="edit_skor_sinta" min="0" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+            </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Skor SINTA</label>
-                <input type="number" name="skor_sinta" id="edit_skor_sinta" min="0" required
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hibah (Rupiah) *</label>
+                <input type="number" name="hibah" id="edit_hibah" min="0" required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
             <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Buku</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Buku *</label>
                 <input type="number" name="buku" id="edit_buku" min="0" required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
@@ -206,9 +213,11 @@ function closeModal() {
     document.getElementById('addModal').classList.add('hidden');
 }
 
-function openEditModal(id, tahun, skor, buku) {
+function openEditModal(id, tahun, publikasi, hibah, skor, buku) {
     document.getElementById('editForm').action = '/dosen/prestasi/' + id;
     document.getElementById('edit_tahun').value = tahun;
+    document.getElementById('edit_publikasi').value = publikasi;
+    document.getElementById('edit_hibah').value = hibah;
     document.getElementById('edit_skor_sinta').value = skor;
     document.getElementById('edit_buku').value = buku;
     document.getElementById('editModal').classList.remove('hidden');

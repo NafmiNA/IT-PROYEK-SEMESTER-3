@@ -44,6 +44,15 @@ class DokumentasiController extends Controller
         return view('mahasiswa.dokumentasi.index', compact('items'));
     }
 
+    public function show(int $id)
+    {
+        $doc = Dokumentasi::with(['penelitian', 'pengabdian'])->findOrFail($id);
+        if (!$this->isOwnedByCurrentStudent($doc)) {
+            abort(403, 'Anda tidak berhak melihat dokumen ini.');
+        }
+        return view('mahasiswa.dokumentasi.show', compact('doc'));
+    }
+
     public function edit(int $id)
     {
         $doc = Dokumentasi::with(['penelitian', 'pengabdian'])->findOrFail($id);
@@ -171,12 +180,57 @@ class DokumentasiController extends Controller
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
                 
-                Log::info('Mahasiswa dokumentasi uploaded', [
+                Log::info('Mahasiswa dokumentasi uploaded to local storage', [
                     'context' => $data['context'],
                     'context_id' => $model->id,
                     'file' => $file->getClientOriginalName(),
                     'path' => $path,
                 ]);
+
+                // Try to upload to Google Drive
+                $driveFileId = null;
+                $driveFileUrl = null;
+                $uploadedToDrive = false;
+                
+                if ($this->googleDrive) {
+                    Log::info('GoogleDrive service available, checking configuration...');
+                    
+                    if ($this->googleDrive->isConfigured()) {
+                        try {
+                            $folderId = $this->googleDrive->getFolderIdByType(strtolower($data['context']));
+                            
+                            if ($folderId) {
+                                $uploadResult = $this->googleDrive->uploadFile(
+                                    storage_path('app/public/' . $path),
+                                    $file->getClientOriginalName(),
+                                    $folderId
+                                );
+                                
+                                if ($uploadResult) {
+                                    $driveFileId = $uploadResult['file_id'];
+                                    $driveFileUrl = $uploadResult['file_url'];
+                                    $uploadedToDrive = true;
+                                    
+                                    Log::info('File uploaded to Google Drive successfully', [
+                                        'file_id' => $driveFileId,
+                                        'file_url' => $driveFileUrl,
+                                    ]);
+                                }
+                            } else {
+                                Log::warning('Google Drive folder ID not found for type: ' . $data['context']);
+                            }
+                        } catch (\Exception $e) {
+                            Log::error('Failed to upload to Google Drive', [
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString(),
+                            ]);
+                        }
+                    } else {
+                        Log::warning('Google Drive not configured properly');
+                    }
+                } else {
+                    Log::warning('GoogleDrive service not available');
+                }
 
                 Dokumentasi::create([
                     $data['context'] === 'penelitian' ? 'penelitian_id' : 'pengabdian_id' => $model->id,
@@ -184,6 +238,9 @@ class DokumentasiController extends Controller
                     'mime'        => $file->getMimeType(),
                     'size'        => $file->getSize(),
                     'gdrive_path' => $path,
+                    'drive_file_id' => $driveFileId,
+                    'drive_file_url' => $driveFileUrl,
+                    'uploaded_to_drive' => $uploadedToDrive,
                 ]);
             } catch (\Exception $e) {
                 Log::error('Failed to upload mahasiswa dokumentasi', [

@@ -214,7 +214,7 @@
                                                     <li class="flex items-center justify-between gap-3 p-2 border rounded-lg">
                                                         <span class="text-sm text-gray-800 truncate">{{ $doc->file_name ?? basename($doc->gdrive_path) }}</span>
                                                         <div class="flex items-center gap-2">
-                                                            <a href="{{ asset('storage/'.$doc->gdrive_path) }}" target="_blank" class="btn-mini btn-detail">Detail</a>
+                                                            <a href="{{ route('mahasiswa.dokumentasi.show', $doc->dokumentasi_id) }}" class="btn-mini btn-detail">Detail</a>
                                                             <a href="{{ route('mahasiswa.dokumentasi.edit', $doc->dokumentasi_id) }}" class="btn-mini btn-edit">Edit</a>
                                                             <form action="{{ route('mahasiswa.dokumentasi.destroy', $doc->dokumentasi_id) }}" method="POST" onsubmit="return confirm('Hapus file ini?');">
                                                                 @csrf
@@ -334,7 +334,7 @@
                                                     <li class="flex items-center justify-between gap-3 p-2 border rounded-lg">
                                                         <span class="text-sm text-gray-800 truncate">{{ $doc->file_name ?? basename($doc->gdrive_path) }}</span>
                                                         <div class="flex items-center gap-2">
-                                                            <a href="{{ asset('storage/'.$doc->gdrive_path) }}" target="_blank" class="btn-mini btn-detail">Detail</a>
+                                                            <a href="{{ route('mahasiswa.dokumentasi.show', $doc->dokumentasi_id) }}" class="btn-mini btn-detail">Detail</a>
                                                             <a href="{{ route('mahasiswa.dokumentasi.edit', $doc->dokumentasi_id) }}" class="btn-mini btn-edit">Edit</a>
                                                             <form action="{{ route('mahasiswa.dokumentasi.destroy', $doc->dokumentasi_id) }}" method="POST" onsubmit="return confirm('Hapus file ini?');">
                                                                 @csrf

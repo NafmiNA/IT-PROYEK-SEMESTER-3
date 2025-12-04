@@ -509,7 +509,8 @@
               <p id="statusEmail" class="text-sm text-gray-500">Silakan hubungkan Google Drive Anda</p>
             </div>
             <button id="connectBtn" onclick="connectGoogleDrive()" 
-                    class="w-full px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg">
+                    style="background-color: #16a34a; color: white;"
+                    class="w-full px-5 py-2.5 rounded-lg transition-colors text-sm font-semibold shadow-md hover:shadow-lg">
               Connect Google Drive
             </button>
           </div>
@@ -576,9 +577,9 @@
             Batal
           </button>
           <button id="saveFoldersBtn" onclick="saveFolderConfiguration()" 
-                  style="background: linear-gradient(to right, #16a34a, #059669); color: white !important;"
-                  class="flex-1 px-4 py-2.5 rounded-lg hover:opacity-90 transition-all font-semibold shadow-lg hover:shadow-xl text-sm">
-            <span style="color: white !important;">Simpan Konfigurasi</span>
+                  style="background-color: #16a34a !important; color: white !important;"
+                  class="flex-1 px-4 py-2.5 rounded-lg transition-all font-semibold shadow-lg hover:shadow-xl text-sm">
+            Simpan Konfigurasi
           </button>
         </div>
 
@@ -645,11 +646,11 @@
 
       if (connected) {
         statusText.textContent = 'Status: Terhubung';
-        statusText.classList.add('text-green-700');
+        statusText.style.color = '#15803d';
         statusEmail.textContent = settings?.email || 'Connected';
         connectBtn.textContent = 'Disconnect';
-        connectBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-        connectBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+        connectBtn.style.backgroundColor = '#dc2626';
+        connectBtn.style.color = 'white';
         connectBtn.onclick = disconnectGoogleDrive;
         
         if (settings?.main_folder_name) {
@@ -657,11 +658,11 @@
         }
       } else {
         statusText.textContent = 'Status: Belum Terhubung';
-        statusText.classList.remove('text-green-700');
+        statusText.style.color = '#111827';
         statusEmail.textContent = 'Silakan hubungkan Google Drive Anda';
         connectBtn.textContent = 'Connect Google Drive';
-        connectBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
-        connectBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        connectBtn.style.backgroundColor = '#16a34a';
+        connectBtn.style.color = 'white';
         connectBtn.onclick = connectGoogleDrive;
       }
     }

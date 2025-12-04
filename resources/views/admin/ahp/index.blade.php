@@ -114,7 +114,7 @@ function getSliderPosition($value) {
                                     Tentukan tingkat kepentingan antar kriteria
                                 </p>
                             </div>
-                        </div>
+                        /</div>
                     </div>
 
                 </div>

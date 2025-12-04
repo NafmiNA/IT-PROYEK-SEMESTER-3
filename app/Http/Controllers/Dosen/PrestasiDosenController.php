@@ -37,6 +37,8 @@ class PrestasiDosenController extends Controller
     {
         $request->validate([
             'tahun' => 'required|integer|min:2000|max:2100',
+            'publikasi' => 'required|integer|min:0',
+            'hibah' => 'required|integer|min:0',
             'skor_sinta' => 'required|integer|min:0',
             'buku' => 'required|integer|min:0',
         ]);
@@ -48,9 +50,6 @@ class PrestasiDosenController extends Controller
             return redirect()->back()->with('error', 'Data dosen tidak ditemukan');
         }
 
-        // Calculate publikasi & hibah automatically
-        $calculated = $this->calculatePrestasi($dosen->id, $request->tahun);
-
         // Create or update prestasi
         PrestasiDosen::updateOrCreate(
             [
@@ -58,8 +57,8 @@ class PrestasiDosenController extends Controller
                 'tahun' => $request->tahun,
             ],
             [
-                'publikasi' => $calculated['publikasi'],
-                'hibah' => $calculated['hibah'],
+                'publikasi' => $request->publikasi,
+                'hibah' => $request->hibah,
                 'skor_sinta' => $request->skor_sinta,
                 'buku' => $request->buku,
             ]
@@ -87,6 +86,8 @@ class PrestasiDosenController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'publikasi' => 'required|integer|min:0',
+            'hibah' => 'required|integer|min:0',
             'skor_sinta' => 'required|integer|min:0',
             'buku' => 'required|integer|min:0',
         ]);
@@ -98,12 +99,9 @@ class PrestasiDosenController extends Controller
             ->where('dosen_id', $dosen->id)
             ->firstOrFail();
 
-        // Recalculate publikasi & hibah
-        $calculated = $this->calculatePrestasi($dosen->id, $prestasi->tahun);
-
         $prestasi->update([
-            'publikasi' => $calculated['publikasi'],
-            'hibah' => $calculated['hibah'],
+            'publikasi' => $request->publikasi,
+            'hibah' => $request->hibah,
             'skor_sinta' => $request->skor_sinta,
             'buku' => $request->buku,
         ]);
