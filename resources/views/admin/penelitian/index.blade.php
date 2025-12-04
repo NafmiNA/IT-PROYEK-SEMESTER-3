@@ -1,4 +1,3 @@
-
 <x-app-layout>
     <style>
         /* Performance-optimized animations <400ms (Doherty Threshold) */
@@ -78,12 +77,10 @@
                     <div class="animate-fade">
                         {{-- Breadcrumb --}}
                         <nav class="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                            {{-- MODIFIKASI: Rute diubah ke admin --}}
                             <a href="{{ route('admin.dashboard') }}" 
                                class="flex items-center gap-1 hover:text-blue-600 transition-colors focus-visible">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1
-                                     0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
                                 Dashboard
                             </a>
@@ -95,7 +92,6 @@
 
                         {{-- Title with back button (Fitts's Law - adequate size) --}}
                         <div class="flex items-center gap-3">
-                            {{-- MODIFIKASI: Rute diubah ke admin --}}
                             <a href="{{ route('admin.dashboard') }}" 
                                class="group flex-shrink-0 inline-flex items-center justify-center w-11 h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200 focus-visible"
                                aria-label="Kembali ke Dashboard">
@@ -109,15 +105,12 @@
                                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Penelitian</h1>
                                     <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">Live</span>
                                 </div>
-                                {{-- =================================================== --}}
-                                {{-- PERUBAHAN: Kata (Global) dihapus --}}
-                                {{-- =================================================== --}}
                                 <p class="text-sm text-gray-600">Pantau dan kelola semua penelitian</p>
                             </div>
                         </div>
                     </div>
 
-                    {{-- REFAKTOR: Toolbar: Search, Add, Export (dipindahkan ke sini) --}}
+                    {{-- Toolbar: Search & ADD BUTTON (Sudah Ditambahkan Kembali) --}}
                     <div class="mt-4 flex items-center gap-3 flex-wrap">
                         <div class="relative">
                             <input type="text"
@@ -130,7 +123,15 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        {{-- Tombol Tambah & Export Dihapus Sesuai Permintaan --}}
+                        
+                        {{-- TOMBOL TAMBAH PENELITIAN --}}
+                        <a href="{{ route('admin.penelitian.create') }}" 
+                           class="inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow transition-all focus-visible">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Tambah Penelitian
+                        </a>
                     </div>
                 </div>
             </div>
@@ -165,7 +166,6 @@
             {{-- Stats Cards (Miller's Law - 4 items max) --}}
             @php
                 $totalPenelitian = method_exists($penelitian, 'total') ? $penelitian->total() : $penelitian->count();
-                // REFAKTOR: Menyesuaikan key agar cocok dengan 'menunggu' dan 'disetujui'
                 $statusCounts = ['total' => $totalPenelitian, 'draft' => 0, 'menunggu' => 0, 'disetujui' => 0];
                 
                 $sourceData = method_exists($penelitian, 'items') ? $penelitian->items() : $penelitian;
@@ -219,8 +219,6 @@
                             <h2 class="text-lg font-semibold text-gray-900">Daftar Penelitian</h2>
                             <p class="text-sm text-gray-600 mt-0.5">{{ $totalPenelitian }} penelitian terdaftar</p>
                         </div>
-                        
-                        {{-- Filter Buttons Dihapus - Tidak Perlu Filter Status --}}
                     </div>
                 </div>
 
@@ -279,14 +277,10 @@
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {{-- Status Badge Dihapus - Penelitian Tidak Perlu Status Approval --}}
                                     </div>
 
                                     {{-- Action Buttons (tidy & consistent) --}}
                                     <div class="action-group flex-shrink-0">
-                                        {{-- MODIFIKASI: Rute diubah ke admin --}}
-                                        {{-- REFAKTOR: Kelas CSS diubah ke .btn-detail --}}
                                         <a href="{{ route('admin.penelitian.show', $p) }}" 
                                            class="action-btn btn-detail focus-visible">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -296,8 +290,6 @@
                                             Detail
                                         </a>
 
-                                        {{-- MODIFIKASI: Rute diubah ke admin --}}
-                                        {{-- REFAKTOR: Kelas CSS diubah ke .btn-edit --}}
                                         <a href="{{ route('admin.penelitian.edit', $p) }}" 
                                            class="action-btn btn-edit focus-visible">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,15 +298,10 @@
                                             Edit
                                         </a>
 
-                                        {{-- ======================================================================== --}}
-                                        {{-- Tombol Approve/Reject Dihapus - Penelitian Tidak Perlu Approval --}}
-
-                                        {{-- MODIFIKASI: Rute diubah ke admin --}}
                                         <form action="{{ route('admin.penelitian.destroy', $p) }}" method="POST" 
                                               onsubmit="return confirm('Yakin ingin menghapus penelitian ini?');" class="inline-block">
                                             @csrf
                                             @method('DELETE')
-                                            {{-- REFAKTOR: Kelas CSS diubah ke .btn-delete --}}
                                             <button type="submit" 
                                                     class="action-btn btn-delete focus-visible">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -336,10 +323,8 @@
                                 </div>
                                 <h3 class="text-xl font-semibold text-gray-900 mb-2">Belum Ada Penelitian</h3>
                                 <p class="text-gray-600 mb-6 max-w-sm mx-auto">
-                                    {{-- MODIFIKASI: Teks diubah untuk Admin --}}
                                     Saat ini belum ada data penelitian yang terdaftar.
                                 </p>
-                                {{-- MODIFIKASI: Rute diubah ke admin --}}
                                 <a href="{{ route('admin.penelitian.create') }}"
                                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all focus-visible">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -406,8 +391,6 @@
             let visibleCount = 0;
             cards.forEach(card => {
                 const cardStatus = card.dataset.status;
-                
-                // REFAKTOR: Logika disederhanakan (cth: 'menunggu' === 'menunggu')
                 const isMatch = (status === 'all' || cardStatus === status);
 
                 if (isMatch) {
