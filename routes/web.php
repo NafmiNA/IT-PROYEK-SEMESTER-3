@@ -87,9 +87,6 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
         
         // Prestasi Dosen
         Route::get('/prestasi', [PrestasiDosenController::class, 'index'])->name('prestasi.index');
-        Route::post('/prestasi', [PrestasiDosenController::class, 'store'])->name('prestasi.store');
-        Route::get('/prestasi/{id}/edit', [PrestasiDosenController::class, 'edit'])->name('prestasi.edit');
-        Route::put('/prestasi/{id}', [PrestasiDosenController::class, 'update'])->name('prestasi.update');
     });
 
     /*
@@ -133,6 +130,9 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
         // ==========================================================
         // FITUR PENELITIAN ADMIN (Sudah Termasuk Tambah/Create)
         // ==========================================================
+        Route::get('/penelitian/export/excel', [AdminPenelitianController::class, 'export'])
+            ->name('penelitian.export');
+
         Route::resource('penelitian', AdminPenelitianController::class)
             ->parameters(['penelitian' => 'penelitian']);
         

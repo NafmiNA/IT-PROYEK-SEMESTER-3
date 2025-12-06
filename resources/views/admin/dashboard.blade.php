@@ -9,6 +9,9 @@
     .hover-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
     .hover-lift:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(0,0,0,0.15); }
     .focus-ring:focus-visible { outline: 3px solid #6a1fccff; outline-offset: 2px; border-radius: 0.5rem; }
+    /* Hide scrollbar */
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 
   <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -485,13 +488,13 @@
 
   {{-- Cloud Storage Modal --}}
   <div id="cloudStorageModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4" onclick="closeCloudStorageModal(event)">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md" onclick="event.stopPropagation()">
       {{-- Modal Header --}}
-      <div class="bg-gradient-to-r from-green-600 to-emerald-600 p-6 rounded-t-2xl">
+      <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-5 py-4 rounded-t-2xl">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="text-xl font-bold text-white">Pengaturan Cloud Storage</h3>
-            <p class="text-sm text-green-100">Kelola backup ke Google Drive</p>
+            <h3 class="text-lg font-bold text-white">Pengaturan Cloud Storage</h3>
+            <p class="text-xs text-green-100">Kelola backup ke Google Drive</p>
           </div>
           <button onclick="closeCloudStorageModal()" class="text-white hover:text-green-100 transition-colors text-2xl font-bold w-8 h-8 flex items-center justify-center">
             ×
@@ -500,93 +503,69 @@
       </div>
 
       {{-- Modal Body --}}
-      <div class="p-5 space-y-5">
+      <div class="p-4 space-y-3">
         {{-- Connection Status --}}
-        <div id="connectionStatus" class="border-2 border-gray-200 rounded-xl p-4 bg-white">
-          <div class="flex flex-col gap-4">
+        <div id="connectionStatus" class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+          <div class="flex items-center justify-between gap-3">
             <div>
-              <p id="statusText" class="font-semibold text-gray-900 text-base mb-1">Status: Belum Terhubung</p>
-              <p id="statusEmail" class="text-sm text-gray-500">Silakan hubungkan Google Drive Anda</p>
+              <p id="statusText" class="font-semibold text-gray-900 text-sm">Status: Belum Terhubung</p>
+              <p id="statusEmail" class="text-xs text-gray-500">Silakan hubungkan Google Drive Anda</p>
             </div>
             <button id="connectBtn" onclick="connectGoogleDrive()" 
                     style="background-color: #16a34a; color: white;"
-                    class="w-full px-5 py-2.5 rounded-lg transition-colors text-sm font-semibold shadow-md hover:shadow-lg">
-              Connect Google Drive
+                    class="px-4 py-2 rounded-lg transition-colors text-xs font-semibold shadow-md hover:shadow-lg whitespace-nowrap">
+              Connect
             </button>
           </div>
+        </div>
+
+        {{-- Folder Configuration --}}
+        <div id="folderConfig">
+          <h4 class="font-semibold text-gray-800 text-sm mb-2">Konfigurasi Folder</h4>
           
-          {{-- Additional Info --}}
-          <div class="mt-3 pt-3 border-t border-gray-200">
-            <p class="text-xs text-gray-600">
-              <span class="font-semibold">Info:</span> Hubungkan Google Drive untuk backup otomatis.
-            </p>
-          </div>
-        </div>
-
-        {{-- Folder Configuration (Always visible now for easier setup) --}}
-        <div id="folderConfig" class="space-y-3">
-          <div class="border-t pt-4">
-            <h4 class="font-semibold text-gray-800 mb-2 text-sm">Konfigurasi Folder</h4>
-            <p class="text-xs text-gray-600 mb-3">
-              Buat folder "SIDOPPAN" di Google Drive, lalu paste ID-nya di bawah.
-            </p>
-            
-            {{-- Main Folder --}}
-            <div class="space-y-2">
-              <label class="block text-xs font-medium text-gray-700">Nama Folder:</label>
+          <div class="space-y-2">
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Nama Folder:</label>
               <input type="text" id="mainFolderName" placeholder="SIDOPPAN" 
-                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-              
-              <label class="block text-xs font-medium text-gray-700 mt-2">Folder ID:</label>
+                     class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+            </div>
+            
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Folder ID:</label>
               <input type="text" id="mainFolderId" placeholder="Paste dari Google Drive" 
-                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs">
-              
-              <details class="mt-2">
-                <summary class="text-xs text-blue-600 cursor-pointer hover:text-blue-700 font-medium">
-                  Cara dapat Folder ID?
-                </summary>
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-2 mt-2">
-                  <p class="text-xs text-amber-800 leading-relaxed">
-                    <strong>Langkah:</strong><br>
-                    1. Buka Google Drive<br>
-                    2. Buat folder "SIDOPPAN"<br>
-                    3. Klik kanan folder, pilih Share, lalu Copy link<br>
-                    4. Paste ID dari URL<br>
-                    <code class="text-[10px] bg-amber-100 px-1">drive.google.com/drive/folders/<strong>ID_INI</strong></code>
-                  </p>
-                </div>
-              </details>
+                     class="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-xs">
             </div>
-
-            {{-- Info Subfolders --}}
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5 mt-3">
-              <p class="text-xs text-blue-800 font-semibold mb-1">Sistem akan otomatis membuat 3 subfolder:</p>
-              <ul class="text-xs text-blue-700 space-y-0.5 ml-4 list-disc">
-                <li>Penelitian/</li>
-                <li>Pengabdian/</li>
-                <li>Dokumentasi/</li>
-              </ul>
-            </div>
+            
+            <details class="text-xs">
+              <summary class="text-blue-600 cursor-pointer hover:text-blue-700 font-medium">Cara dapat Folder ID?</summary>
+              <div class="bg-amber-50 border border-amber-200 rounded p-2 mt-1 text-amber-800">
+                1. Buka Google Drive → 2. Buat folder → 3. Klik kanan, Share, Copy link → 4. Ambil ID dari URL
+              </div>
+            </details>
           </div>
 
+          {{-- Info Subfolders --}}
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 mt-2">
+            <p class="text-xs text-blue-800"><strong>Subfolder otomatis:</strong> Penelitian/, Pengabdian/, Dokumentasi/</p>
+          </div>
         </div>
 
-        {{-- Save Button (Always visible) --}}
-        <div class="flex gap-2 pt-4 border-t">
-          <button onclick="closeCloudStorageModal()" class="flex-1 px-4 py-2.5 border-2 border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
+        {{-- Buttons --}}
+        <div class="flex gap-2 pt-2 border-t">
+          <button onclick="closeCloudStorageModal()" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition-colors font-semibold text-sm">
             Batal
           </button>
           <button id="saveFoldersBtn" onclick="saveFolderConfiguration()" 
                   style="background-color: #16a34a !important; color: white !important;"
-                  class="flex-1 px-4 py-2.5 rounded-lg transition-all font-semibold shadow-lg hover:shadow-xl text-sm">
-            Simpan Konfigurasi
+                  class="flex-1 px-4 py-2 rounded-lg transition-all font-semibold shadow-lg hover:shadow-xl text-sm">
+            Simpan
           </button>
         </div>
 
         {{-- Loading Indicator --}}
-        <div id="loadingIndicator" class="hidden text-center py-8">
-          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-green-600"></div>
-          <p class="text-gray-600 mt-3">Memproses...</p>
+        <div id="loadingIndicator" class="hidden text-center py-4">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-green-600"></div>
+          <p class="text-gray-600 mt-2 text-sm">Memproses...</p>
         </div>
       </div>
     </div>

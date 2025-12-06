@@ -32,20 +32,15 @@
                 transition: transform 0.3s ease !important;
             }
             
-            /* Scrollbar styling untuk sidebar */
+            /* Scrollbar styling untuk sidebar - HIDDEN */
+            .sidebar-main {
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+            }
             .sidebar-main::-webkit-scrollbar {
-                width: 6px;
+                display: none;
             }
-            .sidebar-main::-webkit-scrollbar-track {
-                background: #1e293b;
-            }
-            .sidebar-main::-webkit-scrollbar-thumb {
-                background: #475569;
-                border-radius: 3px;
-            }
-            .sidebar-main::-webkit-scrollbar-thumb:hover {
-                background: #64748b;
-            }
+            
             .sidebar-hidden {
                 transform: translateX(-100%) !important;
             }
@@ -182,20 +177,18 @@
                     </a>
                 </div>
 
-                {{-- Prestasi --}}
-                @php
-                    $prestasiRoute = route('dosen.prestasi.index');
-                    $prestasiActive = request()->routeIs('dosen.prestasi.*');
-                    if (auth()->user()->role == 'admin') {
+                {{-- Prestasi (Hanya Admin) --}}
+                @if(auth()->user()->role == 'admin')
+                    @php
                         $prestasiRoute = route('admin.prestasi.index');
                         $prestasiActive = request()->routeIs('admin.prestasi.*') || request()->routeIs('admin.ahp.*');
-                    }
-                @endphp
-                <div style="background: {{ $prestasiActive ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
-                    <a href="{{ $prestasiRoute }}" style="color: white; text-decoration: none; display: block;">
-                        Prestasi
-                    </a>
-                </div>
+                    @endphp
+                    <div style="background: {{ $prestasiActive ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+                        <a href="{{ $prestasiRoute }}" style="color: white; text-decoration: none; display: block;">
+                            Prestasi
+                        </a>
+                    </div>
+                @endif
             @endif
 
             @if(auth()->user()->role === 'mahasiswa')

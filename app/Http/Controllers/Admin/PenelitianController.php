@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+// Library Excel
+use App\Exports\PenelitianExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class PenelitianController extends Controller
 {
@@ -319,6 +322,14 @@ class PenelitianController extends Controller
         return redirect()
             ->route('admin.penelitian.index')
             ->with('success', 'Status penelitian berhasil diperbarui!');
+    }
+
+    /**
+     * Export data penelitian ke Excel.
+     */
+    public function export()
+    {
+        return Excel::download(new PenelitianExport, 'data-penelitian.xlsx');
     }
 
     /**

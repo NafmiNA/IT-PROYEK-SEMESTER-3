@@ -81,11 +81,26 @@
                         <h3 class="text-3xl font-bold mb-2 text-gray-900">HITUNG RANKING DOSEN BERPRESTASI</h3>
                         <p class="text-gray-600 text-lg">Klik tombol di bawah untuk melihat hasil ranking menggunakan metode SAW</p>
                     </div>
-                    <a href="{{ route('admin.saw.ranking', ['tahun' => $tahun ?? now()->year]) }}" 
-                       class="inline-flex items-center gap-3 px-12 py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-2xl rounded-lg shadow-xl transition transform hover:scale-105">
-                        LIHAT RANKING
-                    </a>
-                    <p class="text-gray-600 text-sm">Data dari {{ $prestasi->count() }} dosen siap dihitung</p>
+                    
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="{{ route('admin.saw.ranking', ['tahun' => $tahun ?? now()->year]) }}" 
+                           class="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xl rounded-lg shadow-xl transition transform hover:scale-105">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            LIHAT RANKING
+                        </a>
+
+                        <a href="{{ route('admin.saw.export', ['tahun' => $tahun ?? now()->year]) }}" 
+                           class="inline-flex items-center gap-3 px-8 py-4 bg-green-700 hover:bg-green-800 text-white font-bold text-xl rounded-lg shadow-xl transition transform hover:scale-105">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            EXPORT EXCEL
+                        </a>
+                    </div>
+
+                    <p class="text-gray-600 text-sm mt-2">Data dari {{ $prestasi->count() }} dosen siap dihitung</p>
                 </div>
             </div>
 
@@ -96,13 +111,12 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                     <div>
-                        <h3 class="font-semibold text-blue-900 mb-2 text-lg">Informasi untuk Admin</h3>
+                        <h3 class="font-semibold text-blue-900 mb-2 text-lg">Informasi Pengelolaan Data</h3>
                         <p class="text-sm text-blue-800 mb-2">
-                            Halaman ini menampilkan <strong>rekap data prestasi yang diupload oleh para dosen</strong>. 
-                            Admin tidak bisa menambah atau mengedit data prestasi secara manual.
+                            <strong>Publikasi & Hibah:</strong> Dihitung secara <strong>OTOMATIS</strong> oleh sistem berdasarkan data Penelitian dan Pengabdian yang berstatus 'Disetujui' pada tahun terkait.
                         </p>
                         <p class="text-sm text-blue-800">
-                            <strong>Tugas Admin:</strong> Klik tombol kuning di atas untuk menghitung ranking menggunakan metode SAW (Simple Additive Weighting).
+                            <strong>Skor Sinta & Buku:</strong> Diinput manual oleh <strong>ADMIN</strong>. Klik tombol "Edit" pada tabel di bawah untuk memperbarui data ini.
                         </p>
                     </div>
                 </div>
@@ -111,7 +125,12 @@
             <!-- Data Rekap -->
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Rekap Data Prestasi Dosen</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Rekap Data Prestasi Dosen</h3>
+                        <button onclick="openCreateModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium">
+                            + Tambah Data Manual
+                        </button>
+                    </div>
 
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">
                         Data Prestasi Tahun {{ $tahun }}
@@ -123,7 +142,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
                             </svg>
                             <p class="text-lg font-medium">Belum ada data prestasi untuk tahun {{ $tahun }}</p>
-                            <p class="text-sm">Silakan tambahkan data menggunakan form di atas</p>
+                            <p class="text-sm">Silakan tambahkan data manual jika diperlukan</p>
                         </div>
                     @else
                         <div class="overflow-x-auto">
@@ -132,10 +151,10 @@
                                     <tr>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dosen</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Publikasi (K1)</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SINTA (K2)</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Hibah (K3)</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Buku (K4)</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Publikasi (Auto)</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">SINTA (Input)</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Hibah (Auto)</th>
+                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Buku (Input)</th>
                                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
@@ -147,19 +166,20 @@
                                                 <div class="font-medium text-gray-900">{{ $p->dosen->nama }}</div>
                                                 <div class="text-xs text-gray-500">NIP: {{ $p->dosen->nip }}</div>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $p->publikasi }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $p->skor_sinta }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">Rp {{ number_format($p->hibah, 0, ',', '.') }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">{{ $p->buku }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 bg-gray-50 font-mono">{{ $p->publikasi }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 font-bold">{{ $p->skor_sinta }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 bg-gray-50 font-mono">Rp {{ number_format($p->hibah, 0, ',', '.') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 font-bold">{{ $p->buku }}</td>
                                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                                <div class="text-center text-gray-500 text-sm">
-                                                    <span class="inline-flex items-center gap-1">
-                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                                        </svg>
-                                                        Dikelola Dosen
-                                                    </span>
-                                                </div>
+                                                <button onclick="openEditModal({{ $p->id }}, '{{ $p->dosen->nama }}', {{ $p->skor_sinta }}, {{ $p->buku }})" 
+                                                        class="text-blue-600 hover:text-blue-900 font-semibold hover:underline">
+                                                    Edit
+                                                </button>
+                                                <form action="{{ route('admin.saw.destroy', $p->id) }}" method="POST" class="inline-block ml-2" onsubmit="return confirm('Hapus data ini?')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-red-600 hover:text-red-900 hover:underline">Hapus</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -171,6 +191,95 @@
             </div>
         </div>
     </div>
-    
 
+    <!-- Edit Modal -->
+    <div id="editModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="relative bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Edit Data Prestasi</h3>
+            <p class="text-sm text-gray-600 mb-6">Dosen: <span id="modalDosenName" class="font-semibold"></span></p>
+            
+            <form id="editForm" method="POST" action="">
+                @csrf
+                @method('PUT')
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Skor SINTA</label>
+                    <input type="number" name="skor_sinta" id="modalSinta" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required min="0">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Jumlah Buku</label>
+                    <input type="number" name="buku" id="modalBuku" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required min="0">
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="document.getElementById('editModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Modal (Untuk inisialisasi data dosen yang belum ada di list) -->
+    <div id="createModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+        <div class="relative bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Tambah Data Prestasi</h3>
+            
+            <form method="POST" action="{{ route('admin.saw.store') }}">
+                @csrf
+                <input type="hidden" name="tahun" value="{{ $tahun }}">
+                
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Pilih Dosen</label>
+                    <select name="dosen_id" class="shadow border rounded w-full py-2 px-3 text-gray-700 focus:outline-none focus:shadow-outline" required>
+                        <option value="">-- Pilih Dosen --</option>
+                        @foreach($dosens as $d)
+                            <option value="{{ $d->id }}">{{ $d->nama }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Skor SINTA</label>
+                    <input type="number" name="skor_sinta" value="0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required min="0">
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Jumlah Buku</label>
+                    <input type="number" name="buku" value="0" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required min="0">
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="document.getElementById('createModal').classList.add('hidden')" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal(id, nama, sinta, buku) {
+            document.getElementById('modalDosenName').innerText = nama;
+            document.getElementById('modalSinta').value = sinta;
+            document.getElementById('modalBuku').value = buku;
+            
+            // Set action URL dynamically
+            const form = document.getElementById('editForm');
+            form.action = "{{ route('admin.saw.update', ':id') }}".replace(':id', id);
+            
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function openCreateModal() {
+            document.getElementById('createModal').classList.remove('hidden');
+        }
+        
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('editModal').classList.add('hidden');
+                document.getElementById('createModal').classList.add('hidden');
+            }
+        });
+    </script>
 </x-app-layout>

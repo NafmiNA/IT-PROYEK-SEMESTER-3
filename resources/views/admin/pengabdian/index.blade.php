@@ -126,7 +126,23 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </div>
-                        {{-- Tombol Tambah & Export Dihapus Sesuai Permintaan --}}
+                        {{-- Tombol Export --}}
+                        <a href="{{ route('admin.pengabdian.export') }}" 
+                           class="inline-flex items-center gap-2 px-4 py-2.5 bg-green-800 hover:bg-green-900 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all focus-visible">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                            </svg>
+                            Export Excel
+                        </a>
+
+                        {{-- Tombol Tambah --}}
+                        <a href="{{ route('admin.pengabdian.create') }}" 
+                           class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow-md transition-all focus-visible">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Tambah Pengabdian
+                        </a>
                     </div>
                 </div>
             </div>
