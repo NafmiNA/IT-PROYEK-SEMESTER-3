@@ -1,55 +1,48 @@
-<section class="space-y-6">
+<section>
     <header>
         <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Hapus Akun') }}
+            {{ __('Perbarui Kata Sandi') }}
         </h2>
 
         <p class="mt-1 text-sm text-gray-600">
-            {{ __('Setelah akun Anda dihapus, semua sumber daya dan datanya akan dihapus secara permanen. Sebelum menghapus akun Anda, harap unduh data atau informasi apa pun yang ingin Anda simpan.') }}
+            {{ __('Pastikan akun Anda menggunakan kata sandi yang panjang dan acak agar tetap aman.') }}
         </p>
     </header>
 
-    <x-danger-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Hapus Akun') }}</x-danger-button>
+    <form method="post" action="{{ route('password.update') }}" class="mt-6 space-y-6">
+        @csrf
+        @method('put')
 
-    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
-        <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
-            @csrf
-            @method('delete')
+        <div>
+            <x-input-label for="current_password" :value="__('Kata Sandi Saat Ini')" />
+            <x-text-input id="current_password" name="current_password" type="password" class="mt-1 block w-full" autocomplete="current-password" />
+            <x-input-error :messages="$errors->updatePassword->get('current_password')" class="mt-2" />
+        </div>
 
-            <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Apakah Anda yakin ingin menghapus akun Anda?') }}
-            </h2>
+        <div>
+            <x-input-label for="password" :value="__('Kata Sandi Baru')" />
+            <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" />
+            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
+        </div>
 
-            <p class="mt-1 text-sm text-gray-600">
-                {{ __('Setelah akun Anda dihapus, semua sumber daya dan datanya akan dihapus secara permanen. Silakan masukkan kata sandi Anda untuk mengonfirmasi bahwa Anda ingin menghapus akun Anda secara permanen.') }}
-            </p>
+        <div>
+            <x-input-label for="password_confirmation" :value="__('Konfirmasi Kata Sandi')" />
+            <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
+            <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
+        </div>
 
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Kata Sandi') }}" class="sr-only" />
+        <div class="flex items-center gap-4">
+            <x-primary-button>{{ __('Simpan') }}</x-primary-button>
 
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Kata Sandi') }}"
-                />
-
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Batal') }}
-                </x-secondary-button>
-
-                <x-danger-button class="ms-3">
-                    {{ __('Hapus Akun') }}
-                </x-danger-button>
-            </div>
-        </form>
-    </x-modal>
+            @if (session('status') === 'password-updated')
+                <p
+                    x-data="{ show: true }"
+                    x-show="show"
+                    x-transition
+                    x-init="setTimeout(() => show = false, 2000)"
+                    class="text-sm text-gray-600"
+                >{{ __('Tersimpan.') }}</p>
+            @endif
+        </div>
+    </form>
 </section>

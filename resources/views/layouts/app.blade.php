@@ -218,7 +218,7 @@
             {{-- Profile --}}
             <div style="background: {{ request()->routeIs('profile.*') ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
                 <a href="{{ route('profile.edit') }}" style="color: white; text-decoration: none; display: block;">
-                    Profile
+                    Profil
                 </a>
             </div>
 

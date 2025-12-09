@@ -101,10 +101,7 @@
                             </a>
                             
                             <div>
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Penelitian</h1>
-                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">Live</span>
-                                </div>
+                                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Penelitian</h1>
                                 <p class="text-sm text-gray-600">Pantau dan kelola semua penelitian</p>
                             </div>
                         </div>

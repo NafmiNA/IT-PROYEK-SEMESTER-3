@@ -89,10 +89,7 @@
                             </a>
                             
                             <div>
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Penelitian</h1>
-                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded">Live</span>
-                                </div>
+                                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Penelitian</h1>
                                 <p class="text-sm text-gray-600">Pantau dan kelola proposal penelitian Anda</p>
                             </div>
                         
@@ -163,7 +160,7 @@
                 }
             @endphp
 
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-6">
                 {{-- Total Card (Clickable - Aesthetic-Usability) --}}
                 <button onclick="filterStatus('all')" 
                         class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
@@ -192,39 +189,6 @@
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['draft'] }}</p>
                     <p class="text-sm text-gray-600 font-medium">Draft</p>
-                </button>
-
-                {{-- Pending Card (Von Restorff - stands out when > 0) --}}
-                <button onclick="filterStatus('pending')" 
-                        class="text-left w-full {{ $statusCounts['pending'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['pending'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
-                        style="animation-delay: 0.15s">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 {{ $statusCounts['pending'] > 0 ? 'bg-gray-100' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        @if($statusCounts['pending'] > 0)
-                            <span class="px-2 py-1 bg-gray-200 text-gray-700 text-xs font-semibold rounded">⚡ Butuh Aksi</span>
-                        @endif
-                    </div>
-                    <p class="text-3xl sm:text-4xl font-bold {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-900' }} stat-num mb-1">{{ $statusCounts['pending'] }}</p>
-                    <p class="text-sm {{ $statusCounts['pending'] > 0 ? 'text-amber-50' : 'text-gray-600' }} font-medium">Menunggu Review</p>
-                </button>
-
-                {{-- Approved Card --}}
-                <button onclick="filterStatus('approved')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
-                        style="animation-delay: 0.2s">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['approved'] }}</p>
-                    <p class="text-sm text-gray-600 font-medium">Disetujui ✓</p>
                 </button>
             </div>
 
