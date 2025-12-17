@@ -31,31 +31,31 @@
                             {{-- Field NAMA --}}
                             <div>
                                 <label for="name" class="block font-medium text-sm text-gray-700">Nama</label>
-                                <input type="text" name="name" id="name" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" value="{{ old('name') }}" required>
+                                <input type="text" name="name" id="name" class="block mt-1 w-full rounded-md shadow-sm border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500" value="{{ old('name') }}" required>
                             </div>
 
                             {{-- Field EMAIL --}}
                             <div>
                                 <label for="email" class="block font-medium text-sm text-gray-700">Email</label>
-                                <input type="email" name="email" id="email" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" value="{{ old('email') }}" required>
+                                <input type="email" name="email" id="email" class="block mt-1 w-full rounded-md shadow-sm border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500" value="{{ old('email') }}" required>
                             </div>
 
                             {{-- Field PASSWORD --}}
                             <div>
                                 <label for="password" class="block font-medium text-sm text-gray-700">Password</label>
-                                <input type="password" name="password" id="password" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" required>
+                                <input type="password" name="password" id="password" class="block mt-1 w-full rounded-md shadow-sm border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500" required>
                             </div>
 
                             {{-- Field KONFIRMASI PASSWORD --}}
                             <div>
                                 <label for="password_confirmation" class="block font-medium text-sm text-gray-700">Konfirmasi Password</label>
-                                <input type="password" name="password_confirmation" id="password_confirmation" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" required>
+                                <input type="password" name="password_confirmation" id="password_confirmation" class="block mt-1 w-full rounded-md shadow-sm border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500" required>
                             </div>
 
                             {{-- Field ROLE --}}
                             <div>
                                 <label for="role" class="block font-medium text-sm text-gray-700">Role</label>
-                                <select name="role" id="role" class="block mt-1 w-full rounded-md shadow-sm border-gray-300" required>
+                                <select name="role" id="role" class="block mt-1 w-full rounded-md shadow-sm border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500" required>
                                     <option value="">Pilih Role</option>
                                     {{-- Sesuaikan role ini dengan diagram use case Anda --}}
                                     <option value="admin">Admin Koordinator P3M</option>

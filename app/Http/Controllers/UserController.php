@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User; // <-- MODIFIKASI: Menggunakan Model User (bukan Dosen)
+use App\Models\Dosen;
+use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash; // <-- TAMBAHAN: Ini penting untuk 'password'
 
@@ -43,12 +45,34 @@ class UserController extends Controller
         ]);
 
         // MODIFIKASI: Membuat User baru
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password), // <-- PENTING: Password harus di-hash
             'role' => $request->role,
         ]);
+
+        // AUTO-CREATE PROFILE berdasarkan Role
+        if ($request->role === 'dosen') {
+            Dosen::create([
+                'user_id' => $user->id,
+                'nama' => $user->name,
+                'email' => $user->email,
+                'status_aktif' => true,
+                // nidn nullable
+            ]);
+        } elseif ($request->role === 'mahasiswa') {
+            // Cek apakah mahasiswa dengan email ini sudah ada (karena tabel mahasiswa tidak punya user_id, kita pakai email)
+            $existingMahasiswa = Mahasiswa::where('email', $user->email)->first();
+            if (!$existingMahasiswa) {
+                Mahasiswa::create([
+                    'nama' => $user->name,
+                    'email' => $user->email,
+                    'status' => 'Aktif',
+                    // tahun & peran nullable
+                ]);
+            }
+        }
 
         // MODIFIKASI: Redirect ke 'admin.users.index'
         return redirect()->route('admin.users.index')->with('success', 'User berhasil ditambahkan.');

@@ -180,6 +180,7 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
             Route::get('/callback', [CloudStorageController::class, 'callback'])->name('callback');
             Route::post('/disconnect', [CloudStorageController::class, 'disconnect'])->name('disconnect');
             Route::post('/save-folders', [CloudStorageController::class, 'saveFolders'])->name('save-folders');
+            Route::post('/create-custom-folder', [CloudStorageController::class, 'createCustomFolder'])->name('create-custom-folder');
             Route::get('/status', [CloudStorageController::class, 'getStatus'])->name('status');
         });
 

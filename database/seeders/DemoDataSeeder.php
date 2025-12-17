@@ -28,6 +28,9 @@ class DemoDataSeeder extends Seeder
         $this->seedPenelitian();
         $this->seedPengabdian();
         $this->seedMahasiswa();
+        
+        // Seed Kriteria for AHP
+        $this->call(KriteriaSeeder::class);
     }
 
     protected function seedAdmin(): void

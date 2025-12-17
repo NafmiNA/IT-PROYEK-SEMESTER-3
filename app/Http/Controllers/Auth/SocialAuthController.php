@@ -38,6 +38,12 @@ class SocialAuthController extends Controller
                 
                 // Refresh user data to ensure we have latest role
                 $user->refresh();
+
+                // Self-correct role: if user has Dosen record but role is mahasiswa, update to dosen
+                if ($user->role === 'mahasiswa' && $user->dosen) {
+                    $user->update(['role' => 'dosen']);
+                    $user->refresh();
+                }
                 
                 // Clear any existing session before login
                 request()->session()->flush();
@@ -60,6 +66,12 @@ class SocialAuthController extends Controller
                 
                 // Refresh user data
                 $user->refresh();
+
+                // Self-correct role: if user has Dosen record but role is mahasiswa, update to dosen
+                if ($user->role === 'mahasiswa' && $user->dosen) {
+                    $user->update(['role' => 'dosen']);
+                    $user->refresh();
+                }
                 
                 // Clear any existing session before login
                 request()->session()->flush();

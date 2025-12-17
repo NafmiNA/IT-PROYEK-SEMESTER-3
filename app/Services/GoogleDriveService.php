@@ -160,6 +160,112 @@ class GoogleDriveService
         }
     }
 
+    public function findFolder(string $folderName, ?string $parentId = null): ?string
+    {
+        try {
+            if (!$this->ensureValidToken()) {
+                throw new Exception('Google Drive token is invalid');
+            }
+
+            $query = "mimeType='application/vnd.google-apps.folder' and name='" . $folderName . "' and trashed=false";
+            if ($parentId) {
+                $query .= " and '" . $parentId . "' in parents";
+            }
+
+            $response = $this->driveService->files->listFiles([
+                'q' => $query,
+                'fields' => 'files(id, name)',
+            ]);
+
+            if (count($response->files) > 0) {
+                return $response->files[0]->id;
+            }
+
+            return null;
+        } catch (Exception $e) {
+            Log::error('Google Drive find folder error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function setupDefaultFolders(): array
+    {
+        try {
+            // 1. Determine unique Main Folder Name
+            $baseName = 'SIDEPAN';
+            $mainFolderName = $baseName;
+            $counter = 1;
+
+            // Check if folder exists in Drive (not just in DB)
+            // If main_folder_id is already set in DB, we should technically use that, 
+            // but the request implies a "fresh" setup or re-setup where we want a new folder if collision exists.
+            // To be safe: if db has id, check if it matches real folder. If so, use it. 
+            // If not (broken link), or if we are setting up fresh, find unique name.
+            
+            // However, simplicity based on prompt: "jika di akun tersebut sudah ada folder yang namanya sideppan, maka... sidepan1"
+            // This implies a check against Drive content.
+            
+            while ($this->findFolder($mainFolderName)) {
+                $mainFolderName = $baseName . ' ' . $counter;
+                $counter++;
+            }
+
+            // Create the folder with the unique name
+            $mainFolderId = $this->createFolder($mainFolderName);
+
+            if (!$mainFolderId) {
+                throw new Exception('Failed to create main folder ' . $mainFolderName);
+            }
+
+            // 2. Create Subfolders
+            $folders = [];
+            $subFolders = ['Dokumentasi', 'Penelitian', 'Pengabdian'];
+            $folderIds = [];
+
+            foreach ($subFolders as $subFolder) {
+                // Subfolders inside the NEW main folder don't need unique checks against global drive, 
+                // just create them.
+                $folderId = $this->createFolder($subFolder, $mainFolderId);
+                
+                $folders[$subFolder] = $folderId;
+                
+                // Map to db columns
+                $key = strtolower($subFolder) . '_folder_id';
+                $folderIds[$key] = $folderId;
+            }
+
+            // 3. Update Settings
+            $this->settings->update(array_merge([
+                'main_folder_id' => $mainFolderId,
+                'main_folder_name' => $mainFolderName,
+                'is_configured' => true,
+            ], $folderIds));
+
+            return array_merge(['main' => $mainFolderId], $folders);
+
+        } catch (Exception $e) {
+            Log::error('Google Drive setup default folders error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function createSubFolder(string $folderName): ?string
+    {
+        try {
+            // Get Main Folder ID from settings
+            $mainFolderId = $this->settings->main_folder_id;
+            
+            if (!$mainFolderId) {
+                throw new Exception('Main folder not configured');
+            }
+
+            return $this->createFolder($folderName, $mainFolderId);
+        } catch (Exception $e) {
+            Log::error('Google Drive create subfolder error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
     public function createFolder(string $folderName, ?string $parentId = null): ?string
     {
         try {

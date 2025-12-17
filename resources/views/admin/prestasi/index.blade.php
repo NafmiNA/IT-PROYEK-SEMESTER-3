@@ -84,6 +84,21 @@
 
                     {{-- Kanan: Search Bar & Tombol --}}
                     <div class="mt-4 flex items-center gap-3 flex-wrap">
+                        
+                        {{-- Filter Tahun --}}
+                        <form action="{{ route('admin.prestasi.index') }}" method="GET" class="flex items-center">
+                            <select name="year" 
+                                    onchange="this.form.submit()"
+                                    class="w-32 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all focus-visible">
+                                <option value="">Semua Tahun</option>
+                                @foreach($availableYears as $year)
+                                    <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
+                                        {{ $year }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </form>
+
                         <div class="relative">
                             <input type="text"
                                    id="searchInput"
@@ -161,7 +176,7 @@
                             Konsisten (CR: {{ number_format($bobot->first()['consistency_ratio'], 4) }})
                         </span>
                     @else
-                        <span class="text-xs px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full font-medium">
+                        <span class="text-xs px-3 py-1 bg-red-100 text-red-700 rounded-full font-medium">
                             Perlu Revisi (CR: {{ number_format($bobot->first()['consistency_ratio'], 4) }})
                         </span>
                     @endif

@@ -211,6 +211,13 @@
                         Kelola Akun
                     </a>
                 </div>
+
+                {{-- Pengaturan Cloud Storage --}}
+                <div style="background: {{ request()->routeIs('admin.cloud-storage.*') ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+                    <a href="{{ route('admin.cloud-storage.settings') }}" style="color: white; text-decoration: none; display: block;">
+                        Cloud Storage
+                    </a>
+                </div>
             @endif
 
             <hr style="border-color: #374151; margin: 1rem 0;">

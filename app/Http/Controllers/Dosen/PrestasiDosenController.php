@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PrestasiDosenController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         $dosen = Dosen::where('user_id', $user->id)->first();
@@ -21,16 +21,27 @@ class PrestasiDosenController extends Controller
             return redirect()->back()->with('error', 'Data dosen tidak ditemukan');
         }
 
-        // Get prestasi per tahun
-        $prestasi = PrestasiDosen::where('dosen_id', $dosen->id)
+        // Ambil list tahun unik untuk filter
+        $availableYears = PrestasiDosen::where('dosen_id', $dosen->id)
+            ->select('tahun')
+            ->distinct()
             ->orderBy('tahun', 'desc')
-            ->get();
+            ->pluck('tahun');
+
+        // Query prestasi per tahun
+        $query = PrestasiDosen::where('dosen_id', $dosen->id);
+
+        if ($request->has('year') && $request->year != '') {
+            $query->where('tahun', $request->year);
+        }
+
+        $prestasi = $query->orderBy('tahun', 'desc')->get();
 
         // Calculate current year stats
         $currentYear = date('Y');
         $currentPrestasi = $this->calculatePrestasi($dosen->id, $currentYear);
 
-        return view('dosen.prestasi.index', compact('prestasi', 'currentPrestasi', 'currentYear', 'dosen'));
+        return view('dosen.prestasi.index', compact('prestasi', 'currentPrestasi', 'currentYear', 'dosen', 'availableYears'));
     }
 
     public function store(Request $request)

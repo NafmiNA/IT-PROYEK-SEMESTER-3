@@ -84,40 +84,32 @@ class CloudStorageController extends Controller
     public function saveFolders(Request $request)
     {
         try {
-            $request->validate([
-                'main_folder_id' => 'required|string',
-                'main_folder_name' => 'required|string',
-            ]);
+            // Setup default folders (SIDEPAN -> subfolders)
+            $folders = $this->driveService->setupDefaultFolders();
 
-            $mainFolderId = $request->main_folder_id;
-            $mainFolderName = $request->main_folder_name;
-
-            // Setup subfolders
-            $folders = $this->driveService->setupFolders($mainFolderId);
-
-            if (empty($folders)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal membuat folder'
-                ], 500);
-            }
-
-            // Update main folder name
-            $settings = CloudStorageSetting::first();
-            $settings->main_folder_name = $mainFolderName;
-            $settings->save();
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Folder berhasil dikonfigurasi',
-                'folders' => $folders
-            ]);
+            return redirect()->back()->with('success', 'Folder SIDEPAN dan sub-folder berhasil dibuat/dikonfigurasi!');
         } catch (\Exception $e) {
             Log::error('Cloud storage save folders error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Gagal konfigurasi folder: ' . $e->getMessage());
+        }
+    }
+
+    public function createCustomFolder(Request $request)
+    {
+        try {
+            $request->validate([
+                'folder_name' => 'required|string|max:255',
+            ]);
+
+            $folderId = $this->driveService->createSubFolder($request->folder_name);
+
+            if ($folderId) {
+                return redirect()->back()->with('success', 'Folder "' . $request->folder_name . '" berhasil dibuat di dalam SIDEPAN.');
+            } else {
+                return redirect()->back()->with('error', 'Gagal membuat folder.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 

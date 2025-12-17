@@ -12,6 +12,11 @@ class DosenSeeder extends Seeder
     {
         $user = User::firstWhere('email', 'andi@kampus.ac.id');
 
+        // Update role user menjadi dosen jika belum
+        if ($user && $user->role !== 'dosen') {
+            $user->update(['role' => 'dosen']);
+        }
+
         // kalau user berhasil dibuat
         if ($user) {
             Dosen::updateOrCreate(
