@@ -189,11 +189,11 @@
               {{-- Status Summary --}}
               <div class="pt-4 border-t border-gray-200">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm text-gray-600">Disetujui</span>
+                  <span class="text-sm text-gray-600">Disetujui (Semua Tahun)</span>
                   <span class="text-lg font-bold text-emerald-600">{{ $yearSummary['approved'] }}</span>
                 </div>
                 <div class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">Ditolak</span>
+                  <span class="text-sm text-gray-600">Ditolak (Semua Tahun)</span>
                   <span class="text-lg font-bold text-rose-600">{{ $yearSummary['rejected'] }}</span>
                 </div>
               </div>

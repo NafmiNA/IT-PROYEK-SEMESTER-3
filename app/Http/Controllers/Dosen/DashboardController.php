@@ -48,9 +48,7 @@ class DashboardController extends Controller
             ->where('status', 'Menunggu')
             ->count();
 
-        $menungguPengabdian = $pengabdianBuilder()
-            ->where('status', 'Menunggu')
-            ->count();
+        $menungguPengabdian = $pengabdianBuilder()->where('status', 'Menunggu')->count();
 
         $menungguVerif += $menungguPengabdian;
 
@@ -84,10 +82,9 @@ class DashboardController extends Controller
         $yearSummary = [
             'penelitian' => (int) ($penelitianPerYear[$currentYear] ?? 0),
             'pengabdian' => (int) ($pengabdianPerYear[$currentYear] ?? 0),
-            'approved' => $penelitianBuilder()->where('tahun', $currentYear)->where('status', 'Disetujui')->count()
-                + $pengabdianBuilder()->where('tahun', $currentYear)->where('status', 'Disetujui')->count(),
-            'rejected' => $penelitianBuilder()->where('tahun', $currentYear)->where('status', 'Ditolak')->count()
-                + $pengabdianBuilder()->where('tahun', $currentYear)->where('status', 'Ditolak')->count(),
+            'approved' => $penelitianBuilder()->count() // Semua Penelitian dianggap disetujui
+                + $pengabdianBuilder()->where('status', 'Disetujui')->count(),
+            'rejected' => $pengabdianBuilder()->where('status', 'Ditolak')->count(),
         ];
 
         $kpi = [

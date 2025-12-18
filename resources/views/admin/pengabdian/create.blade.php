@@ -34,6 +34,23 @@
                 </div>
             </div>
 
+            {{-- Error Messages --}}
+            @if($errors->has('error'))
+                <div class="mb-6 animate-slide-up">
+                    <div class="flex items-start gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-lg shadow-sm">
+                        <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-red-900">Gagal Menyimpan!</p>
+                            <p class="text-sm text-red-700">{{ $errors->first('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             {{-- Form --}}
             {{-- MODIFIKASI: Rute diubah ke admin.pengabdian.store --}}
             <form method="POST" action="{{ route('admin.pengabdian.store') }}" enctype="multipart/form-data" class="space-y-6 animate-fade">
@@ -167,7 +184,9 @@
                             <label class="block text-sm font-semibold text-gray-900 mb-2">Dana (Rp)</label>
                             <input type="text" 
                                    name="dana" 
+                                   id="dana_input"
                                    value="{{ old('dana') }}" 
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')"
                                    class="w-full rounded-lg border-2 border-gray-300 bg-white px-4 py-3 text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 hover:border-gray-400" 
                                    placeholder="15000000">
                             <p class="mt-2 text-xs text-gray-600">Isi angka tanpa titik/koma</p>

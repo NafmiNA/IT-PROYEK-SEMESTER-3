@@ -65,10 +65,9 @@ class AdminDashboardController extends Controller
         $yearSummary = [
             'penelitian' => (int) ($penelitianPerYear[$currentYear] ?? 0),
             'pengabdian' => (int) ($pengabdianPerYear[$currentYear] ?? 0),
-            'approved' => $penelitianBuilder()->where('tahun', $currentYear)->where('status', 'Disetujui')->count()
-                + $pengabdianBuilder()->where('tahun', $currentYear)->where('status', 'Disetujui')->count(),
-            'rejected' => $penelitianBuilder()->where('tahun', $currentYear)->where('status', 'Ditolak')->count()
-                + $pengabdianBuilder()->where('tahun', $currentYear)->where('status', 'Ditolak')->count(),
+            'approved' => $penelitianBuilder()->count() // Semua Penelitian dianggap disetujui
+                + $pengabdianBuilder()->where('status', 'Disetujui')->count(),
+            'rejected' => $pengabdianBuilder()->where('status', 'Ditolak')->count(),
         ];
 
         // Kumpulkan data KPI (Global)

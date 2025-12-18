@@ -70,31 +70,33 @@ class PrestasiDosenController extends Controller
      */
     private function syncPrestasiData()
     {
-        $dosens = Dosen::with(['penelitian', 'pengabdians'])->get();
+        $dosens = Dosen::all();
 
         foreach ($dosens as $dosen) {
-            // Ambil semua tahun unik dari kedua sumber
-            $years = collect();
+            // 1. Ambil SEMUA data di mana dosen terlibat (Ketua ATAU Anggota) untuk hitung Publikasi
+            $allPenelitian = $dosen->penelitian()->get(); 
+            $allPengabdianApproved = $dosen->pengabdians()->where('status', 'Disetujui')->get();
             
-            // Ambil data yang disetujui
-            $penelitian = $dosen->penelitian()->where('status', 'Disetujui')->get();
-            $pengabdian = $dosen->pengabdians()->where('status', 'Disetujui')->get();
-            
-            $years = $years->merge($penelitian->pluck('tahun'))
-                           ->merge($pengabdian->pluck('tahun'))
+            // 2. Ambil data di mana dosen adalah KETUA saja untuk hitung Hibah (Dana)
+            $penelitianKetua = $dosen->penelitianKetua()->get();
+            $pengabdianKetuaApproved = $dosen->pengabdianKetua()->where('status', 'Disetujui')->get();
+
+            // Ambil semua tahun unik dari keterlibatan dosen
+            $years = $allPenelitian->pluck('tahun')
+                           ->merge($allPengabdianApproved->pluck('tahun'))
                            ->unique()
                            ->filter()
                            ->values();
 
             foreach ($years as $year) {
-                // Hitung statistik untuk tahun tersebut
-                $p_year = $penelitian->where('tahun', $year);
-                $ab_year = $pengabdian->where('tahun', $year);
+                // Hitung Publikasi (Semua keterlibatan)
+                $countPublikasi = $allPenelitian->where('tahun', $year)->count() 
+                                + $allPengabdianApproved->where('tahun', $year)->count();
 
-                $countPublikasi = $p_year->count() + $ab_year->count();
-                $totalHibah = $p_year->sum('dana') + $ab_year->sum('dana');
+                // Hitung Hibah (Hanya sebagai Ketua agar tidak double counting dana sistem)
+                $totalHibah = $penelitianKetua->where('tahun', $year)->sum('dana') 
+                            + $pengabdianKetuaApproved->where('tahun', $year)->sum('dana');
 
-                // Update atau Create record prestasi
                 $prestasi = PrestasiDosen::firstOrNew([
                     'dosen_id' => $dosen->id,
                     'tahun' => $year
@@ -103,7 +105,6 @@ class PrestasiDosenController extends Controller
                 $prestasi->publikasi = $countPublikasi;
                 $prestasi->hibah = $totalHibah;
                 
-                // Set default jika null (untuk record baru)
                 if (!$prestasi->exists) {
                     $prestasi->skor_sinta = 0;
                     $prestasi->buku = 0;

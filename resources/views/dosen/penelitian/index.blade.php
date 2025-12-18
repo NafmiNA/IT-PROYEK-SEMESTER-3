@@ -93,19 +93,24 @@
                                 <p class="text-sm text-gray-600">Pantau dan kelola proposal penelitian Anda</p>
                             </div>
                         
-                        {{-- Toolbar: Search + Add (left aligned) --}}
+                        {{-- Toolbar: Search + Add --}}
                         <div class="mt-4 flex items-center gap-3 flex-wrap">
-                            <div class="relative">
+                            <form action="{{ route('dosen.penelitian.index') }}" method="GET" class="relative">
+                                @if(request('status'))
+                                    <input type="hidden" name="status" value="{{ request('status') }}">
+                                @endif
                                 <input type="text"
-                                       id="searchInput"
+                                       name="search"
+                                       value="{{ request('search') }}"
                                        placeholder="Cari penelitian..."
                                        class="w-64 sm:w-80 pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all focus-visible"
-                                       onkeyup="searchPenelitian(this.value)"
                                        aria-label="Cari penelitian">
-                                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                            </div>
+                                <button type="submit" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </button>
+                            </form>
                             <a href="{{ route('dosen.penelitian.create') }}"
                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,24 +152,14 @@
 
             {{-- Stats Cards (Miller's Law - 4 items max) --}}
             @php
-                $totalPenelitian = method_exists($penelitian, 'total') ? $penelitian->total() : $penelitian->count();
-                $statusCounts = ['total' => $totalPenelitian, 'draft' => 0, 'pending' => 0, 'approved' => 0];
-                if (!method_exists($penelitian, 'total')) {
-                    foreach ($penelitian as $p) {
-                        if (isset($p->status)) {
-                            if ($p->status == 'Draft') $statusCounts['draft']++;
-                            elseif ($p->status == 'Menunggu') $statusCounts['pending']++;
-                            elseif ($p->status == 'Disetujui') $statusCounts['approved']++;
-                        }
-                    }
-                }
+                // Data sudah dikirim dari controller: $statusCounts
+                $totalPenelitian = $statusCounts['total'] ?? 0;
             @endphp
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mb-6">
-                {{-- Total Card (Clickable - Aesthetic-Usability) --}}
-                <button onclick="filterStatus('all')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
-                        style="animation-delay: 0.05s">
+            <div class="grid grid-cols-1 gap-4 sm:gap-5 mb-6">
+                {{-- Total Card --}}
+                <div class="text-left w-full bg-white rounded-lg shadow-md border border-gray-200 p-5 animate-slide-up"
+                     style="animation-delay: 0.05s">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
                             <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,22 +169,7 @@
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['total'] }}</p>
                     <p class="text-sm text-gray-600 font-medium">Total Penelitian</p>
-                </button>
-
-                {{-- Draft Card --}}
-                <button onclick="filterStatus('draft')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
-                        style="animation-delay: 0.1s">
-                    <div class="flex items-center justify-between mb-3">
-                        <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['draft'] }}</p>
-                    <p class="text-sm text-gray-600 font-medium">Draft</p>
-                </button>
+                </div>
             </div>
 
             {{-- Main Content (Law of Common Region) --}}
@@ -200,27 +180,7 @@
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900">Daftar Penelitian</h2>
-                            <p class="text-sm text-gray-600 mt-0.5">{{ $totalPenelitian }} penelitian terdaftar</p>
-                        </div>
-                        
-                        {{-- Filter Buttons (Pareto + Law of Similarity) --}}
-                        <div class="flex flex-wrap gap-2">
-                            <button onclick="filterStatus('all')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible">
-                                Semua
-                            </button>
-                            <button onclick="filterStatus('draft')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
-                                Draft
-                            </button>
-                            <button onclick="filterStatus('pending')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
-                                Menunggu
-                            </button>
-                            <button onclick="filterStatus('approved')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
-                                Disetujui
-                            </button>
+                            <p class="text-sm text-gray-600 mt-0.5">{{ $penelitian->total() }} penelitian ditemukan</p>
                         </div>
                     </div>
                 </div>
@@ -229,21 +189,9 @@
                 <div class="p-5 sm:p-6">
                     <div class="space-y-4" id="penelitianList">
                         @forelse ($penelitian as $index => $p)
-                            @php
-                                $statusConfig = [
-                                    'Draft' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-700', 'icon' => 'text-gray-600'],
-                                    'Menunggu' => ['bg' => 'bg-amber-100', 'text' => 'text-amber-700', 'icon' => 'text-amber-600'],
-                                    'Disetujui' => ['bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'icon' => 'text-emerald-600'],
-                                    'Ditolak' => ['bg' => 'bg-rose-100', 'text' => 'text-rose-700', 'icon' => 'text-rose-600'],
-                                ];
-                                $status = $p->status ?? 'Draft';
-                                $config = $statusConfig[$status] ?? $statusConfig['Draft'];
-                            @endphp
-
                             {{-- Card (Law of Similarity - consistent design) --}}
                             <div class="penelitian-card border border-gray-200 rounded-lg p-4 sm:p-5 hover:border-blue-300 hover:shadow-md transition-all duration-200 animate-slide-up"
-                                 style="animation-delay: {{ min($index * 0.03, 0.5) }}s"
-                                 data-status="{{ strtolower($status) }}">
+                                 style="animation-delay: {{ min($index * 0.03, 0.5) }}s">
                                 <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                                     
                                     {{-- Content (Law of Proximity) --}}
@@ -279,22 +227,6 @@
                                                     </span>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        {{-- Status Badge (Goal-Gradient Effect) --}}
-                                        <div class="ml-14">
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $config['bg'] }} {{ $config['text'] }} text-xs font-semibold rounded-full">
-                                                @if($status == 'Disetujui')
-                                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
-                                                    </svg>
-                                                @elseif($status == 'Menunggu')
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"/>
-                                                    </svg>
-                                                @endif
-                                                {{ $status }}
-                                            </span>
                                         </div>
                                     </div>
 
@@ -380,95 +312,6 @@
 
     {{-- Optimized JavaScript (Doherty Threshold) --}}
     <script>
-        // Filter by status with instant feedback
-        function filterStatus(status) {
-            const cards = document.querySelectorAll('.penelitian-card');
-            const buttons = document.querySelectorAll('.filter-btn');
-            const searchInput = document.getElementById('searchInput');
-            
-            // Clear search
-            if (searchInput) searchInput.value = '';
-            
-            // Update button states (Law of Similarity)
-            buttons.forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-100', 'text-gray-700');
-            });
-            
-            if (event && event.target.classList.contains('filter-btn')) {
-                event.target.classList.remove('bg-gray-100', 'text-gray-700');
-                event.target.classList.add('bg-blue-600', 'text-white');
-            }
-            
-            // Filter cards with animation
-            let visibleCount = 0;
-            cards.forEach(card => {
-                const cardStatus = card.dataset.status;
-                if (status === 'all' || cardStatus === status) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            showFeedback(visibleCount + ' penelitian ditampilkan');
-        }
-        
-        // Search functionality
-        function searchPenelitian(query) {
-            const cards = document.querySelectorAll('.penelitian-card');
-            const buttons = document.querySelectorAll('.filter-btn');
-            const searchTerm = query.toLowerCase().trim();
-            
-            // Reset filters
-            buttons.forEach((btn, i) => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-100', 'text-gray-700');
-                if (i === 0) {
-                    btn.classList.remove('bg-gray-100', 'text-gray-700');
-                    btn.classList.add('bg-blue-600', 'text-white');
-                }
-            });
-            
-            let visibleCount = 0;
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                if (searchTerm === '' || title.includes(searchTerm)) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            if (searchTerm) showFeedback(visibleCount + ' hasil ditemukan');
-        }
-        
-        // Feedback toast
-        function showFeedback(message) {
-            const existing = document.getElementById('feedback-toast');
-            if (existing) existing.remove();
-            
-            const toast = document.createElement('div');
-            toast.id = 'feedback-toast';
-            toast.className = 'fixed bottom-6 right-6 px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-lg animate-slide-up z-50';
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        }
-        
-        // Keyboard shortcut: Ctrl/Cmd + K for search
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-                e.preventDefault();
-                document.getElementById('searchInput')?.focus();
-            }
-        });
+        // Server-side filtering is now used.
     </script>
 </x-app-layout>

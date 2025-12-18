@@ -30,6 +30,23 @@
                 </div>
             </div>
 
+            {{-- Error Messages --}}
+            @if($errors->has('error'))
+                <div class="mb-6 animate-slide-up">
+                    <div class="flex items-start gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-lg shadow-sm">
+                        <div class="flex-shrink-0 w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-red-900">Gagal Memperbarui!</p>
+                            <p class="text-sm text-red-700">{{ $errors->first('error') }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <form action="{{ route('admin.pengabdian.update', $pengabdian) }}" method="POST" enctype="multipart/form-data" class="space-y-6 animate-fade">
                 @csrf
                 @method('PUT')

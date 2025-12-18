@@ -84,7 +84,7 @@ class DokumentasiController extends Controller
 
                 $context = $doc->penelitian_id ? 'penelitian' : 'pengabdian';
                 $contextId = $doc->penelitian_id ?: $doc->pengabdian_id;
-                $folder = 'SIDOPPAN/' . ucfirst($context) . '/' . $contextId . '/dokumentasi';
+                $folder = 'SIDEPAN/' . ucfirst($context) . '/' . $contextId . '/dokumentasi';
                 
                 $file = $request->file('file');
                 
@@ -176,7 +176,7 @@ class DokumentasiController extends Controller
         foreach ($request->file('dokumentasi', []) as $file) {
             try {
                 // Store file to local storage
-                $folder = 'SIDOPPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
+                $folder = 'SIDEPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
                 

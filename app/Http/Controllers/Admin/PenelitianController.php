@@ -23,12 +23,26 @@ class PenelitianController extends Controller
      */
     public function index(Request $request)
     {
-        // Admin melihat semua data, diurutkan dari yang terbaru
-        $penelitian = Penelitian::with(['ketua'])
-            ->latest()
-            ->paginate(10);
+        $query = Penelitian::with(['ketua']);
 
-        return view('admin.penelitian.index', compact('penelitian'));
+        // Server-side searching
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('tahun', 'like', "%{$search}%")
+                  ->orWhere('skema', 'like', "%{$search}%");
+            });
+        }
+
+        $penelitian = $query->latest()->paginate(10)->withQueryString();
+
+        // Status counts simplified for Penelitian
+        $statusCounts = [
+            'total'     => Penelitian::count(),
+        ];
+
+        return view('admin.penelitian.index', compact('penelitian', 'statusCounts'));
     }
 
     /**
@@ -70,8 +84,6 @@ class PenelitianController extends Controller
             'mahasiswa_id.*' => 'nullable|exists:mahasiswa,id',
             'link_jurnal'    => 'nullable|url',
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
-            // Admin bisa langsung set status jika mau, atau default 'Menunggu'/'Disetujui'
-            'status'         => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak',
         ]);
 
         // Helper untuk memastikan tabel pivot ada (opsional jika migrasi sudah benar)
@@ -86,8 +98,6 @@ class PenelitianController extends Controller
                 'sumber_dana' => $validated['sumber_dana'] ?? null,
                 'dana'        => $validated['dana'] ?? null,
                 'dosen_id'    => $validated['ketua_id'], // Set Ketua
-                // Jika Admin yang buat, default bisa langsung 'Disetujui' atau sesuai input
-                'status'      => $validated['status'] ?? 'Disetujui', 
             ];
 
             if (Schema::hasColumn('penelitian', 'link_jurnal')) {
@@ -127,7 +137,7 @@ class PenelitianController extends Controller
             // 6. Upload File Laporan (Jika ada)
             if ($request->hasFile('laporan_jurnal')) {
                 $file = $request->file('laporan_jurnal');
-                $folder   = "SIDOPPAN/Penelitian/{$penelitian->id}/laporan";
+                $folder   = "SIDEPAN/Penelitian/{$penelitian->id}/laporan";
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
@@ -209,7 +219,6 @@ class PenelitianController extends Controller
             'mahasiswa_id.*' => 'nullable|exists:mahasiswa,id',
             'link_jurnal'    => 'nullable|url',
             'laporan_jurnal' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
-            'status'         => 'nullable|in:Draft,Menunggu,Disetujui,Ditolak',
         ]);
 
         $this->ensurePenelitianMahasiswaPivot();
@@ -223,7 +232,6 @@ class PenelitianController extends Controller
                 'sumber_dana' => $data['sumber_dana'] ?? null,
                 'dana'        => $data['dana'] ?? null,
                 'dosen_id'    => $data['ketua_id'],
-                'status'      => $data['status'] ?? $penelitian->status,
             ];
 
             if (Schema::hasColumn('penelitian', 'link_jurnal')) {
@@ -265,7 +273,7 @@ class PenelitianController extends Controller
                 }
 
                 $file = $request->file('laporan_jurnal');
-                $folder   = "SIDOPPAN/Penelitian/{$penelitian->id}/laporan";
+                $folder   = "SIDEPAN/Penelitian/{$penelitian->id}/laporan";
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $storedPath = Storage::disk('public')->putFileAs($folder, $file, $filename);
 
@@ -304,24 +312,6 @@ class PenelitianController extends Controller
         return redirect()
             ->route('admin.penelitian.index')
             ->with('success', 'Penelitian berhasil dihapus.');
-    }
-
-    /**
-     * Memperbarui status penelitian (Verifikasi).
-     */
-    public function updateStatus(Request $request, Penelitian $penelitian)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:Disetujui,Ditolak,Menunggu,Draft',
-        ]);
-
-        $penelitian->update([
-            'status' => $validated['status']
-        ]);
-
-        return redirect()
-            ->route('admin.penelitian.index')
-            ->with('success', 'Status penelitian berhasil diperbarui!');
     }
 
     /**

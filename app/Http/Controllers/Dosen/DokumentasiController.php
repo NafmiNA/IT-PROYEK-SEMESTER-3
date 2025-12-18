@@ -51,7 +51,7 @@ class DokumentasiController extends Controller
         foreach ($files as $file) {
             try {
                 // Store file to local storage
-                $folder = 'SIDOPPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
+                $folder = 'SIDEPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                 $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 

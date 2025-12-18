@@ -112,8 +112,8 @@
                     </svg>
                     <div>
                         <h3 class="font-semibold text-blue-900 mb-2 text-lg">Informasi Pengelolaan Data</h3>
-                        <p class="text-sm text-blue-800 mb-2">
-                            <strong>Publikasi & Hibah:</strong> Dihitung secara <strong>OTOMATIS</strong> oleh sistem berdasarkan data Penelitian dan Pengabdian yang berstatus 'Disetujui' pada tahun terkait.
+                        <p class="text-xs text-blue-700 leading-relaxed">
+                            <strong>Publikasi & Hibah:</strong> Dihitung secara <strong>OTOMATIS</strong> oleh sistem berdasarkan data <strong>Penelitian</strong> (Semua) dan <strong>Pengabdian</strong> yang berstatus 'Disetujui' pada tahun terkait.
                         </p>
                         <p class="text-sm text-blue-800">
                             <strong>Skor Sinta & Buku:</strong> Diinput manual oleh <strong>ADMIN</strong>. Klik tombol "Edit" pada tabel di bawah untuk memperbarui data ini.

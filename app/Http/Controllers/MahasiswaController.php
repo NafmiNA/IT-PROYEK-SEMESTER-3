@@ -31,7 +31,7 @@ class MahasiswaController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $folder = 'SIDOPPAN/Dokumentasi';
+            $folder = 'SIDEPAN/Dokumentasi';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $validated['file'] = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
@@ -61,7 +61,7 @@ class MahasiswaController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $folder = 'SIDOPPAN/Dokumentasi';
+            $folder = 'SIDEPAN/Dokumentasi';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $validated['file'] = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }

@@ -21,12 +21,34 @@ class PengabdianController extends Controller
 {
     public function index(Request $request)
     {
-        // Menampilkan semua data pengabdian urut dari yang terbaru
-        $pengabdian = Pengabdian::with(['ketua'])
-            ->latest()
-            ->paginate(10);
+        $query = Pengabdian::with(['ketua']);
 
-        return view('admin.pengabdian.index', compact('pengabdian'));
+        // Server-side filtering by status
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Server-side searching
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('tahun', 'like', "%{$search}%")
+                  ->orWhere('skema', 'like', "%{$search}%");
+            });
+        }
+
+        $pengabdian = $query->latest()->paginate(10)->withQueryString();
+
+        // Status counts for ALL records
+        $statusCounts = [
+            'total'     => Pengabdian::count(),
+            'draft'     => Pengabdian::where('status', 'Draft')->count(),
+            'menunggu'  => Pengabdian::where('status', 'Menunggu')->count(),
+            'disetujui' => Pengabdian::where('status', 'Disetujui')->count(),
+        ];
+
+        return view('admin.pengabdian.index', compact('pengabdian', 'statusCounts'));
     }
 
     // --- FITUR TAMBAH (CREATE) ---
@@ -67,81 +89,86 @@ class PengabdianController extends Controller
 
         $this->ensurePengabdianMahasiswaPivot();
 
-        DB::transaction(function () use ($data, $request) {
-            // 1. Simpan Data Utama
-            $pengabdian = Pengabdian::create([
-                'judul'       => $data['judul'],
-                'tahun'       => $data['tahun'],
-                'bidang'      => $data['bidang'] ?? null,
-                'skema'       => $data['skema'] ?? null,
-                'sumber_dana' => $data['sumber_dana'] ?? null,
-                'dana'        => $data['dana'] ?? null,
-                'dosen_id'    => $data['ketua_id'],
-                // Default status 'Disetujui' jika Admin yang input, atau sesuai inputan form
-                'status'      => $data['status'] ?? 'Disetujui', 
-            ]);
+        try {
+            DB::transaction(function () use ($data, $request) {
+                // 1. Simpan Data Utama
+                $pengabdian = Pengabdian::create([
+                    'judul'       => $data['judul'],
+                    'tahun'       => $data['tahun'],
+                    'bidang'      => $data['bidang'] ?? null,
+                    'skema'       => $data['skema'] ?? null,
+                    'sumber_dana' => $data['sumber_dana'] ?? null,
+                    'dana'        => $data['dana'] ?? null,
+                    'dosen_id'    => $data['ketua_id'],
+                    // Default status 'Disetujui' jika Admin yang input, atau sesuai inputan form
+                    'status'      => $data['status'] ?? 'Disetujui', 
+                ]);
 
-            if (Schema::hasColumn('pengabdian', 'link_jurnal') && isset($data['link_jurnal'])) {
-                $pengabdian->update(['link_jurnal' => $data['link_jurnal']]);
-            }
+                if (Schema::hasColumn('pengabdian', 'link_jurnal') && isset($data['link_jurnal'])) {
+                    $pengabdian->update(['link_jurnal' => $data['link_jurnal']]);
+                }
 
-            // 2. Sync Dosen (Ketua & Anggota)
-            $sync = [];
-            $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
-            
-            if (!empty($data['anggota_id'])) {
-                foreach (array_unique($data['anggota_id']) as $id) {
-                    if ((int) $id === (int) $data['ketua_id']) {
-                        continue;
+                // 2. Sync Dosen (Ketua & Anggota)
+                $sync = [];
+                $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
+                
+                if (!empty($data['anggota_id'])) {
+                    foreach (array_unique($data['anggota_id']) as $id) {
+                        if ((int) $id === (int) $data['ketua_id']) {
+                            continue;
+                        }
+                        $sync[$id] = ['peran' => 'Anggota'];
                     }
-                    $sync[$id] = ['peran' => 'Anggota'];
                 }
-            }
-            $pengabdian->dosens()->sync($sync);
+                $pengabdian->dosens()->sync($sync);
 
-            // 3. Sync Mahasiswa
-            if (Schema::hasTable('pengabdian_mahasiswa')) {
-                $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
-                $mSync = [];
-                foreach ($ids as $mId) {
-                    $mSync[$mId] = ['peran' => 'Pendukung'];
+                // 3. Sync Mahasiswa
+                if (Schema::hasTable('pengabdian_mahasiswa')) {
+                    $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
+                    $mSync = [];
+                    foreach ($ids as $mId) {
+                        $mSync[$mId] = ['peran' => 'Pendukung'];
+                    }
+                    $pengabdian->mahasiswas()->sync($mSync);
                 }
-                $pengabdian->mahasiswas()->sync($mSync);
-            }
 
-            // 4. Upload File Laporan Akhir
-            if ($request->hasFile('laporan_akhir')) {
-                $file = $request->file('laporan_akhir');
-                $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/laporan";
-                $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
-                $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
-
-                // Cek nama kolom di DB (sesuaikan dengan migrasi kamu)
-                $colName = Schema::hasColumn('pengabdian', 'laporan_path') ? 'laporan_path' : 'file_path';
-                if (Schema::hasColumn('pengabdian', $colName)) {
-                    $pengabdian->update([$colName => $path]);
-                }
-            }
-            
-            // 5. Upload Dokumentasi (Foto)
-            if ($request->hasFile('dokumentasi')) {
-                foreach ((array) $request->file('dokumentasi') as $file) {
-                    $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
+                // 4. Upload File Laporan Akhir
+                if ($request->hasFile('laporan_akhir')) {
+                    $file = $request->file('laporan_akhir');
+                    $folder = "SIDEPAN/Pengabdian/{$pengabdian->id}/laporan";
                     $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
                     $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
 
-                    Dokumentasi::create([
-                        'pengabdian_id' => $pengabdian->id,
-                        'file_name'     => $file->getClientOriginalName(),
-                        'mime'          => $file->getMimeType(),
-                        'size'          => $file->getSize(),
-                        'gdrive_path'   => $path,
-                    ]);
+                    // Cek nama kolom di DB (sesuaikan dengan migrasi kamu)
+                    $colName = Schema::hasColumn('pengabdian', 'laporan_path') ? 'laporan_path' : 'file_path';
+                    if (Schema::hasColumn('pengabdian', $colName)) {
+                        $pengabdian->update([$colName => $path]);
+                    }
                 }
-            }
-        });
+                
+                // 5. Upload Dokumentasi (Foto)
+                if ($request->hasFile('dokumentasi')) {
+                    foreach ((array) $request->file('dokumentasi') as $file) {
+                        $folder = "SIDEPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
+                        $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
+                        $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
 
-        return redirect()->route('admin.pengabdian.index')->with('success', 'Pengabdian berhasil ditambahkan.');
+                        Dokumentasi::create([
+                            'pengabdian_id' => $pengabdian->id,
+                            'file_name'     => $file->getClientOriginalName(),
+                            'mime'          => $file->getMimeType(),
+                            'size'          => $file->getSize(),
+                            'gdrive_path'   => $path,
+                        ]);
+                    }
+                }
+            });
+
+            return redirect()->route('admin.pengabdian.index')->with('success', 'Pengabdian berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            \Log::error('Admin Pengabdian store failed: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['error' => 'Gagal menyimpan pengabdian: ' . $e->getMessage()]);
+        }
     }
 
     public function show(Pengabdian $pengabdian)
@@ -202,85 +229,90 @@ class PengabdianController extends Controller
 
         $this->ensurePengabdianMahasiswaPivot();
 
-        DB::transaction(function () use ($data, $request, $pengabdian) {
-            $updateData = [
-                'judul'       => $data['judul'],
-                'tahun'       => $data['tahun'],
-                'bidang'      => $data['bidang'] ?? null,
-                'skema'       => $data['skema'] ?? null,
-                'sumber_dana' => $data['sumber_dana'] ?? null,
-                'dana'        => $data['dana'] ?? null,
-                'dosen_id'    => $data['ketua_id'],
-                'status'      => $data['status'] ?? $pengabdian->status,
-            ];
+        try {
+            DB::transaction(function () use ($data, $request, $pengabdian) {
+                $updateData = [
+                    'judul'       => $data['judul'],
+                    'tahun'       => $data['tahun'],
+                    'bidang'      => $data['bidang'] ?? null,
+                    'skema'       => $data['skema'] ?? null,
+                    'sumber_dana' => $data['sumber_dana'] ?? null,
+                    'dana'        => $data['dana'] ?? null,
+                    'dosen_id'    => $data['ketua_id'],
+                    'status'      => $data['status'] ?? $pengabdian->status,
+                ];
 
-            if (Schema::hasColumn('pengabdian', 'link_jurnal')) {
-                $updateData['link_jurnal'] = $data['link_jurnal'] ?? $pengabdian->link_jurnal;
-            }
+                if (Schema::hasColumn('pengabdian', 'link_jurnal')) {
+                    $updateData['link_jurnal'] = $data['link_jurnal'] ?? $pengabdian->link_jurnal;
+                }
 
-            $pengabdian->update($updateData);
+                $pengabdian->update($updateData);
 
-            // Sync Dosen
-            $sync = [];
-            $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
-            if (!empty($data['anggota_id'])) {
-                foreach (array_unique($data['anggota_id']) as $id) {
-                    if ((int) $id === (int) $data['ketua_id']) {
-                        continue;
+                // Sync Dosen
+                $sync = [];
+                $sync[$data['ketua_id']] = ['peran' => 'Ketua'];
+                if (!empty($data['anggota_id'])) {
+                    foreach (array_unique($data['anggota_id']) as $id) {
+                        if ((int) $id === (int) $data['ketua_id']) {
+                            continue;
+                        }
+                        $sync[$id] = ['peran' => 'Anggota'];
                     }
-                    $sync[$id] = ['peran' => 'Anggota'];
                 }
-            }
-            $pengabdian->dosens()->sync($sync);
+                $pengabdian->dosens()->sync($sync);
 
-            // Sync Mahasiswa
-            if (Schema::hasTable('pengabdian_mahasiswa')) {
-                $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
-                $mSync = [];
-                foreach ($ids as $mId) {
-                    $mSync[$mId] = ['peran' => 'Pendukung'];
-                }
-                $pengabdian->mahasiswas()->sync($mSync);
-            }
-
-            // Upload File Laporan Baru
-            if ($request->hasFile('laporan_akhir')) {
-                $colName = Schema::hasColumn('pengabdian', 'laporan_path') ? 'laporan_path' : 'file_path';
-                
-                if (Schema::hasColumn('pengabdian', $colName)) {
-                    // Hapus file lama
-                    if ($pengabdian->$colName && Storage::disk('public')->exists($pengabdian->$colName)) {
-                        Storage::disk('public')->delete($pengabdian->$colName);
+                // Sync Mahasiswa
+                if (Schema::hasTable('pengabdian_mahasiswa')) {
+                    $ids = collect($data['mahasiswa_id'] ?? [])->filter()->unique()->values();
+                    $mSync = [];
+                    foreach ($ids as $mId) {
+                        $mSync[$mId] = ['peran' => 'Pendukung'];
                     }
-                    
-                    $file = $request->file('laporan_akhir');
-                    $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/laporan";
-                    $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
-                    $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
-                    
-                    $pengabdian->update([$colName => $path]);
+                    $pengabdian->mahasiswas()->sync($mSync);
                 }
-            }
 
-            // Upload Dokumentasi Baru
-            if ($request->hasFile('dokumentasi')) {
-                foreach ((array) $request->file('dokumentasi') as $file) {
-                    $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
-                    $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
-                    $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
-
-                    Dokumentasi::create([
-                        'pengabdian_id' => $pengabdian->id,
-                        'file_name'     => $file->getClientOriginalName(),
-                        'mime'          => $file->getMimeType(),
-                        'size'          => $file->getSize(),
-                        'gdrive_path'   => $path,
-                    ]);
+                // Upload File Laporan Baru
+                if ($request->hasFile('laporan_akhir')) {
+                    $colName = Schema::hasColumn('pengabdian', 'laporan_path') ? 'laporan_path' : 'file_path';
+                    
+                    if (Schema::hasColumn('pengabdian', $colName)) {
+                        // Hapus file lama
+                        if ($pengabdian->$colName && Storage::disk('public')->exists($pengabdian->$colName)) {
+                            Storage::disk('public')->delete($pengabdian->$colName);
+                        }
+                        
+                        $file = $request->file('laporan_akhir');
+                        $folder = "SIDEPAN/Pengabdian/{$pengabdian->id}/laporan";
+                        $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
+                        $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
+                        
+                        $pengabdian->update([$colName => $path]);
+                    }
                 }
-            }
-        });
 
-        return redirect()->route('admin.pengabdian.index')->with('success', 'Data pengabdian berhasil diperbarui.');
+                // Upload Dokumentasi Baru
+                if ($request->hasFile('dokumentasi')) {
+                    foreach ((array) $request->file('dokumentasi') as $file) {
+                        $folder = "SIDEPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
+                        $name   = uniqid('', true) . '_' . $file->getClientOriginalName();
+                        $path   = Storage::disk('public')->putFileAs($folder, $file, $name);
+
+                        Dokumentasi::create([
+                            'pengabdian_id' => $pengabdian->id,
+                            'file_name'     => $file->getClientOriginalName(),
+                            'mime'          => $file->getMimeType(),
+                            'size'          => $file->getSize(),
+                            'gdrive_path'   => $path,
+                        ]);
+                    }
+                }
+            });
+
+            return redirect()->route('admin.pengabdian.index')->with('success', 'Data pengabdian berhasil diperbarui.');
+        } catch (\Exception $e) {
+            \Log::error('Admin Pengabdian update failed: ' . $e->getMessage());
+            return back()->withInput()->withErrors(['error' => 'Gagal memperbarui pengabdian: ' . $e->getMessage()]);
+        }
     }
 
     public function destroy(Pengabdian $pengabdian)
@@ -369,7 +401,7 @@ class PengabdianController extends Controller
         if (!Schema::hasTable('pengabdian_mahasiswa')) {
             Schema::create('pengabdian_mahasiswa', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('pengabdian_id')->constrained('pengabdian')->cascadeOnDelete(); 
+                $table->foreignId('pengabdian_id')->constrained('pengabdians')->cascadeOnDelete(); 
                 $table->foreignId('mahasiswa_id')->constrained('mahasiswa')->cascadeOnDelete();
                 $table->string('peran')->default('Pendukung');
                 $table->timestamps();

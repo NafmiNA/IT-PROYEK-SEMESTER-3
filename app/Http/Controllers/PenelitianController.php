@@ -32,7 +32,7 @@ class PenelitianController extends Controller
 
         if ($request->hasFile('dokumen')) {
             $file = $request->file('dokumen');
-            $folder = 'SIDOPPAN/Penelitian/Dokumen';
+            $folder = 'SIDEPAN/Penelitian/Dokumen';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $validated['dokumen'] = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
@@ -60,7 +60,7 @@ class PenelitianController extends Controller
 
         if ($request->hasFile('dokumen')) {
             $file = $request->file('dokumen');
-            $folder = 'SIDOPPAN/Penelitian/Dokumen';
+            $folder = 'SIDEPAN/Penelitian/Dokumen';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $validated['dokumen'] = \Storage::disk('public')->putFileAs($folder, $file, $filename);
         }
@@ -78,7 +78,7 @@ class PenelitianController extends Controller
 
         if ($request->hasFile('dokumen')) {
             $file = $request->file('dokumen');
-            $folder = 'SIDOPPAN/Penelitian/Dokumen';
+            $folder = 'SIDEPAN/Penelitian/Dokumen';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $path = \Storage::disk('public')->putFileAs($folder, $file, $filename);
             $penelitian->update(['dokumen' => $path]);

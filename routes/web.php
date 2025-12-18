@@ -136,10 +136,6 @@ Route::middleware(['auth', 'verified', 'prevent.back'])->group(function () {
         Route::resource('penelitian', AdminPenelitianController::class)
             ->parameters(['penelitian' => 'penelitian']);
         
-        // Custom Route: Update Status Penelitian
-        Route::patch('/penelitian/{penelitian}/update-status', [AdminPenelitianController::class, 'updateStatus'])
-            ->name('penelitian.updateStatus');
-
         // ==========================================================
         // FITUR PENGABDIAN ADMIN
         // ==========================================================

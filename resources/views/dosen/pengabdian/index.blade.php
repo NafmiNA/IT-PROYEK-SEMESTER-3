@@ -96,17 +96,22 @@
                         
                         {{-- Toolbar: Search + Add --}}
                         <div class="mt-4 flex items-center gap-3 flex-wrap">
-                            <div class="relative">
+                            <form action="{{ route('dosen.pengabdian.index') }}" method="GET" class="relative">
+                                @if(request('status'))
+                                    <input type="hidden" name="status" value="{{ request('status') }}">
+                                @endif
                                 <input type="text"
-                                       id="searchInput"
+                                       name="search"
+                                       value="{{ request('search') }}"
                                        placeholder="Cari pengabdian..."
                                        class="w-64 sm:w-80 pl-9 pr-4 py-2.5 text-sm bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all focus-visible"
-                                       onkeyup="searchPengabdian(this.value)"
                                        aria-label="Cari pengabdian">
-                                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                </svg>
-                            </div>
+                                <button type="submit" class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                </button>
+                            </form>
                             <a href="{{ route('dosen.pengabdian.create') }}"
                                class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-colors focus-visible">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,23 +153,14 @@
 
             {{-- Stats Cards --}}
             @php
-                $totalPengabdian = method_exists($pengabdian, 'total') ? $pengabdian->total() : $pengabdian->count();
-                $statusCounts = ['total' => $totalPengabdian, 'draft' => 0, 'pending' => 0, 'approved' => 0];
-                if (!method_exists($pengabdian, 'total')) {
-                    foreach ($pengabdian as $p) {
-                        if (isset($p->status)) {
-                            if ($p->status == 'Draft') $statusCounts['draft']++;
-                            elseif ($p->status == 'Menunggu') $statusCounts['pending']++;
-                            elseif ($p->status == 'Disetujui') $statusCounts['approved']++;
-                        }
-                    }
-                }
+                // Data sudah dikirim dari controller: $statusCounts
+                $totalPengabdian = $statusCounts['total'] ?? 0;
             @endphp
 
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-6">
                 {{-- Total Card --}}
-                <button onclick="filterStatus('all')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
+                <a href="{{ route('dosen.pengabdian.index', ['status' => 'all']) }}" 
+                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible {{ ($status ?? 'all') === 'all' ? 'ring-2 ring-blue-500' : '' }}"
                         style="animation-delay: 0.05s">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -175,11 +171,11 @@
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['total'] }}</p>
                     <p class="text-sm text-gray-600 font-medium">Total Pengabdian</p>
-                </button>
+                </a>
 
                 {{-- Draft Card --}}
-                <button onclick="filterStatus('draft')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
+                <a href="{{ route('dosen.pengabdian.index', ['status' => 'Draft']) }}" 
+                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible {{ ($status ?? '') === 'Draft' ? 'ring-2 ring-blue-500' : '' }}"
                         style="animation-delay: 0.1s">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -190,15 +186,15 @@
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['draft'] }}</p>
                     <p class="text-sm text-gray-600 font-medium">Draft</p>
-                </button>
+                </a>
 
                 {{-- Pending Card --}}
-                <button onclick="filterStatus('pending')" 
-                        class="text-left w-full {{ $statusCounts['pending'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['pending'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible"
+                <a href="{{ route('dosen.pengabdian.index', ['status' => 'Menunggu']) }}" 
+                        class="text-left w-full {{ $statusCounts['pending'] > 0 ? 'bg-amber-500 hover:bg-amber-600' : 'bg-white hover:bg-gray-50' }} rounded-lg shadow-md {{ $statusCounts['pending'] > 0 ? '' : 'border border-gray-200' }} card-hover p-5 animate-slide-up focus-visible {{ ($status ?? '') === 'Menunggu' ? 'ring-2 ring-amber-300' : '' }}"
                         style="animation-delay: 0.15s">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 {{ $statusCounts['pending'] > 0 ? 'bg-gray-100' : 'bg-gray-100' }} rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-6 h-6 {{ $statusCounts['pending'] > 0 ? 'text-amber-600' : 'text-gray-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                         </div>
@@ -208,11 +204,11 @@
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold {{ $statusCounts['pending'] > 0 ? 'text-white' : 'text-gray-900' }} stat-num mb-1">{{ $statusCounts['pending'] }}</p>
                     <p class="text-sm {{ $statusCounts['pending'] > 0 ? 'text-amber-50' : 'text-gray-600' }} font-medium">Menunggu Review</p>
-                </button>
+                </a>
 
                 {{-- Approved Card --}}
-                <button onclick="filterStatus('approved')" 
-                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible"
+                <a href="{{ route('dosen.pengabdian.index', ['status' => 'Disetujui']) }}" 
+                        class="text-left w-full bg-white hover:bg-gray-50 rounded-lg shadow-md border border-gray-200 card-hover p-5 animate-slide-up focus-visible {{ ($status ?? '') === 'Disetujui' ? 'ring-2 ring-blue-500' : '' }}"
                         style="animation-delay: 0.2s">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-11 h-11 bg-gray-100 rounded-lg flex items-center justify-center">
@@ -223,7 +219,7 @@
                     </div>
                     <p class="text-3xl sm:text-4xl font-bold text-gray-900 stat-num mb-1">{{ $statusCounts['approved'] }}</p>
                     <p class="text-sm text-gray-600 font-medium">Disetujui ✓</p>
-                </button>
+                </a>
             </div>
 
             {{-- Main Content --}}
@@ -234,27 +230,27 @@
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                             <h2 class="text-lg font-semibold text-gray-900">Daftar Pengabdian</h2>
-                            <p class="text-sm text-gray-600 mt-0.5">{{ $totalPengabdian }} pengabdian terdaftar</p>
+                            <p class="text-sm text-gray-600 mt-0.5">{{ $pengabdian->total() }} pengabdian ditemukan</p>
                         </div>
                         
                         {{-- Filter Buttons --}}
                         <div class="flex flex-wrap gap-2">
-                            <button onclick="filterStatus('all')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus-visible">
+                            <a href="{{ route('dosen.pengabdian.index', ['status' => 'all', 'search' => request('search')]) }}" 
+                                    class="filter-btn px-4 py-2 text-sm font-medium {{ request('status', 'all') === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }} rounded-lg hover:bg-blue-700 transition-colors focus-visible">
                                 Semua
-                            </button>
-                            <button onclick="filterStatus('draft')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
+                            </a>
+                            <a href="{{ route('dosen.pengabdian.index', ['status' => 'Draft', 'search' => request('search')]) }}" 
+                                    class="filter-btn px-4 py-2 text-sm font-medium {{ request('status') === 'Draft' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }} rounded-lg hover:bg-blue-700 transition-colors focus-visible">
                                 Draft
-                            </button>
-                            <button onclick="filterStatus('pending')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
+                            </a>
+                            <a href="{{ route('dosen.pengabdian.index', ['status' => 'Menunggu', 'search' => request('search')]) }}" 
+                                    class="filter-btn px-4 py-2 text-sm font-medium {{ request('status') === 'Menunggu' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }} rounded-lg hover:bg-blue-700 transition-colors focus-visible">
                                 Menunggu
-                            </button>
-                            <button onclick="filterStatus('approved')" 
-                                    class="filter-btn px-4 py-2 text-sm font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors focus-visible">
+                            </a>
+                            <a href="{{ route('dosen.pengabdian.index', ['status' => 'Disetujui', 'search' => request('search')]) }}" 
+                                    class="filter-btn px-4 py-2 text-sm font-medium {{ request('status') === 'Disetujui' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700' }} rounded-lg hover:bg-blue-700 transition-colors focus-visible">
                                 Disetujui
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -422,94 +418,13 @@
 
     {{-- Optimized JavaScript --}}
     <script>
-        // Filter by status with instant feedback
-        function filterStatus(status) {
-            const cards = document.querySelectorAll('.pengabdian-card');
-            const buttons = document.querySelectorAll('.filter-btn');
-            const searchInput = document.getElementById('searchInput');
-            
-            // Clear search
-            if (searchInput) searchInput.value = '';
-            
-            // Update button states
-            buttons.forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-100', 'text-gray-700');
-            });
-            
-            if (event && event.target.classList.contains('filter-btn')) {
-                event.target.classList.remove('bg-gray-100', 'text-gray-700');
-                event.target.classList.add('bg-blue-600', 'text-white');
-            }
-            
-            // Filter cards with animation
-            let visibleCount = 0;
-            cards.forEach(card => {
-                const cardStatus = card.dataset.status;
-                if (status === 'all' || cardStatus === status) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            showFeedback(visibleCount + ' pengabdian ditampilkan');
-        }
-        
-        // Search functionality
-        function searchPengabdian(query) {
-            const cards = document.querySelectorAll('.pengabdian-card');
-            const buttons = document.querySelectorAll('.filter-btn');
-            const searchTerm = query.toLowerCase().trim();
-            
-            // Reset filters
-            buttons.forEach((btn, i) => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-100', 'text-gray-700');
-                if (i === 0) {
-                    btn.classList.remove('bg-gray-100', 'text-gray-700');
-                    btn.classList.add('bg-blue-600', 'text-white');
-                }
-            });
-            
-            let visibleCount = 0;
-            cards.forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                if (searchTerm === '' || title.includes(searchTerm)) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            if (searchTerm) showFeedback(visibleCount + ' hasil ditemukan');
-        }
-        
-        // Feedback toast
-        function showFeedback(message) {
-            const existing = document.getElementById('feedback-toast');
-            if (existing) existing.remove();
-            
-            const toast = document.createElement('div');
-            toast.id = 'feedback-toast';
-            toast.className = 'fixed bottom-6 right-6 px-4 py-3 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-lg animate-slide-up z-50';
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transition = 'opacity 0.3s';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        }
+        // Server-side filtering is now used.
         
         // Keyboard shortcut: Ctrl/Cmd + K for search
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
                 e.preventDefault();
-                document.getElementById('searchInput')?.focus();
+                document.querySelector('input[name="search"]')?.focus();
             }
         });
     </script>

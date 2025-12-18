@@ -50,7 +50,7 @@ class DokumentasiController extends Controller
 
         $saved = [];
         foreach ($files as $file) {
-            $folder = 'SIDOPPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
+            $folder = 'SIDEPAN/' . ucfirst($data['context']) . '/' . $model->id . '/dokumentasi';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
 

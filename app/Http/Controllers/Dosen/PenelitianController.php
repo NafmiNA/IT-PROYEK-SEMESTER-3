@@ -25,14 +25,29 @@ class PenelitianController extends Controller
     {
         $dosen = $request->user()->dosen;
 
-        $penelitian = Penelitian::with(['ketua'])
+        $query = Penelitian::with(['ketua'])
             ->whereHas('dosens', function ($query) use ($dosen) {
                 $query->where('dosen_id', $dosen->id);
-            })
-            ->latest()
-            ->paginate(10);
+            });
 
-        return view('dosen.penelitian.index', compact('penelitian'));
+        // Server-side searching
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('tahun', 'like', "%{$search}%")
+                  ->orWhere('skema', 'like', "%{$search}%");
+            });
+        }
+
+        $penelitian = $query->latest()->paginate(10)->withQueryString();
+
+        // Status counts simplified for Penelitian
+        $statusCounts = [
+            'total'     => Penelitian::whereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id))->count(),
+        ];
+
+        return view('dosen.penelitian.index', compact('penelitian', 'statusCounts'));
     }
 
     public function create()
@@ -124,7 +139,7 @@ class PenelitianController extends Controller
         
             if ($request->hasFile('laporan_jurnal')) {
                 $file = $request->file('laporan_jurnal');
-                $folder = "SIDOPPAN/Penelitian/{$penelitian->id}/laporan";
+                $folder = "SIDEPAN/Penelitian/{$penelitian->id}/laporan";
                 
                 // Store file locally
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
@@ -259,7 +274,7 @@ class PenelitianController extends Controller
                 }
 
                 $file = $request->file('laporan_jurnal');
-                $folder = "SIDOPPAN/Penelitian/{$penelitian->id}/laporan";
+                $folder = "SIDEPAN/Penelitian/{$penelitian->id}/laporan";
                 
                 // Store file locally
                 $filename = uniqid('', true) . '_' . $file->getClientOriginalName();

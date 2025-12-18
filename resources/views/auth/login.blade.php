@@ -104,7 +104,7 @@
         <div class="absolute bottom-6 left-6 bg-black/60 text-white p-4 rounded-lg backdrop-blur-sm max-w-[520px]">
           <p class="text-xs tracking-wider uppercase text-lime-300">Selamat Datang</p>
           <h2 class="text-xl font-semibold leading-tight">
-            Sistem Informasi Pengelolaan Data Penelitian dan Pengabdian Dosen<br>
+            Sistem Informasi Dosen Penelitian dan Pengabdian (SIDEPAN)<br>
             <span class="font-extrabold">POLITEKNIK NEGERI TANAH LAUT</span>
           </h2>
         </div>

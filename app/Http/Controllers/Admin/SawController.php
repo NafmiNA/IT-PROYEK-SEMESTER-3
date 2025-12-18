@@ -27,6 +27,9 @@ class SawController extends Controller
      */
     public function index(Request $request)
     {
+        // Sinkronisasi data real-time agar data yang disetujui langsung muncul
+        $this->syncPrestasiData();
+
         $tahun = $request->get('tahun', now()->year);
         $years = $this->sawService->getAvailableYears();
         
@@ -42,6 +45,58 @@ class SawController extends Controller
         $dosens = Dosen::orderBy('nama')->get();
         
         return view('admin.saw.index', compact('prestasi', 'dosens', 'tahun', 'years'));
+    }
+    
+    /**
+     * Sinkronisasi data prestasi dari tabel Penelitian dan Pengabdian
+     */
+    private function syncPrestasiData()
+    {
+        $dosens = Dosen::all();
+
+        foreach ($dosens as $dosen) {
+            // 1. Ambil SEMUA data di mana dosen terlibat (Ketua ATAU Anggota) untuk hitung Publikasi
+            $allPenelitian = $dosen->penelitian()->get(); 
+            $allPengabdianApproved = $dosen->pengabdians()->where('status', 'Disetujui')->get();
+            
+            // 2. Ambil data di mana dosen adalah KETUA saja untuk hitung Hibah (Dana)
+            $penelitianKetua = $dosen->penelitianKetua()->get();
+            $pengabdianKetuaApproved = $dosen->pengabdianKetua()->where('status', 'Disetujui')->get();
+
+            // Ambil semua tahun unik dari keterlibatan dosen
+            $years = $allPenelitian->pluck('tahun')
+                ->merge($allPengabdianApproved->pluck('tahun'))
+                ->unique()
+                ->filter()
+                ->values();
+
+            foreach ($years as $year) {
+                // Hitung Publikasi (Semua keterlibatan)
+                $countPublikasi = $allPenelitian->where('tahun', $year)->count() 
+                                + $allPengabdianApproved->where('tahun', $year)->count();
+
+                // Hitung Hibah (Hanya sebagai Ketua agar tidak double counting dana sistem)
+                $totalHibah = $penelitianKetua->where('tahun', $year)->sum('dana') 
+                            + $pengabdianKetuaApproved->where('tahun', $year)->sum('dana');
+
+                // Update atau Create record prestasi
+                $prestasi = PrestasiDosen::firstOrNew([
+                    'dosen_id' => $dosen->id,
+                    'tahun' => $year
+                ]);
+
+                $prestasi->publikasi = $countPublikasi;
+                $prestasi->hibah = $totalHibah;
+                
+                // Set default jika null (untuk record baru)
+                if (!$prestasi->exists) {
+                    $prestasi->skor_sinta = 0;
+                    $prestasi->buku = 0;
+                }
+                
+                $prestasi->save();
+            }
+        }
     }
     
     /**
@@ -200,28 +255,38 @@ class SawController extends Controller
         /**
          * Helper: Hitung Publikasi dan Hibah secara otomatis
          */
-        private function calculatePublikasiAndHibah($dosenId, $tahun)
-        {
-            // Hitung Publikasi (Jumlah Penelitian Disetujui)
-            $publikasi = Penelitian::where('dosen_id', $dosenId)
-                ->where('tahun', $tahun)
-                ->where('status', 'Disetujui')
-                ->count();
-    
-            // Hitung Hibah (Total Dana Penelitian + Pengabdian Disetujui)
-            // Asumsi: Dosen yang login adalah Ketua (dosen_id pada tabel penelitian/pengabdian)
-            $danaPenelitian = Penelitian::where('dosen_id', $dosenId)
-                ->where('tahun', $tahun)
-                ->where('status', 'Disetujui')
-                ->sum('dana');
-    
-            $danaPengabdian = Pengabdian::where('dosen_id', $dosenId)
-                ->where('tahun', $tahun)
-                ->where('status', 'Disetujui')
-                ->sum('dana');
-    
-            $hibah = $danaPenelitian + $danaPengabdian;
-    
-            return [$publikasi, $hibah];
-        }
-    }
+            private function calculatePublikasiAndHibah($dosenId, $tahun)
+            {
+                $dosen = Dosen::find($dosenId);
+                if (!$dosen) return [0, 0];
+
+                // 1. Publikasi (Semua keterlibatan: Ketua ATAU Anggota)
+                $jmlPenelitian = Penelitian::whereHas('dosens', function($q) use ($dosenId) {
+                        $q->where('dosen_id', $dosenId);
+                    })
+                    ->where('tahun', $tahun)
+                    ->count();
+        
+                $jmlPengabdian = Pengabdian::whereHas('dosens', function($q) use ($dosenId) {
+                        $q->where('dosen_id', $dosenId);
+                    })
+                    ->where('tahun', $tahun)
+                    ->where('status', 'Disetujui')
+                    ->count();
+        
+                $publikasi = $jmlPenelitian + $jmlPengabdian;
+        
+                // 2. Hibah (Hanya sebagai Ketua agar tidak double counting dana)
+                $danaPenelitian = Penelitian::where('dosen_id', $dosenId)
+                    ->where('tahun', $tahun)
+                    ->sum('dana');
+        
+                $danaPengabdian = Pengabdian::where('dosen_id', $dosenId)
+                    ->where('tahun', $tahun)
+                    ->where('status', 'Disetujui')
+                    ->sum('dana');
+        
+                $hibah = $danaPenelitian + $danaPengabdian;
+        
+                return [$publikasi, $hibah];
+            }    }

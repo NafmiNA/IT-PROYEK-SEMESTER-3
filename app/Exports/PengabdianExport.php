@@ -9,8 +9,10 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Events\AfterSheet;
 
-class PengabdianExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles
+class PengabdianExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
 {
     protected $tahun;
     protected $status;
@@ -76,23 +78,28 @@ class PengabdianExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
      */
     public function map($pengabdian): array
     {
-        // Ambil nama anggota dosen (selain ketua)
-        $anggota = $pengabdian->dosens
+        // Ambil nama anggota dosen (selain ketua) dan format dengan strip/newline
+        $anggotaList = $pengabdian->dosens
             ->where('id', '!=', $pengabdian->dosen_id)
-            ->pluck('nama')
-            ->implode(', ');
+            ->pluck('nama');
+        
+        $anggotaFormatted = $anggotaList->count() > 0 
+            ? $anggotaList->map(fn($nama) => "- " . $nama)->implode("\n")
+            : '-';
 
-        // Ambil nama mahasiswa
-        $mahasiswa = $pengabdian->mahasiswas
-            ->pluck('nama')
-            ->implode(', ');
+        // Ambil nama mahasiswa dan format dengan strip/newline
+        $mahasiswaList = $pengabdian->mahasiswas->pluck('nama');
+        
+        $mahasiswaFormatted = $mahasiswaList->count() > 0 
+            ? $mahasiswaList->map(fn($nama) => "- " . $nama)->implode("\n")
+            : '-';
 
         return [
             $pengabdian->id,
             $pengabdian->judul,
             $pengabdian->ketua->nama ?? 'Tidak Ada', // Nama Ketua
-            $anggota ?: '-',                         // Nama Anggota
-            $mahasiswa ?: '-',                       // Nama Mahasiswa
+            $anggotaFormatted,                       // Nama Anggota
+            $mahasiswaFormatted,                     // Nama Mahasiswa
             $pengabdian->tahun,
             $pengabdian->skema,
             $pengabdian->sumber_dana,
@@ -109,6 +116,26 @@ class PengabdianExport implements FromQuery, WithHeadings, WithMapping, ShouldAu
     {
         return [
             1 => ['font' => ['bold' => true, 'size' => 12]],
+        ];
+    }
+
+    /**
+     * Aktifkan wrap text agar newline (\n) terlihat di Excel
+     */
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function(AfterSheet $event) {
+                // Kolom D (Anggota Dosen) dan E (Mahasiswa Terlibat)
+                $event->sheet->getDelegate()->getStyle('D:E')
+                    ->getAlignment()
+                    ->setWrapText(true);
+                
+                // Set vertical alignment ke top agar rapi
+                $event->sheet->getDelegate()->getStyle('A:K')
+                    ->getAlignment()
+                    ->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            },
         ];
     }
 }

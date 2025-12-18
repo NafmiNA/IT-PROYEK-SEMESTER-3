@@ -25,14 +25,37 @@ class PengabdianController extends Controller
     {
         $dosen = $request->user()->dosen;
 
-        $pengabdian = Pengabdian::with(['ketua'])
+        $query = Pengabdian::with(['ketua'])
             ->whereHas('dosens', function ($query) use ($dosen) {
                 $query->where('dosen_id', $dosen->id);
-            })
-            ->latest()
-            ->paginate(10);
+            });
 
-        return view('dosen.pengabdian.index', compact('pengabdian'));
+        // Server-side filtering by status
+        if ($request->filled('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        // Server-side searching
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                  ->orWhere('tahun', 'like', "%{$search}%")
+                  ->orWhere('skema', 'like', "%{$search}%");
+            });
+        }
+
+        $pengabdian = $query->latest()->paginate(10)->withQueryString();
+
+        // Status counts for ALL records belonging to this Dosen
+        $statusCounts = [
+            'total'     => Pengabdian::whereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id))->count(),
+            'draft'     => Pengabdian::where('status', 'Draft')->whereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id))->count(),
+            'pending'   => Pengabdian::where('status', 'Menunggu')->whereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id))->count(),
+            'approved'  => Pengabdian::where('status', 'Disetujui')->whereHas('dosens', fn($q) => $q->where('dosen_id', $dosen->id))->count(),
+        ];
+
+        return view('dosen.pengabdian.index', compact('pengabdian', 'statusCounts'));
     }
 
     public function create()
@@ -136,7 +159,7 @@ class PengabdianController extends Controller
                     foreach ((array) $request->file('dokumentasi') as $file) {
                         try {
                             // Store file locally
-                            $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
+                                $folder = "SIDEPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
                             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
                             $filePath = Storage::disk('public')->putFileAs($folder, $file, $filename);
                             
@@ -274,7 +297,7 @@ class PengabdianController extends Controller
             if ($request->hasFile('dokumentasi')) {
                 foreach ((array) $request->file('dokumentasi') as $file) {
                     try {
-                        $folder = "SIDOPPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
+                            $folder = "SIDEPAN/Pengabdian/{$pengabdian->id}/dokumentasi";
                         
                         // Store file to local storage
                         $filename = uniqid('', true) . '_' . $file->getClientOriginalName();

@@ -130,8 +130,8 @@
             </svg>
         </button>
         
-        <h2 style="color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; margin-top: 3rem;">SIDOPPAN</h2>
-        <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 1.5rem;">Mahasiswa</p>
+                    <h2 style="color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; margin-top: 3rem;">SIDEPAN</h2>
+            <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 1.5rem;">Mahasiswa</p>
         
         <div style="background: {{ request()->routeIs('mahasiswa.dashboard') ? '#2563eb' : '#1e293b' }}; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 0.5rem;">
             <a href="{{ route('mahasiswa.dashboard') }}" style="color: white; text-decoration: none; display: block;">Dashboard</a>

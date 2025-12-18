@@ -77,7 +77,7 @@ class MahasiswaDashboardController extends Controller
         
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $folder = 'SIDOPPAN/Dokumentasi';
+            $folder = 'SIDEPAN/Dokumentasi';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $path = \Storage::disk('public')->putFileAs($folder, $file, $filename);
             
@@ -165,7 +165,7 @@ class MahasiswaDashboardController extends Controller
             
             // Upload new file to local storage
             $file = $request->file('file');
-            $folder = 'SIDOPPAN/Dokumentasi';
+            $folder = 'SIDEPAN/Dokumentasi';
             $filename = uniqid('', true) . '_' . $file->getClientOriginalName();
             $path = Storage::disk('public')->putFileAs($folder, $file, $filename);
             

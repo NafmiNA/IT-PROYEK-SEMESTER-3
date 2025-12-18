@@ -123,7 +123,7 @@
                 </svg>
             </button>
             
-            <h2 style="color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; margin-top: 3rem;">SIDOPPAN</h2>
+            <h2 style="color: white; font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem; margin-top: 3rem;">SIDEPAN</h2>
             <p style="color: #9ca3af; font-size: 0.875rem; margin-bottom: 1.5rem;">{{ ucfirst(Auth::user()->role ?? 'Dosen') }}</p>
             
             {{-- Dashboard --}}
