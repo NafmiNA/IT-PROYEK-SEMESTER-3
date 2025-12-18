@@ -121,13 +121,21 @@ class SawController extends Controller
                 'hibah' => $hibah,
             ]);
 
-            PrestasiDosen::create($dataToStore);
+            // Gunakan updateOrCreate untuk menghindari error Duplicate Entry
+            // karena data mungkin sudah dibuat otomatis oleh fungsi syncPrestasiData()
+            PrestasiDosen::updateOrCreate(
+                [
+                    'dosen_id' => $validated['dosen_id'],
+                    'tahun' => $validated['tahun']
+                ],
+                $dataToStore
+            );
             
-            Log::info('Prestasi dosen created (auto-calculated)', $dataToStore);
+            Log::info('Prestasi dosen saved (create/update)', $dataToStore);
             
             return redirect()
                 ->route('admin.saw.index', ['tahun' => $validated['tahun']])
-                ->with('success', 'Data prestasi berhasil ditambahkan! Publikasi dan Hibah dihitung otomatis.');
+                ->with('success', 'Data prestasi berhasil disimpan! Jika data tahun tersebut sudah ada, data akan diperbarui.');
         } catch (\Exception $e) {
             Log::error('Failed to create prestasi', ['error' => $e->getMessage()]);
             
